@@ -600,9 +600,19 @@ export interface MutationRecord {
   lokasiTujuan: string;
   picBefore?: string; // New Field: PIC Asal
   picAfter?: string; // New Field: PIC Tujuan
+  biayaMutasi?: string; // New field for Vehicle Mutation Cost
   status: string;
   statusApproval: string;
   workflow?: WorkflowLog[];
+  
+  // New Fields for Checklist Unit
+  photoFront?: string;
+  photoRear?: string;
+  photoRight?: string;
+  photoLeft?: string;
+  photoInterior?: string;
+  documentStnk?: string;
+  checklistCondition?: string[]; // Array of strings for checklist items
 }
 
 export interface BidRecord {

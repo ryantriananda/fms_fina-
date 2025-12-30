@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { X, Send, MapPin, Building, Info, AlertTriangle, User, Package, Car, Tag, Filter } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Send, MapPin, Building, Info, AlertTriangle, User, Package, Car, Tag, Filter, DollarSign, UploadCloud, Trash2, Image as ImageIcon, FileText, CheckSquare } from 'lucide-react';
 import { MutationRecord, VehicleRecord, GeneralAssetRecord, BuildingAssetRecord } from '../types';
 
 interface Props {
@@ -13,6 +13,8 @@ interface Props {
   generalAssetList?: any[]; // Supports both GeneralAssetRecord and BuildingAssetRecord with sourceCategory
   assetType?: 'VEHICLE' | 'GENERAL_ASSET';
 }
+
+type DocKeys = 'front' | 'rear' | 'right' | 'left' | 'interior' | 'stnk';
 
 export const MutationModal: React.FC<Props> = ({ 
     isOpen, 
@@ -27,6 +29,18 @@ export const MutationModal: React.FC<Props> = ({
   const [activeTab, setActiveTab] = useState('DETAILS');
   const [categoryFilter, setCategoryFilter] = useState('ALL'); // New State for Filter
   
+  // Document Upload States
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeUploadKey, setActiveUploadKey] = useState<DocKeys | null>(null);
+  const [docPreviews, setDocPreviews] = useState<{ [key in DocKeys]: string | null }>({
+      front: null,
+      rear: null,
+      right: null,
+      left: null,
+      interior: null,
+      stnk: null
+  });
+
   const [form, setForm] = useState<Partial<MutationRecord>>({
     status: 'Draft',
     statusApproval: 'Pending',
@@ -34,7 +48,9 @@ export const MutationModal: React.FC<Props> = ({
     tipeMutasi: 'Permanent',
     picBefore: '',
     picAfter: '',
-    assetType: assetType
+    assetType: assetType,
+    biayaMutasi: '',
+    checklistCondition: []
   });
 
   // Helper to find selected asset regardless of type
@@ -53,6 +69,15 @@ export const MutationModal: React.FC<Props> = ({
     if (isOpen) {
       if (initialData) {
         setForm(initialData);
+        // Load existing photos if available
+        setDocPreviews({
+            front: initialData.photoFront || null,
+            rear: initialData.photoRear || null,
+            right: initialData.photoRight || null,
+            left: initialData.photoLeft || null,
+            interior: initialData.photoInterior || null,
+            stnk: initialData.documentStnk || null
+        });
       } else {
         setForm({
             status: 'Draft',
@@ -66,8 +91,11 @@ export const MutationModal: React.FC<Props> = ({
             lokasiTujuan: '',
             picBefore: '',
             picAfter: '',
-            assetType: assetType
+            assetType: assetType,
+            biayaMutasi: '',
+            checklistCondition: []
         });
+        setDocPreviews({ front: null, rear: null, right: null, left: null, interior: null, stnk: null });
         setCategoryFilter('ALL'); // Reset filter on open
       }
       setActiveTab('DETAILS');
@@ -120,6 +148,55 @@ export const MutationModal: React.FC<Props> = ({
       }
   };
 
+  // --- Upload Handlers ---
+  const handleUploadClick = (key: DocKeys) => {
+      if (!isView) {
+          setActiveUploadKey(key);
+          setTimeout(() => fileInputRef.current?.click(), 0);
+      }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file && activeUploadKey) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+              setDocPreviews(prev => ({ ...prev, [activeUploadKey]: ev.target?.result as string }));
+          };
+          reader.readAsDataURL(file);
+      }
+      e.target.value = ''; // Reset input
+  };
+
+  const handleRemoveImage = (e: React.MouseEvent, key: DocKeys) => {
+      e.stopPropagation();
+      setDocPreviews(prev => ({ ...prev, [key]: null }));
+  };
+
+  const toggleChecklist = (item: string) => {
+      if (isView) return;
+      const current = form.checklistCondition || [];
+      if (current.includes(item)) {
+          setForm({ ...form, checklistCondition: current.filter(i => i !== item) });
+      } else {
+          setForm({ ...form, checklistCondition: [...current, item] });
+      }
+  };
+
+  const handleSave = () => {
+      // Map previews to form fields before saving
+      const updatedData: Partial<MutationRecord> = {
+          ...form,
+          photoFront: docPreviews.front || undefined,
+          photoRear: docPreviews.rear || undefined,
+          photoRight: docPreviews.right || undefined,
+          photoLeft: docPreviews.left || undefined,
+          photoInterior: docPreviews.interior || undefined,
+          documentStnk: docPreviews.stnk || undefined
+      };
+      onSave(updatedData);
+  };
+
   const Label = ({ children, required }: { children?: React.ReactNode, required?: boolean }) => (
     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2.5">
       {children} {required && <span className="text-red-500 font-black ml-0.5">*</span>}
@@ -135,6 +212,45 @@ export const MutationModal: React.FC<Props> = ({
         <span className="text-[11px] font-black text-black truncate" title={value}>{value || '-'}</span>
     </div>
   );
+
+  const UploadBox = ({ label, uploadKey, icon: Icon = UploadCloud }: { label: string, uploadKey: DocKeys, icon?: any }) => {
+      const preview = docPreviews[uploadKey];
+      return (
+        <div className="flex flex-col h-full">
+            <Label>{label}</Label>
+            <div 
+                onClick={() => handleUploadClick(uploadKey)}
+                className={`relative flex-1 border-2 border-dashed rounded-[1.5rem] flex flex-col items-center justify-center transition-all overflow-hidden bg-white min-h-[140px]
+                  ${preview ? 'border-gray-200' : 'border-gray-100 hover:border-black hover:bg-gray-50/50'}
+                  ${!isView ? 'cursor-pointer' : 'cursor-default'}
+                `}
+            >
+                {preview ? (
+                  <div className="relative w-full h-full group flex items-center justify-center">
+                      <img src={preview} alt={label} className="w-full h-full object-contain p-2" />
+                      {!isView && (
+                          <button 
+                              onClick={(e) => handleRemoveImage(e, uploadKey)}
+                              className="absolute top-2 right-2 bg-black text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                          >
+                              <Trash2 size={12} />
+                          </button>
+                      )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center p-4 text-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm border border-gray-100 transition-all mb-2 bg-white`}>
+                          <Icon size={16} className="text-gray-300" />
+                      </div>
+                      <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest leading-relaxed">
+                          {isView ? 'No Image' : 'Upload'}
+                      </p>
+                  </div>
+                )}
+            </div>
+        </div>
+      );
+  };
 
   return (
     <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center backdrop-blur-sm p-4">
@@ -159,14 +275,24 @@ export const MutationModal: React.FC<Props> = ({
         </div>
 
         <div className="bg-white border-b border-gray-100 flex px-10 shrink-0 gap-8">
-            <button onClick={() => setActiveTab('DETAILS')} className={`py-3 text-[10px] font-black uppercase tracking-widest border-b-2 ${activeTab === 'DETAILS' ? 'border-black text-black' : 'border-transparent text-gray-400'}`}>Details</button>
-            <button onClick={() => setActiveTab('WORKFLOW')} className={`py-3 text-[10px] font-black uppercase tracking-widest border-b-2 ${activeTab === 'WORKFLOW' ? 'border-black text-black' : 'border-transparent text-gray-400'}`}>Workflow</button>
+            {['DETAILS', 'CHECKLIST', 'WORKFLOW'].map(tab => {
+                if (tab === 'CHECKLIST' && assetType !== 'VEHICLE') return null;
+                return (
+                    <button 
+                        key={tab}
+                        onClick={() => setActiveTab(tab)} 
+                        className={`py-3 text-[10px] font-black uppercase tracking-widest border-b-2 ${activeTab === tab ? 'border-black text-black' : 'border-transparent text-gray-400'}`}
+                    >
+                        {tab}
+                    </button>
+                )
+            })}
         </div>
 
         {/* Content */}
         <div className="p-10 overflow-y-auto custom-scrollbar bg-[#FBFBFB]">
-            {activeTab === 'DETAILS' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {activeTab === 'DETAILS' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-2">
                 {/* Asset Selection */}
                 <div className="md:col-span-2 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
@@ -370,6 +496,24 @@ export const MutationModal: React.FC<Props> = ({
                             </div>
                         </div>
 
+                        {/* Cost Field for Vehicle Mutation */}
+                        {assetType === 'VEHICLE' && (
+                            <div className="md:col-span-2">
+                                <Label>Estimasi Biaya Mutasi (IDR)</Label>
+                                <div className="relative">
+                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[12px] font-black text-gray-400">Rp</span>
+                                    <input 
+                                        type="number"
+                                        disabled={isView}
+                                        className="w-full bg-white border-none rounded-2xl pl-12 pr-5 py-4 text-[12px] font-black text-black outline-none shadow-sm focus:ring-2 focus:ring-black/5 disabled:text-gray-400 placeholder:text-gray-300"
+                                        placeholder="0"
+                                        value={form.biayaMutasi || ''}
+                                        onChange={(e) => setForm({...form, biayaMutasi: e.target.value})}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         <div className="md:col-span-2">
                             <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-xl border border-orange-100">
                                 <AlertTriangle size={16} className="text-orange-500 shrink-0 mt-0.5" />
@@ -381,7 +525,63 @@ export const MutationModal: React.FC<Props> = ({
                     </div>
                 </div>
             </div>
-            ) : (
+            )}
+
+            {activeTab === 'CHECKLIST' && assetType === 'VEHICLE' && (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
+                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*,application/pdf" onChange={handleFileChange} />
+                    
+                    {/* Checklist Section */}
+                    <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                            <CheckSquare size={18} className="text-black"/>
+                            <h3 className="text-[11px] font-black text-black uppercase tracking-widest">Physical Condition Checklist</h3>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {['Body / Exterior', 'Interior / Cabin', 'Engine / Mesin', 'Tires / Ban', 'Lights / Lampu', 'Tools / Kunci', 'Spare Tire', 'Ac / Pendingin'].map((item) => (
+                                <label key={item} className="flex items-center gap-3 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all">
+                                    <input 
+                                        type="checkbox" 
+                                        className="w-4 h-4 rounded text-black focus:ring-black border-gray-300"
+                                        checked={form.checklistCondition?.includes(item)}
+                                        onChange={() => toggleChecklist(item)}
+                                        disabled={isView}
+                                    />
+                                    <span className="text-[10px] font-bold text-gray-600 uppercase">{item}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Photos Section */}
+                    <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                            <ImageIcon size={18} className="text-black"/>
+                            <h3 className="text-[11px] font-black text-black uppercase tracking-widest">Foto Fisik Unit (Wajib)</h3>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                            <UploadBox label="Tampak Depan" uploadKey="front" icon={ImageIcon} />
+                            <UploadBox label="Tampak Belakang" uploadKey="rear" icon={ImageIcon} />
+                            <UploadBox label="Samping Kanan" uploadKey="right" icon={ImageIcon} />
+                            <UploadBox label="Samping Kiri" uploadKey="left" icon={ImageIcon} />
+                            <UploadBox label="Interior / Dash" uploadKey="interior" icon={ImageIcon} />
+                        </div>
+                    </div>
+
+                    {/* Document Section */}
+                    <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                            <FileText size={18} className="text-black"/>
+                            <h3 className="text-[11px] font-black text-black uppercase tracking-widest">Dokumen Kelengkapan</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <UploadBox label="Scan STNK (Asli/Copy)" uploadKey="stnk" icon={FileText} />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'WORKFLOW' && (
                 <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="bg-white p-12 rounded-[2.5rem] border border-gray-100 shadow-sm relative overflow-hidden">
                         <div className="text-center p-8">
