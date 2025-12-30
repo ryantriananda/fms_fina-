@@ -750,8 +750,29 @@ export const MOCK_SALES_DATA: SalesRecord[] = [
         channel: 'HCO',
         cabang: 'Jakarta',
         hargaTertinggi: '120.000.000',
+        hargaPembuka: '100.000.000', // Added mock data
         status: 'Open Bid',
-        statusApproval: 'Approved'
+        statusApproval: 'Approved',
+        bids: [
+            { 
+                id: '1', 
+                amount: '120.000.000', 
+                bidderName: 'Budi Santoso', 
+                bidderRole: 'External', 
+                bidderEmail: 'budi.s@gmail.com', 
+                bidderAvatar: 'https://picsum.photos/id/1012/100/100',
+                timestamp: '2024-01-12 10:30' 
+            },
+            { 
+                id: '2', 
+                amount: '110.000.000', 
+                bidderName: 'Andi Wijaya', 
+                bidderRole: 'Internal', 
+                bidderEmail: 'andi.wijaya@modena.com', 
+                bidderAvatar: 'https://picsum.photos/id/1005/100/100',
+                timestamp: '2024-01-11 14:00' 
+            }
+        ]
     },
     {
         id: 'SALE-002',
@@ -760,8 +781,10 @@ export const MOCK_SALES_DATA: SalesRecord[] = [
         channel: 'Operation',
         cabang: 'Surabaya',
         hargaTertinggi: '0',
+        hargaPembuka: '0',
         status: 'Draft',
-        statusApproval: 'Pending'
+        statusApproval: 'Pending',
+        bids: []
     },
     // New
     {
@@ -771,8 +794,20 @@ export const MOCK_SALES_DATA: SalesRecord[] = [
         channel: 'Sales',
         cabang: 'Bandung',
         hargaTertinggi: '85.500.000',
+        hargaPembuka: '80.000.000', // Added mock data
         status: 'Open Bid',
-        statusApproval: 'Approved'
+        statusApproval: 'Approved',
+        bids: [
+             { 
+                 id: '3', 
+                 amount: '85.500.000', 
+                 bidderName: 'Siti Aminah', 
+                 bidderRole: 'Internal', 
+                 bidderEmail: 'siti.aminah@modena.com',
+                 bidderAvatar: 'https://picsum.photos/id/1011/100/100',
+                 timestamp: '2024-03-02 09:15' 
+             }
+        ]
     },
     {
         id: 'SALE-004',
@@ -781,7 +816,9 @@ export const MOCK_SALES_DATA: SalesRecord[] = [
         channel: 'Marketing',
         cabang: 'Medan',
         hargaTertinggi: '210.000.000',
+        hargaPembuka: '195.000.000', // Added mock data
         status: 'Open Bid',
-        statusApproval: 'Approved'
+        statusApproval: 'Approved',
+        bids: []
     }
 ];

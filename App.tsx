@@ -671,25 +671,25 @@ const App: React.FC = () => {
                 </>
             );
         case 'Penjualan':
-            return (
-                <>
-                    <FilterBar tabs={['SEMUA', 'OPEN BID', 'SOLD']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('SALES', 'create')} />
-                    <SalesTable data={salesData} onEdit={(item) => openModal('SALES', 'edit', item)} onView={(item) => openModal('SALES', 'view', item)} onAction={(item, action) => handleInitiateWorkflow(item, action, 'SALES')} />
-                </>
-            );
-        case 'Open Bid':
-            const openBidData = salesData.filter(item => item.status === 'Open Bid');
+            // Logic for filtering Sales Data inside the Sales Module
+            let displayedSalesData = salesData;
+            if (activeTab === 'OPEN BID') {
+                displayedSalesData = salesData.filter(item => item.status === 'Open Bid' || item.status === 'Open Bidding');
+            } else if (activeTab === 'SOLD') {
+                displayedSalesData = salesData.filter(item => item.status === 'Sold');
+            }
+
             return (
                 <>
                     <FilterBar 
-                        tabs={['LIVE', 'ENDING SOON']} 
+                        tabs={['SEMUA', 'OPEN BID', 'SOLD']} 
                         activeTab={activeTab} 
                         onTabChange={setActiveTab} 
                         onAddClick={() => openModal('SALES', 'create')} 
-                        customAddLabel="New Auction"
+                        customAddLabel={activeTab === 'OPEN BID' ? "Lelang Baru" : undefined}
                     />
                     <SalesTable 
-                        data={openBidData} 
+                        data={displayedSalesData} 
                         onEdit={(item) => openModal('SALES', 'edit', item)} 
                         onView={(item) => openModal('SALES', 'view', item)} 
                         onAction={(item, action) => handleInitiateWorkflow(item, action, 'SALES')} 

@@ -600,6 +600,26 @@ export interface MutationRecord {
   workflow?: WorkflowLog[];
 }
 
+export interface BidRecord {
+    id: string;
+    amount: string; // IDR value
+    bidderName: string;
+    bidderRole?: string;
+    bidderAvatar?: string; // Added avatar
+    bidderEmail?: string; // Added email
+    bidderPhone?: string; // Added Phone
+    bidderKtp?: string; // Added KTP/NIK
+    timestamp: string; // ISO Date
+}
+
+export interface BidderRegistration {
+    name: string;
+    ktp: string;
+    phone: string;
+    email: string;
+    agreedToTerms: boolean;
+}
+
 export interface SalesRecord {
   id: string;
   noPolisi: string;
@@ -607,10 +627,11 @@ export interface SalesRecord {
   channel: string;
   cabang: string;
   hargaTertinggi: string;
+  hargaPembuka?: string;
   status: string;
   statusApproval: string;
   workflow?: WorkflowLog[];
-  
+  bids?: BidRecord[]; // History of bids
 }
 
 export interface MasterVendorRecord {
