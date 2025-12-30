@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Save, DollarSign, Car, Tag, TrendingUp, User, Clock, AlertCircle, Mail, Link, Copy, Check, ShieldCheck, ChevronRight, Trophy, Users, Phone, CreditCard, Info, Hash, Calendar as CalendarIcon, FileText } from 'lucide-react';
-import { SalesRecord, VehicleRecord, BidRecord, BidderRegistration } from '../types';
+import { X, Save, DollarSign, Car, Tag, TrendingUp, User, Clock, AlertCircle, Mail, Link, Copy, Check, ShieldCheck, ChevronRight, Trophy, Users, Phone, CreditCard, Info, Hash, Calendar as CalendarIcon, FileText, Package, Filter } from 'lucide-react';
+import { SalesRecord, VehicleRecord, BidRecord, BidderRegistration, GeneralAssetRecord } from '../types';
 
 interface Props {
   isOpen: boolean;
@@ -10,6 +10,8 @@ interface Props {
   initialData?: SalesRecord | null;
   mode?: 'create' | 'edit' | 'view';
   vehicleList?: VehicleRecord[];
+  generalAssetList?: any[]; // Supports both GeneralAssetRecord and BuildingAssetRecord
+  assetType?: 'VEHICLE' | 'GENERAL_ASSET';
 }
 
 export const SalesModal: React.FC<Props> = ({ 
@@ -18,16 +20,21 @@ export const SalesModal: React.FC<Props> = ({
     onSave, 
     initialData, 
     mode = 'create',
-    vehicleList = []
+    vehicleList = [],
+    generalAssetList = [],
+    assetType = 'VEHICLE'
 }) => {
   const [activeTab, setActiveTab] = useState('DETAILS');
+  const [categoryFilter, setCategoryFilter] = useState('ALL'); // New Filter State
+
   const [form, setForm] = useState<Partial<SalesRecord>>({
     status: 'Open Bidding',
     statusApproval: 'Pending',
     tglRequest: new Date().toISOString().split('T')[0],
     hargaTertinggi: '0',
     hargaPembuka: '0',
-    bids: []
+    bids: [],
+    assetType: assetType
   });
 
   // State for Bidding Logic
@@ -49,8 +56,17 @@ export const SalesModal: React.FC<Props> = ({
   // State for Bidder Detail Popup
   const [selectedBidder, setSelectedBidder] = useState<BidRecord | null>(null);
 
-  // Get full vehicle details based on selection
-  const selectedVehicle = vehicleList.find(v => v.noPolisi === form.noPolisi);
+  // Get full vehicle/asset details based on selection
+  const selectedVehicle = assetType === 'VEHICLE' ? vehicleList.find(v => v.noPolisi === form.noPolisi) : null;
+  const selectedGeneralAsset = assetType === 'GENERAL_ASSET' 
+    ? generalAssetList.find(a => (a.assetNumber === form.assetNumber) || (a.assetCode === form.assetNumber)) 
+    : null;
+
+  // Filter Logic
+  const filteredGeneralAssets = generalAssetList.filter(asset => {
+      if (categoryFilter === 'ALL') return true;
+      return asset.sourceCategory === categoryFilter;
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -65,10 +81,13 @@ export const SalesModal: React.FC<Props> = ({
             hargaTertinggi: '0',
             hargaPembuka: '0',
             noPolisi: '',
+            assetNumber: '',
             channel: '',
             cabang: '',
-            bids: []
+            bids: [],
+            assetType: assetType
         });
+        setCategoryFilter('ALL'); // Reset filter
       }
       setActiveTab('DETAILS');
       setNewBidAmount('');
@@ -79,7 +98,7 @@ export const SalesModal: React.FC<Props> = ({
       setRegForm({ name: '', ktp: '', phone: '', email: '', agreedToTerms: false });
       setSelectedBidder(null);
     }
-  }, [isOpen, initialData]);
+  }, [isOpen, initialData, assetType]);
 
   if (!isOpen) return null;
 
@@ -98,6 +117,28 @@ export const SalesModal: React.FC<Props> = ({
           }));
       } else {
           setForm(prev => ({ ...prev, noPolisi: selectedNoPol, channel: '', cabang: '' }));
+      }
+  };
+
+  const handleGeneralAssetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const selectedId = e.target.value;
+      const asset = generalAssetList.find(a => a.id === selectedId || a.assetNumber === selectedId || a.assetCode === selectedId);
+      
+      if (asset) {
+          const assetNumber = asset.assetNumber || asset.assetCode;
+          const assetName = asset.assetName || asset.type;
+          // Use buildingName/location logic
+          const location = asset.assetLocation || asset.buildingName;
+          
+          setForm(prev => ({
+              ...prev,
+              assetNumber: assetNumber,
+              assetName: assetName,
+              channel: asset.channel || 'Direct',
+              cabang: location, 
+          }));
+      } else {
+          setForm(prev => ({ ...prev, assetNumber: selectedId, channel: '', cabang: '' }));
       }
   };
 
@@ -193,7 +234,7 @@ export const SalesModal: React.FC<Props> = ({
                 <h2 className="text-[18px] font-black text-black uppercase tracking-tight leading-none">
                     DETAIL PENJUALAN & LELANG
                 </h2>
-                <p className="text-[9px] font-bold text-gray-400 mt-2 uppercase tracking-[0.3em]">Vehicle Asset Disposal</p>
+                <p className="text-[9px] font-bold text-gray-400 mt-2 uppercase tracking-[0.3em]">{assetType === 'VEHICLE' ? 'Vehicle Asset Disposal' : 'General Asset Disposal'}</p>
             </div>
           </div>
           <button onClick={onClose} className="text-gray-300 hover:text-black transition-all p-2 rounded-full hover:bg-gray-50">
@@ -221,31 +262,75 @@ export const SalesModal: React.FC<Props> = ({
             {activeTab === 'DETAILS' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
                     <div className="space-y-8">
-                        {/* Vehicle Selection Card */}
+                        {/* Asset Selection Card */}
                         <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
-                                <Car size={16} className="text-black"/>
-                                <h3 className="text-[11px] font-black text-black uppercase tracking-widest">UNIT YANG DIJUAL</h3>
+                                {assetType === 'VEHICLE' ? <Car size={16} className="text-black"/> : <Package size={16} className="text-black"/>}
+                                <h3 className="text-[11px] font-black text-black uppercase tracking-widest">{assetType === 'VEHICLE' ? 'UNIT YANG DIJUAL' : 'ASET YANG DIJUAL'}</h3>
                             </div>
                             
                             <div className="space-y-6">
                                 <div>
-                                    <Label required>PILIH UNIT KENDARAAN</Label>
-                                    <select 
-                                        disabled={isView || mode === 'edit'}
-                                        className="w-full bg-[#F8F9FA] border-none rounded-2xl px-5 py-4 text-[12px] font-black text-black outline-none shadow-sm focus:ring-2 focus:ring-black/5 disabled:text-gray-400 appearance-none cursor-pointer"
-                                        value={form.noPolisi || ''}
-                                        onChange={handleVehicleChange}
-                                    >
-                                        <option value="">-- Pilih Kendaraan (Hanya Milik Sendiri) --</option>
-                                        {vehicleList.filter(v => v.ownership === 'Milik Modena').map(v => (
-                                            <option key={v.id} value={v.noPolisi}>{v.noPolisi} - {v.nama} ({v.tahunPembuatan})</option>
-                                        ))}
-                                    </select>
+                                    <div className="flex justify-between items-center mb-2.5">
+                                        <Label required>{assetType === 'VEHICLE' ? 'PILIH UNIT KENDARAAN' : 'PILIH ASET'}</Label>
+                                        
+                                        {/* Flagging Filter for General Asset */}
+                                        {assetType === 'GENERAL_ASSET' && !isView && (
+                                            <div className="flex gap-1">
+                                                {['ALL', 'Asset HC', 'Asset IT', 'Customer Service'].map((cat) => (
+                                                    <button
+                                                        key={cat}
+                                                        onClick={() => setCategoryFilter(cat)}
+                                                        className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-wider border transition-all ${
+                                                            categoryFilter === cat 
+                                                            ? 'bg-black text-white border-black' 
+                                                            : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300'
+                                                        }`}
+                                                    >
+                                                        {cat === 'ALL' ? 'Semua' : cat.replace('Asset ', '')}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    {assetType === 'VEHICLE' ? (
+                                        <select 
+                                            disabled={isView || mode === 'edit'}
+                                            className="w-full bg-[#F8F9FA] border-none rounded-2xl px-5 py-4 text-[12px] font-black text-black outline-none shadow-sm focus:ring-2 focus:ring-black/5 disabled:text-gray-400 appearance-none cursor-pointer"
+                                            value={form.noPolisi || ''}
+                                            onChange={handleVehicleChange}
+                                        >
+                                            <option value="">-- Pilih Kendaraan (Hanya Milik Sendiri) --</option>
+                                            {vehicleList.filter(v => v.ownership === 'Milik Modena').map(v => (
+                                                <option key={v.id} value={v.noPolisi}>{v.noPolisi} - {v.nama} ({v.tahunPembuatan})</option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <select 
+                                            disabled={isView || mode === 'edit'}
+                                            className="w-full bg-[#F8F9FA] border-none rounded-2xl px-5 py-4 text-[12px] font-black text-black outline-none shadow-sm focus:ring-2 focus:ring-black/5 disabled:text-gray-400 appearance-none cursor-pointer"
+                                            value={form.assetNumber || ''}
+                                            onChange={handleGeneralAssetChange}
+                                        >
+                                            <option value="">-- Pilih Aset {categoryFilter !== 'ALL' ? `(${categoryFilter})` : ''} --</option>
+                                            {filteredGeneralAssets.filter(a => a.ownership === 'Own').map(a => {
+                                                const code = a.assetNumber || a.assetCode;
+                                                const name = a.assetName || a.type;
+                                                const loc = a.assetLocation || a.buildingName;
+                                                const val = a.id || code;
+                                                return (
+                                                    <option key={a.id} value={val}>
+                                                        {code} - {name} ({loc}) {categoryFilter === 'ALL' && a.sourceCategory ? `[${a.sourceCategory}]` : ''}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                    )}
                                 </div>
 
                                 {/* Detailed Vehicle Info (Read Only) */}
-                                {selectedVehicle && (
+                                {assetType === 'VEHICLE' && selectedVehicle && (
                                     <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 animate-in fade-in slide-in-from-top-2">
                                         <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-200/50">
                                             <Info size={14} className="text-black" />
@@ -272,6 +357,31 @@ export const SalesModal: React.FC<Props> = ({
                                                     <span className="text-[10px] font-mono font-bold text-black bg-white px-2 py-1 rounded border border-gray-200 shadow-sm">{selectedVehicle.masaBerlaku1 || '-'} (1Y)</span>
                                                     <span className="text-[10px] font-mono font-bold text-black bg-white px-2 py-1 rounded border border-gray-200 shadow-sm">{selectedVehicle.masaBerlaku5 || '-'} (5Y)</span>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Detailed General Asset Info */}
+                                {assetType === 'GENERAL_ASSET' && selectedGeneralAsset && (
+                                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 animate-in fade-in slide-in-from-top-2">
+                                        <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-200/50">
+                                            <Info size={14} className="text-black" />
+                                            <span className="text-[10px] font-black text-black uppercase tracking-widest">Detail Aset</span>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-2 gap-y-5 gap-x-4">
+                                            <DetailItem label="Kategori" value={selectedGeneralAsset.assetCategory || selectedGeneralAsset.assetType} />
+                                            <DetailItem label="Tipe / Nama" value={selectedGeneralAsset.type || selectedGeneralAsset.assetName} />
+                                            <DetailItem label="Lokasi" value={selectedGeneralAsset.assetLocation || selectedGeneralAsset.buildingName} />
+                                            <DetailItem label="Sub Lokasi" value={selectedGeneralAsset.subLocation || `${selectedGeneralAsset.floor || ''} ${selectedGeneralAsset.roomName || ''}`} />
+                                            <DetailItem label="Departemen" value={selectedGeneralAsset.department || '-'} />
+                                            <DetailItem label="Tgl Beli" value={selectedGeneralAsset.purchaseDate} icon={CalendarIcon} />
+                                            
+                                            <div className="col-span-2 h-px bg-gray-200/50 my-1"></div>
+                                            
+                                            <div className="col-span-2">
+                                                <DetailItem label="Harga Perolehan" value={`Rp ${parseInt(selectedGeneralAsset.purchasePrice || '0').toLocaleString('id-ID')}`} />
                                             </div>
                                         </div>
                                     </div>

@@ -189,6 +189,41 @@ const MODULE_MAPPING: Record<string, string> = {
     'ARK_REQ': 'Household Request (Permintaan ARK)'
 };
 
+const MOCK_GA_SALES_DATA: SalesRecord[] = [
+    {
+        id: 'SALE-GA-001',
+        assetType: 'GENERAL_ASSET',
+        assetNumber: 'AST-GEN-001',
+        assetName: 'Office Desk - HR Room',
+        tglRequest: '2024-03-15',
+        channel: 'Direct',
+        cabang: 'Jakarta',
+        hargaTertinggi: '1.200.000',
+        hargaPembuka: '1.000.000',
+        status: 'Open Bidding',
+        statusApproval: 'Approved',
+        bids: []
+    }
+];
+
+const MOCK_GA_MUTATION_DATA: MutationRecord[] = [
+    {
+        id: 'MUT-GA-001',
+        assetType: 'GENERAL_ASSET',
+        assetNumber: 'AST-GEN-002',
+        assetName: 'Coffee Machine',
+        cabangAset: 'Surabaya',
+        tipeMutasi: 'Permanent',
+        tglPermintaan: '2024-03-20',
+        lokasiAsal: 'Surabaya Branch - Pantry',
+        lokasiTujuan: 'MEC Surabaya - Lounge',
+        picBefore: 'Siti Aminah',
+        picAfter: 'Andi Staff',
+        status: 'Pending',
+        statusApproval: 'Pending'
+    }
+];
+
 const App: React.FC = () => {
   const { t } = useLanguage();
   const [activeModule, setActiveModule] = useState('Dashboard'); 
@@ -221,7 +256,9 @@ const App: React.FC = () => {
   const [timesheetData, setTimesheetData] = useState<TimesheetRecord[]>(() => getInitialData('timesheetData', MOCK_TIMESHEET_DATA));
   const [generalAssetData, setGeneralAssetData] = useState<GeneralAssetRecord[]>(() => getInitialData('generalAssetData', MOCK_GENERAL_ASSET_DATA));
   const [mutationData, setMutationData] = useState<MutationRecord[]>(() => getInitialData('mutationData', MOCK_MUTATION_DATA));
+  const [gaMutationData, setGaMutationData] = useState<MutationRecord[]>(() => getInitialData('gaMutationData', MOCK_GA_MUTATION_DATA)); // New state for GA Mutation
   const [salesData, setSalesData] = useState<SalesRecord[]>(() => getInitialData('salesData', MOCK_SALES_DATA));
+  const [gaSalesData, setGaSalesData] = useState<SalesRecord[]>(() => getInitialData('gaSalesData', MOCK_GA_SALES_DATA)); // New state for GA Sales
   const [masterApprovalData, setMasterApprovalData] = useState<MasterApprovalRecord[]>(() => getInitialData('masterApprovalData', MOCK_MASTER_APPROVAL_DATA));
   const [complianceData, setComplianceData] = useState<ReminderRecord[]>(() => getInitialData('complianceData', MOCK_REMINDER_DATA));
   
@@ -272,6 +309,17 @@ const App: React.FC = () => {
       module: string;
   } | null>(null);
 
+  // Combined Asset List for General Asset Mutation/Sales
+  // Merges Asset HC, Asset IT, and Customer Service Assets
+  const combinedGeneralAssets = useMemo(() => {
+      // Map BuildingAssetRecord to a compatible structure if needed, or pass as is
+      // We'll treat them all as potential items for mutation/sales
+      const hc = buildingAssetData.map(i => ({...i, sourceCategory: 'Asset HC'}));
+      const it = itBuildingData.map(i => ({...i, sourceCategory: 'Asset IT'}));
+      const cs = csBuildingData.map(i => ({...i, sourceCategory: 'Customer Service'}));
+      return [...hc, ...it, ...cs];
+  }, [buildingAssetData, itBuildingData, csBuildingData]);
+
   // Sync Data on Change
   useEffect(() => { localStorage.setItem('atkData', JSON.stringify(atkData)); }, [atkData]);
   useEffect(() => { localStorage.setItem('arkData', JSON.stringify(arkData)); }, [arkData]);
@@ -293,7 +341,9 @@ const App: React.FC = () => {
   useEffect(() => { localStorage.setItem('timesheetData', JSON.stringify(timesheetData)); }, [timesheetData]);
   useEffect(() => { localStorage.setItem('generalAssetData', JSON.stringify(generalAssetData)); }, [generalAssetData]);
   useEffect(() => { localStorage.setItem('mutationData', JSON.stringify(mutationData)); }, [mutationData]);
+  useEffect(() => { localStorage.setItem('gaMutationData', JSON.stringify(gaMutationData)); }, [gaMutationData]);
   useEffect(() => { localStorage.setItem('salesData', JSON.stringify(salesData)); }, [salesData]);
+  useEffect(() => { localStorage.setItem('gaSalesData', JSON.stringify(gaSalesData)); }, [gaSalesData]);
   useEffect(() => { localStorage.setItem('masterApprovalData', JSON.stringify(masterApprovalData)); }, [masterApprovalData]);
   useEffect(() => { localStorage.setItem('complianceData', JSON.stringify(complianceData)); }, [complianceData]);
   
@@ -413,9 +463,17 @@ const App: React.FC = () => {
         if (modalMode === 'create') setMutationData([...mutationData, { ...data, id: `MUT-${Date.now()}` }]);
         else setMutationData(mutationData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
         break;
+      case 'MUTATION_GA':
+        if (modalMode === 'create') setGaMutationData([...gaMutationData, { ...data, id: `MUT-GA-${Date.now()}`, assetType: 'GENERAL_ASSET' }]);
+        else setGaMutationData(gaMutationData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
+        break;
       case 'SALES':
         if (modalMode === 'create') setSalesData([...salesData, { ...data, id: `SALE-${Date.now()}` }]);
         else setSalesData(salesData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
+        break;
+      case 'SALES_GA':
+        if (modalMode === 'create') setGaSalesData([...gaSalesData, { ...data, id: `SALE-GA-${Date.now()}`, assetType: 'GENERAL_ASSET' }]);
+        else setGaSalesData(gaSalesData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
         break;
       case 'GEN_ASSET':
         if (modalMode === 'create') setGeneralAssetData([...generalAssetData, { ...data, id: `AST-${Date.now()}` }]);
@@ -522,7 +580,9 @@ const App: React.FC = () => {
           case 'TAX': setTaxKirData(prev => prev.map(i => i.id === item.id ? updateItemWithWorkflow(i) : i)); break;
           case 'CONTRACT': setVehicleContractData(prev => prev.map(i => i.id === item.id ? updateItemWithWorkflow(i) : i)); break;
           case 'MUTATION': setMutationData(prev => prev.map(i => i.id === item.id ? updateItemWithWorkflow(i) : i)); break;
+          case 'MUTATION_GA': setGaMutationData(prev => prev.map(i => i.id === item.id ? updateItemWithWorkflow(i) : i)); break;
           case 'SALES': setSalesData(prev => prev.map(i => i.id === item.id ? updateItemWithWorkflow(i) : i)); break;
+          case 'SALES_GA': setGaSalesData(prev => prev.map(i => i.id === item.id ? updateItemWithWorkflow(i) : i)); break;
           case 'BLD_MAINT': setBuildingMaintenanceData(prev => prev.map(i => i.id === item.id ? updateItemWithWorkflow(i) : i)); break;
           case 'SERVICE': setServiceData(prev => prev.map(i => i.id === item.id ? updateItemWithWorkflow(i) : i)); break;
           case 'BRANCH_IMP': 
@@ -623,6 +683,39 @@ const App: React.FC = () => {
                 <>
                     <FilterBar tabs={['SEMUA', 'ACTIVE', 'INACTIVE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('ASSET_CS', 'create')} customAddLabel="Request Asset CS" />
                     <BuildingAssetTable data={csBuildingData} onEdit={(item) => openModal('ASSET_CS', 'edit', item)} onView={(item) => openModal('ASSET_CS', 'view', item)} onAction={(item, action) => handleInitiateWorkflow(item, action, 'ASSET_CS')} />
+                </>
+            );
+        case 'Mutasi Aset':
+            return (
+                <>
+                    <FilterBar tabs={['SEMUA', 'PENDING', 'APPROVED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('MUTATION_GA', 'create')} customAddLabel="Mutasi Baru" />
+                    <MutationTable data={gaMutationData} onEdit={(item) => openModal('MUTATION_GA', 'edit', item)} onView={(item) => openModal('MUTATION_GA', 'view', item)} onAction={(item, action) => handleInitiateWorkflow(item, action, 'MUTATION_GA')} />
+                </>
+            );
+        case 'Penjualan Aset':
+            // Logic for filtering General Asset Sales Data
+            let displayedGaSalesData = gaSalesData;
+            if (activeTab === 'OPEN BID') {
+                displayedGaSalesData = gaSalesData.filter(item => item.status === 'Open Bid' || item.status === 'Open Bidding');
+            } else if (activeTab === 'SOLD') {
+                displayedGaSalesData = gaSalesData.filter(item => item.status === 'Sold');
+            }
+
+            return (
+                <>
+                    <FilterBar 
+                        tabs={['SEMUA', 'OPEN BID', 'SOLD']} 
+                        activeTab={activeTab} 
+                        onTabChange={setActiveTab} 
+                        onAddClick={() => openModal('SALES_GA', 'create')} 
+                        customAddLabel={activeTab === 'OPEN BID' ? "Lelang Baru" : undefined}
+                    />
+                    <SalesTable 
+                        data={displayedGaSalesData} 
+                        onEdit={(item) => openModal('SALES_GA', 'edit', item)} 
+                        onView={(item) => openModal('SALES_GA', 'view', item)} 
+                        onAction={(item, action) => handleInitiateWorkflow(item, action, 'SALES_GA')} 
+                    />
                 </>
             );
 
@@ -827,8 +920,15 @@ const App: React.FC = () => {
             {modalType === 'BRANCH_IMP' && <BuildingModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} buildingTypeList={masterBuildingType} />}
             {modalType === 'USER' && <UserModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} departmentList={masterDepartment} locationList={masterLocation} roleList={masterRole} />}
             {modalType === 'VENDOR' && <VendorModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} />}
-            {modalType === 'MUTATION' && <MutationModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} vehicleList={vehicleData} />}
-            {modalType === 'SALES' && <SalesModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} vehicleList={vehicleData} />}
+            {modalType === 'MUTATION' && <MutationModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} vehicleList={vehicleData} assetType="VEHICLE" />}
+            {modalType === 'MUTATION_GA' && <MutationModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} generalAssetList={combinedGeneralAssets} assetType="GENERAL_ASSET" />}
+            
+            {/* Vehicle Sales Modal */}
+            {modalType === 'SALES' && <SalesModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} vehicleList={vehicleData} assetType="VEHICLE" />}
+            
+            {/* General Asset Sales Modal */}
+            {modalType === 'SALES_GA' && <SalesModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} generalAssetList={combinedGeneralAssets} assetType="GENERAL_ASSET" />}
+
             {modalType === 'GEN_ASSET' && <AssetGeneralModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} assetTypeList={masterAssetType} categoryList={masterAssetCategory} locationList={masterLocation} departmentList={masterDepartment} />}
             
             {(modalType === 'ASSET_HC' || modalType === 'ASSET_IT' || modalType === 'ASSET_CS') && (
@@ -869,7 +969,7 @@ const App: React.FC = () => {
           <WorkflowActionModal 
               isOpen={workflowModalOpen} 
               action={pendingWorkflow.action}
-              entityName={pendingWorkflow.item.assetName || pendingWorkflow.item.id || pendingWorkflow.item.noPolisi}
+              entityName={pendingWorkflow.item.assetName || pendingWorkflow.item.id || pendingWorkflow.item.noPolisi || pendingWorkflow.item.assetNumber}
               onClose={() => {
                   setWorkflowModalOpen(false);
                   setPendingWorkflow(null);

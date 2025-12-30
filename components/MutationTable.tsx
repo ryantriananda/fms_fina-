@@ -46,7 +46,7 @@ export const MutationTable: React.FC<Props> = ({ data, onEdit, onView, onDelete,
               </th>
               <th className="p-4 group cursor-pointer hover:bg-gray-200 transition-colors">
                 <div className="flex items-center justify-between">
-                  No Polisi
+                  No Polisi / No Aset
                   <ChevronsUpDown size={14} className="text-gray-500 group-hover:text-gray-700"/>
                 </div>
               </th>
@@ -102,7 +102,16 @@ export const MutationTable: React.FC<Props> = ({ data, onEdit, onView, onDelete,
             {data.map((item) => (
               <tr key={item.id} className="bg-white hover:bg-gray-50 transition-colors cursor-pointer group">
                 <td className="p-4 font-medium text-gray-900">{item.id}</td>
-                <td className="p-4 font-medium text-gray-900">{item.noPolisi}</td>
+                <td className="p-4">
+                    {item.assetType === 'GENERAL_ASSET' ? (
+                        <div className="flex flex-col">
+                            <span className="font-bold text-gray-900">{item.assetNumber || '-'}</span>
+                            <span className="text-[10px] text-gray-500">{item.assetName || ''}</span>
+                        </div>
+                    ) : (
+                        <span className="font-medium text-gray-900">{item.noPolisi}</span>
+                    )}
+                </td>
                 <td className="p-4 text-gray-600">{item.cabangAset}</td>
                 <td className="p-4 text-gray-600">{item.tipeMutasi}</td>
                 <td className="p-4 text-gray-600">{item.tglPermintaan}</td>

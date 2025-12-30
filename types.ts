@@ -589,7 +589,10 @@ export interface TaxKirRecord {
 
 export interface MutationRecord {
   id: string;
-  noPolisi: string;
+  assetType?: 'VEHICLE' | 'GENERAL_ASSET'; // New Field
+  noPolisi?: string;
+  assetNumber?: string; // New Field
+  assetName?: string; // New Field
   cabangAset: string;
   tipeMutasi: string;
   tglPermintaan: string;
@@ -624,7 +627,10 @@ export interface BidderRegistration {
 
 export interface SalesRecord {
   id: string;
-  noPolisi: string;
+  assetType?: 'VEHICLE' | 'GENERAL_ASSET'; // New Field: Differentiate between vehicle and general asset
+  noPolisi?: string; // Used for Vehicles
+  assetNumber?: string; // Used for General Assets
+  assetName?: string; // Used for General Assets display
   tglRequest: string;
   channel: string;
   cabang: string;
@@ -772,6 +778,7 @@ export interface GeneralAssetRecord {
   approvalStatus?: 'Pending' | 'Approved' | 'Rejected'; // Added approval status
   purchasePrice?: string; // New
   purchaseDate?: string; // New
+  pic?: string; // New: PIC for Mutation logic
 }
 
 export interface ApprovalTier {

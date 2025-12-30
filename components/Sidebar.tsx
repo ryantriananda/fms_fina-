@@ -122,6 +122,8 @@ export const Sidebar: React.FC<Props> = ({
             { label: 'Asset HC', icon: <Database size={16} /> },
             { label: 'Asset IT', icon: <Monitor size={16} /> },
             { label: 'Customer Service', icon: <Headset size={16} /> },
+            { label: 'Mutasi Aset', icon: <Send size={16} /> }, // New Menu
+            { label: 'Penjualan Aset', icon: <DollarSign size={16} /> }, 
         ]
     },
     { label: 'Log Book', icon: <BookOpen size={20} /> },
