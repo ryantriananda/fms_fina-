@@ -409,6 +409,8 @@ export interface ReminderRecord {
   expiryDate: string;
   daysRemaining?: number;
   status: 'Safe' | 'Warning' | 'Urgent' | 'Expired';
+  category?: 'Insurance' | 'Lease' | 'Legal' | 'Permit'; // Added category
+  source?: 'System' | 'Manual'; // Added source
 }
 
 export interface MaintenanceScheduleRecord {

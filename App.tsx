@@ -274,6 +274,48 @@ const App: React.FC = () => {
       return all.filter((i: InsuranceRecord) => i.category === 'Building');
   });
 
+  // Aggregated Compliance Data (Automated)
+  const aggregatedComplianceData = useMemo(() => {
+      const reminders: ReminderRecord[] = [];
+
+      // 1. Existing Manual Entries
+      reminders.push(...complianceData.map(c => ({...c, category: 'Legal' as const, source: 'Manual' as const})));
+
+      // 2. Building Insurance
+      buildingInsuranceData.forEach(ins => {
+          if (ins.endDate) {
+              reminders.push({
+                  id: `INS-${ins.id}`,
+                  documentName: `ASURANSI: ${ins.type} (${ins.provider})`,
+                  buildingName: ins.assetName,
+                  assetNo: ins.policyNumber,
+                  expiryDate: ins.endDate,
+                  status: 'Safe', // Will be recalculated by table
+                  category: 'Insurance',
+                  source: 'System'
+              });
+          }
+      });
+
+      // 3. Building Lease / Contracts (Branch Improvement)
+      buildingData.forEach(bld => {
+          if (bld.endDate) {
+              reminders.push({
+                  id: `LEASE-${bld.id}`,
+                  documentName: `LEASE CONTRACT: ${bld.type} (${bld.ownership})`,
+                  buildingName: bld.name,
+                  assetNo: bld.assetNo,
+                  expiryDate: bld.endDate,
+                  status: 'Safe',
+                  category: 'Lease',
+                  source: 'System'
+              });
+          }
+      });
+
+      return reminders;
+  }, [complianceData, buildingInsuranceData, buildingData]);
+
   // MASTER DATA STATES (Generic & Complex)
   const [masterItems, setMasterItems] = useState<MasterItem[]>(() => getInitialData('masterItems', MOCK_ATK_MASTER));
   const [masterArkItems, setMasterArkItems] = useState<MasterItem[]>(() => getInitialData('masterArkItems', MOCK_MASTER_ARK_DATA));
@@ -375,6 +417,10 @@ const App: React.FC = () => {
         if (modalMode === 'create') setBuildingInsuranceData([...buildingInsuranceData, { ...data, id: `INS-B-${Date.now()}` }]);
         else setBuildingInsuranceData(buildingInsuranceData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
         break;
+      case 'COMPLIANCE':
+        if (modalMode === 'create') setComplianceData([...complianceData, { ...data, id: `DOC-${Date.now()}` }]);
+        else setComplianceData(complianceData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
+        break;
       // ... Add other cases as needed ...
       case 'GEN_MASTER':
         // Generic Master Handling
@@ -473,7 +519,7 @@ const App: React.FC = () => {
         case 'Compliance & Legal': return (
             <>
                 <FilterBar tabs={['SEMUA', 'URGENT', 'WARNING', 'SAFE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('COMPLIANCE', 'create')} customAddLabel="Add Document" />
-                <ReminderTable data={complianceData} onView={(item) => openModal('COMPLIANCE', 'view', item)} onDelete={() => {}} />
+                <ReminderTable data={aggregatedComplianceData} onView={(item) => openModal('COMPLIANCE', 'view', item)} onDelete={() => {}} />
             </>
         );
 
@@ -697,7 +743,8 @@ const App: React.FC = () => {
       {isModalOpen && (
         <>
             {modalType === 'VEHICLE' && <VehicleModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} branchList={masterLocation} channelList={masterDepartment} brandList={masterBrand} colorList={masterColor} />}
-            {modalType === 'BUILDING' && <BuildingModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} buildingTypeList={masterBuildingType} />}
+            {/* PASS EXISTING BUILDING DATA HERE */}
+            {modalType === 'BUILDING' && <BuildingModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} buildingTypeList={masterBuildingType} existingBuildings={buildingData} />}
             {modalType === 'INSURANCE_VEHICLE' && <InsuranceModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} category="Vehicle" assetList={vehicleData} />}
             {modalType === 'INSURANCE_BUILDING' && <InsuranceModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} category="Building" assetList={buildingData} />}
             {modalType === 'SERVICE' && <ServiceModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} vehicleList={vehicleData} serviceTypeList={masterJenisServis} vendorList={vendorData} />}

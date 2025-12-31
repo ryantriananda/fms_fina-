@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { ReminderRecord } from '../types';
-import { ChevronsUpDown, Eye, Trash2, Bell, Clock, Building, AlertTriangle, Calendar, AlertOctagon, CheckCircle2 } from 'lucide-react';
+import { ChevronsUpDown, Eye, Trash2, Bell, Clock, Building, AlertTriangle, Calendar, AlertOctagon, CheckCircle2, Shield, FileText, Key } from 'lucide-react';
 
 interface Props {
   data: ReminderRecord[];
@@ -33,7 +33,7 @@ export const ReminderTable: React.FC<Props> = ({ data, onView, onDelete, title }
       if (days <= 30) {
           return { 
               label: 'CRITICAL', 
-              subLabel: '< 1 Month (Daily Check)',
+              subLabel: '< 1 Month',
               style: 'bg-red-500 text-white border-red-600 shadow-lg shadow-red-500/30 animate-pulse', 
               icon: <Bell size={14} strokeWidth={3} />,
               days 
@@ -76,6 +76,15 @@ export const ReminderTable: React.FC<Props> = ({ data, onView, onDelete, title }
       };
   };
 
+  const getCategoryIcon = (category?: string) => {
+      switch(category) {
+          case 'Insurance': return <Shield size={14} className="text-blue-500" />;
+          case 'Lease': return <Key size={14} className="text-orange-500" />;
+          case 'Permit': return <FileText size={14} className="text-purple-500" />;
+          default: return <FileText size={14} className="text-gray-500" />;
+      }
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden transition-all duration-500">
       <div className="overflow-x-auto custom-scrollbar">
@@ -84,7 +93,7 @@ export const ReminderTable: React.FC<Props> = ({ data, onView, onDelete, title }
             <tr className="bg-[#F2F2F2] border-b border-gray-200">
               <th className="p-5 pl-8 w-1/4 group cursor-pointer hover:bg-gray-200/50 transition-colors">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">DOCUMENT INFO</span>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">DOCUMENT & SOURCE</span>
                   <ChevronsUpDown size={12} className="text-gray-300" />
                 </div>
               </th>
@@ -126,12 +135,17 @@ export const ReminderTable: React.FC<Props> = ({ data, onView, onDelete, title }
                         >
                             <td className="p-5 pl-8">
                                 <div className="flex items-center gap-4">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 transition-all group-hover:bg-black group-hover:text-white bg-gray-50`}>
-                                        <Bell size={18} />
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 transition-all bg-gray-50`}>
+                                        {getCategoryIcon(item.category)}
                                     </div>
                                     <div>
                                         <div className="font-black text-black text-[13px] uppercase tracking-tight">{item.documentName}</div>
-                                        <div className="text-[9px] text-gray-400 font-mono font-bold tracking-tighter uppercase mt-0.5">{item.id}</div>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="text-[9px] text-gray-400 font-mono font-bold tracking-tighter uppercase">{item.id}</span>
+                                            {item.source === 'System' && (
+                                                <span className="text-[8px] font-black text-white bg-blue-400 px-1.5 py-0.5 rounded uppercase tracking-wider">AUTO</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -168,9 +182,12 @@ export const ReminderTable: React.FC<Props> = ({ data, onView, onDelete, title }
                                     <button onClick={(e) => { e.stopPropagation(); onView?.(item); }} className="p-2 text-gray-300 hover:text-black transition-all rounded-lg hover:bg-gray-50">
                                         <Eye size={16} />
                                     </button>
-                                    <button onClick={(e) => { e.stopPropagation(); onDelete?.(item.id); }} className="p-2 text-gray-300 hover:text-red-500 transition-all rounded-lg hover:bg-red-50">
-                                        <Trash2 size={16} />
-                                    </button>
+                                    {/* Disable delete for System generated items */}
+                                    {item.source !== 'System' && (
+                                        <button onClick={(e) => { e.stopPropagation(); onDelete?.(item.id); }} className="p-2 text-gray-300 hover:text-red-500 transition-all rounded-lg hover:bg-red-50">
+                                            <Trash2 size={16} />
+                                        </button>
+                                    )}
                                 </div>
                             </td>
                         </tr>

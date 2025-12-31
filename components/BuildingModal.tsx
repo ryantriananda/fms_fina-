@@ -10,6 +10,7 @@ interface Props {
   initialData?: BuildingRecord;
   mode?: 'create' | 'edit' | 'view';
   buildingTypeList?: GeneralMasterItem[];
+  existingBuildings?: BuildingRecord[];
 }
 
 export const BuildingModal: React.FC<Props> = ({ 
@@ -18,7 +19,8 @@ export const BuildingModal: React.FC<Props> = ({
     onSave, 
     initialData, 
     mode = 'create',
-    buildingTypeList = []
+    buildingTypeList = [],
+    existingBuildings = []
 }) => {
   const [activeTab, setActiveTab] = useState('INFORMASI UMUM');
   const [proposalTab, setProposalTab] = useState('INFO UTAMA'); // For Proposal Tab
@@ -39,6 +41,7 @@ export const BuildingModal: React.FC<Props> = ({
     businessNotes: { deliveryTime: '', dealersCount: '', staffComposition: '', margin: '', competitorPareto: '' },
   });
 
+  const [isManualInput, setIsManualInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Proposal Management State
@@ -62,6 +65,7 @@ export const BuildingModal: React.FC<Props> = ({
     if (isOpen) {
       if (initialData) {
         setForm(initialData);
+        setIsManualInput(true); // Edit mode defaults to manual input view (readonly if needed)
       } else {
         setForm({
             status: 'Pending',
@@ -88,11 +92,13 @@ export const BuildingModal: React.FC<Props> = ({
             locationContext: { right: '', left: '', front: '', back: '', nearIndustry: false, operationalHours: '' },
             businessNotes: { deliveryTime: '', dealersCount: '', staffComposition: '', margin: '', competitorPareto: '' },
         });
+        // If there are existing buildings, default to select mode for convenience
+        setIsManualInput(existingBuildings.length === 0);
       }
       setActiveTab('INFORMASI UMUM');
       setIsEditingProposal(false);
     }
-  }, [isOpen, initialData]);
+  }, [isOpen, initialData, existingBuildings]);
 
   if (!isOpen) return null;
 
@@ -100,6 +106,32 @@ export const BuildingModal: React.FC<Props> = ({
 
   const handleSave = () => {
       onSave(form);
+  };
+
+  const handleBuildingSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const selectedName = e.target.value;
+      if (selectedName === 'NEW_ENTRY') {
+          setIsManualInput(true);
+          setForm(prev => ({...prev, name: ''}));
+      } else {
+          const selectedBuilding = existingBuildings.find(b => b.name === selectedName);
+          if (selectedBuilding) {
+              setForm(prev => ({
+                  ...prev,
+                  name: selectedBuilding.name,
+                  assetNo: selectedBuilding.assetNo,
+                  type: selectedBuilding.type,
+                  location: selectedBuilding.location,
+                  address: selectedBuilding.address,
+                  city: selectedBuilding.city,
+                  district: selectedBuilding.district,
+                  province: selectedBuilding.province,
+                  // Keep workflow/proposals specific to this new request, don't overwrite if not needed
+                  // or if this is an "Improvement" request on existing asset, we might want some data.
+                  // For now, we copy basic info.
+              }));
+          }
+      }
   };
 
   const handleSaveProposal = () => {
@@ -332,15 +364,44 @@ export const BuildingModal: React.FC<Props> = ({
                         <SectionHeader num="2" title="2. IDENTITAS ASET" sub="ASSET CLASSIFICATION & NUMBERING" />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                             <div className="md:col-span-2">
-                                <Label>NAMA PROPERTI / GEDUNG <span className="text-red-500">*</span></Label>
-                                <input 
-                                    type="text"
-                                    className="w-full bg-[#F8F9FA] border-none rounded-2xl px-6 py-5 text-[14px] font-black text-black outline-none transition-all placeholder:text-gray-300 focus:ring-2 focus:ring-black/5"
-                                    value={form.name || ''} 
-                                    onChange={e => setForm({...form, name: e.target.value})} 
-                                    placeholder="Contoh: MODENA Home Center Bintaro"
-                                    disabled={isView}
-                                />
+                                <div className="flex justify-between items-center mb-2">
+                                    <Label>NAMA PROPERTI / GEDUNG <span className="text-red-500">*</span></Label>
+                                    {!isView && (
+                                        <button 
+                                            onClick={() => setIsManualInput(!isManualInput)} 
+                                            className="text-[10px] font-bold text-blue-600 hover:text-blue-800 underline uppercase tracking-wider"
+                                        >
+                                            {isManualInput ? "Pilih dari Daftar Gedung" : "Input Nama Gedung Baru"}
+                                        </button>
+                                    )}
+                                </div>
+                                
+                                {isManualInput ? (
+                                    <input 
+                                        type="text"
+                                        className="w-full bg-[#F8F9FA] border-none rounded-2xl px-6 py-5 text-[14px] font-black text-black outline-none transition-all placeholder:text-gray-300 focus:ring-2 focus:ring-black/5"
+                                        value={form.name || ''} 
+                                        onChange={e => setForm({...form, name: e.target.value})} 
+                                        placeholder="Contoh: MODENA Home Center Bintaro"
+                                        disabled={isView}
+                                    />
+                                ) : (
+                                    <div className="relative">
+                                        <select 
+                                            disabled={isView}
+                                            className="w-full bg-[#F8F9FA] border-none rounded-2xl px-6 py-5 text-[14px] font-black text-black outline-none appearance-none shadow-sm cursor-pointer"
+                                            value={existingBuildings.find(b => b.name === form.name) ? form.name : ''}
+                                            onChange={handleBuildingSelect}
+                                        >
+                                            <option value="">-- Pilih Gedung untuk Perbaikan --</option>
+                                            {existingBuildings.map(b => (
+                                                <option key={b.id} value={b.name}>{b.name}</option>
+                                            ))}
+                                            <option value="NEW_ENTRY">-- Input Gedung Baru --</option>
+                                        </select>
+                                        <ChevronDown size={18} className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                    </div>
+                                )}
                             </div>
                             
                             <div>
