@@ -339,6 +339,7 @@ export interface BuildingRecord {
   gateCondition?: string;
   structureChecklist?: { [key: string]: string[] };
   environmentConditions?: string[];
+  securityFeatures?: string[];
   renovationNeeded?: boolean;
   renovationCostEstimate?: string;
   renovationTimeEstimate?: string;
@@ -399,6 +400,8 @@ export interface BuildingProposal {
   renovationNeeded?: boolean;
   renovationCostEstimate?: string;
   renovationTimeEstimate?: string;
+  distanceToDealer?: string;
+  roadCondition?: string;
 }
 
 export interface WorkflowStep {

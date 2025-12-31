@@ -1,0 +1,57 @@
+import React, { useState } from 'react';
+import { FilterBar } from '../../components/FilterBar';
+import { ServiceTable } from '../../components/ServiceTable';
+import { ServiceModal } from '../../components/ServiceModal';
+import { useAppContext } from '../../contexts/AppContext';
+
+const Servis: React.FC = () => {
+  const { serviceData, setServiceData, vehicleData } = useAppContext();
+  const [activeTab, setActiveTab] = useState('SEMUA');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+
+  const openModal = (mode: 'create' | 'edit' | 'view', item: any = null) => {
+    setModalMode(mode);
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleSave = (data: any) => {
+    if (modalMode === 'create') {
+      setServiceData([...serviceData, { ...data, id: `SRV-${Date.now()}` }]);
+    } else {
+      setServiceData(serviceData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
+    }
+    setIsModalOpen(false);
+  };
+
+  return (
+    <>
+      <FilterBar
+        tabs={['SEMUA', 'SCHEDULED', 'IN PROGRESS', 'COMPLETED']}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onAddClick={() => openModal('create')}
+        customAddLabel="New Service"
+      />
+      <ServiceTable
+        data={serviceData}
+        onEdit={(item) => openModal('edit', item)}
+        onView={(item) => openModal('view', item)}
+      />
+      {isModalOpen && (
+        <ServiceModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSave}
+          mode={modalMode}
+          initialData={selectedItem}
+          vehicleList={vehicleData}
+        />
+      )}
+    </>
+  );
+};
+
+export default Servis;
