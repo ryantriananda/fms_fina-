@@ -12,6 +12,14 @@ func SetupRoutes(r *gin.Engine) {
 	r.POST("/api/auth/login", controllers.Login)
 	r.POST("/api/auth/register", controllers.Register)
 
+	// Public Master Data routes (no auth required for dropdown data)
+	r.GET("/api/general-masters", controllers.GetGeneralMasters)
+	r.GET("/api/general-masters/category/:category", controllers.GetMastersByCategory)
+	r.GET("/api/general-masters/:id", controllers.GetGeneralMaster)
+	r.POST("/api/general-masters", controllers.CreateGeneralMaster)
+	r.PUT("/api/general-masters/:id", controllers.UpdateGeneralMaster)
+	r.DELETE("/api/general-masters/:id", controllers.DeleteGeneralMaster)
+
 	// Protected routes
 	api := r.Group("/api")
 	api.Use(middleware.AuthMiddleware())
@@ -167,14 +175,8 @@ func SetupRoutes(r *gin.Engine) {
 		api.PUT("/delivery-locations/:id", controllers.UpdateDeliveryLocation)
 		api.DELETE("/delivery-locations/:id", controllers.DeleteDeliveryLocation)
 
-		// General Masters (dropdown data) - Dynamic & Flexible
-		api.GET("/general-masters", controllers.GetGeneralMasters)
-		api.GET("/general-masters/category/:category", controllers.GetMastersByCategory) // Simple list by category
-		api.GET("/general-masters/:id", controllers.GetGeneralMaster)
-		api.POST("/general-masters", controllers.CreateGeneralMaster)
-		api.POST("/general-masters/bulk", controllers.BulkCreateGeneralMasters) // Bulk create for seeding
-		api.PUT("/general-masters/:id", controllers.UpdateGeneralMaster)
-		api.DELETE("/general-masters/:id", controllers.DeleteGeneralMaster)
+		// General Masters - Bulk create only (protected)
+		api.POST("/general-masters/bulk", controllers.BulkCreateGeneralMasters)
 
 		// Master Categories (manage available categories)
 		api.GET("/master-categories", controllers.GetMasterCategories)

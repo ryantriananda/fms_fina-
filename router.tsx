@@ -52,6 +52,25 @@ const ManajemenUser = React.lazy(() => import('./pages/ManajemenUser'));
 // Master Data
 const MasterApproval = React.lazy(() => import('./pages/master/MasterApproval'));
 const MasterVendor = React.lazy(() => import('./pages/master/MasterVendor'));
+const MasterPPN = React.lazy(() => import('./pages/master/MasterPPN'));
+const MasterBrandType = React.lazy(() => import('./pages/master/MasterBrandType'));
+const MasterBrand = React.lazy(() => import('./pages/master/MasterBrand'));
+const MasterVehicleModel = React.lazy(() => import('./pages/master/MasterVehicleModel'));
+const MasterBuildingComponent = React.lazy(() => import('./pages/master/MasterBuildingComponent'));
+const MasterDocumentType = React.lazy(() => import('./pages/master/MasterDocumentType'));
+const MasterUtilityType = React.lazy(() => import('./pages/master/MasterUtilityType'));
+const MasterOperator = React.lazy(() => import('./pages/master/MasterOperator'));
+const MasterAssetType = React.lazy(() => import('./pages/master/MasterAssetType'));
+const MasterDepartment = React.lazy(() => import('./pages/master/MasterDepartment'));
+const MasterLocation = React.lazy(() => import('./pages/master/MasterLocation'));
+const MasterUOM = React.lazy(() => import('./pages/master/MasterUOM'));
+const MasterColor = React.lazy(() => import('./pages/master/MasterColor'));
+const MasterBuildingType = React.lazy(() => import('./pages/master/MasterBuildingType'));
+const MasterCostCenter = React.lazy(() => import('./pages/master/MasterCostCenter'));
+const MasterAssetCategory = React.lazy(() => import('./pages/master/MasterAssetCategory'));
+const MasterTaxType = React.lazy(() => import('./pages/master/MasterTaxType'));
+const MasterPaymentType = React.lazy(() => import('./pages/master/MasterPaymentType'));
+const MasterServiceCategory = React.lazy(() => import('./pages/master/MasterServiceCategory'));
 
 export const router = createBrowserRouter([
   {
@@ -108,6 +127,25 @@ export const router = createBrowserRouter([
       // Master Data
       { path: 'master/approval', element: <MasterApproval /> },
       { path: 'master/vendor', element: <MasterVendor /> },
+      { path: 'master/ppn', element: <MasterPPN /> },
+      { path: 'master/tipe-brand', element: <MasterBrandType /> },
+      { path: 'master/brand', element: <MasterBrand /> },
+      { path: 'master/model-kendaraan', element: <MasterVehicleModel /> },
+      { path: 'master/komponen-bangunan', element: <MasterBuildingComponent /> },
+      { path: 'master/tipe-dokumen', element: <MasterDocumentType /> },
+      { path: 'master/tipe-utilitas', element: <MasterUtilityType /> },
+      { path: 'master/operator', element: <MasterOperator /> },
+      { path: 'master/tipe-aset', element: <MasterAssetType /> },
+      { path: 'master/departemen', element: <MasterDepartment /> },
+      { path: 'master/lokasi', element: <MasterLocation /> },
+      { path: 'master/satuan', element: <MasterUOM /> },
+      { path: 'master/warna', element: <MasterColor /> },
+      { path: 'master/tipe-gedung', element: <MasterBuildingType /> },
+      { path: 'master/cost-center', element: <MasterCostCenter /> },
+      { path: 'master/kategori-aset', element: <MasterAssetCategory /> },
+      { path: 'master/jenis-pajak', element: <MasterTaxType /> },
+      { path: 'master/jenis-pembayaran', element: <MasterPaymentType /> },
+      { path: 'master/jenis-servis', element: <MasterServiceCategory /> },
     ],
   },
 ]);

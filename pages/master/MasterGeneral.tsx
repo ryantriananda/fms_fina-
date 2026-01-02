@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Filter } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const API_URL = 'http://localhost:8080/api';
 
@@ -15,26 +16,33 @@ interface GeneralMaster {
   isDefault: boolean;
 }
 
-interface Props {
-  category: string;
-  title: string;
-  description?: string;
-  showValue?: boolean;
-  valueLabel?: string;
-}
+const CATEGORIES = [
+  { code: 'BUILDING_TYPE', name: 'Tipe Gedung', path: '/master/tipe-gedung' },
+  { code: 'BRAND', name: 'Merek', path: '/master/brand' },
+  { code: 'VEHICLE_TYPE', name: 'Tipe Kendaraan', path: '/master/tipe-kendaraan' },
+  { code: 'COLOR', name: 'Warna', path: '/master/warna' },
+  { code: 'CHANNEL', name: 'Channel', path: '/master/channel' },
+  { code: 'DEPARTMENT', name: 'Department', path: '/master/department' },
+  { code: 'UOM', name: 'Satuan (UOM)', path: '/master/satuan' },
+  { code: 'VENDOR_CATEGORY', name: 'Kategori Vendor', path: '/master/kategori-vendor' },
+  { code: 'PPN', name: 'PPN', path: '/master/ppn' },
+  { code: 'ASSET_CATEGORY', name: 'Kategori Aset', path: '/master/kategori-aset' },
+  { code: 'OWNERSHIP', name: 'Kepemilikan', path: '/master/kepemilikan' },
+  { code: 'INSURANCE_TYPE', name: 'Tipe Asuransi', path: '/master/tipe-asuransi' },
+  { code: 'SERVICE_TYPE', name: 'Tipe Servis', path: '/master/tipe-servis' },
+  { code: 'MAINTENANCE_TYPE', name: 'Tipe Pemeliharaan', path: '/master/tipe-pemeliharaan' },
+  { code: 'MAINTENANCE_FREQ', name: 'Frekuensi Pemeliharaan', path: '/master/frekuensi-pemeliharaan' },
+  { code: 'BUILDING_ASSET_TYPE', name: 'Tipe Aset Gedung', path: '/master/tipe-aset-gedung' },
+  { code: 'UTILITY_TYPE', name: 'Tipe Utilitas', path: '/master/tipe-utilitas' },
+];
 
-export const GeneralMasterTable: React.FC<Props> = ({ 
-  category, 
-  title, 
-  description,
-  showValue = false,
-  valueLabel = 'Nilai'
-}) => {
+const MasterGeneral: React.FC = () => {
+  const location = useLocation();
+  const [selectedCategory, setSelectedCategory] = useState('BUILDING_TYPE');
   const [data, setData] = useState<GeneralMaster[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GeneralMaster | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     name: '',
     code: '',
@@ -45,22 +53,27 @@ export const GeneralMasterTable: React.FC<Props> = ({
     isDefault: false,
   });
 
+  // Auto-select category based on URL
+  useEffect(() => {
+    const category = CATEGORIES.find(cat => cat.path === location.pathname);
+    if (category) {
+      setSelectedCategory(category.code);
+    }
+  }, [location.pathname]);
+
   useEffect(() => {
     fetchData();
-  }, [category]);
+  }, [selectedCategory]);
 
   const fetchData = async () => {
-    setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/general-masters/category/${category}`);
+      const response = await fetch(`${API_URL}/general-masters/category/${selectedCategory}`);
       if (response.ok) {
         const result = await response.json();
         setData(result || []);
       }
     } catch (error) {
       console.error('Failed to fetch data:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -68,7 +81,7 @@ export const GeneralMasterTable: React.FC<Props> = ({
     try {
       const payload = {
         ...form,
-        category: category,
+        category: selectedCategory,
       };
 
       const url = editingItem 
@@ -143,8 +156,27 @@ export const GeneralMasterTable: React.FC<Props> = ({
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
-        {description && <p className="text-sm text-gray-600">{description}</p>}
+        <h1 className="text-2xl font-bold text-gray-800">Master Data Umum</h1>
+        <p className="text-sm text-gray-600">Kelola data master untuk dropdown sistem</p>
+      </div>
+
+      {/* Category Tabs */}
+      <div className="bg-white rounded-lg shadow-sm mb-6 p-4">
+        <div className="flex flex-wrap gap-2">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat.code}
+              onClick={() => setSelectedCategory(cat.code)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                selectedCategory === cat.code
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Toolbar */}
@@ -160,7 +192,6 @@ export const GeneralMasterTable: React.FC<Props> = ({
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <span className="text-sm text-gray-500">{filteredData.length} data</span>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -178,53 +209,46 @@ export const GeneralMasterTable: React.FC<Props> = ({
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
-              {showValue && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{valueLabel}</th>}
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nilai</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Urutan</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Default</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan={showValue ? 5 : 4} className="px-6 py-8 text-center text-gray-500">
-                  Loading...
+            {filteredData.map((item) => (
+              <tr key={item.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.code}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.value || '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.sortOrder}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    item.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {item.isActive ? 'Aktif' : 'Nonaktif'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {item.isDefault && <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Default</span>}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button
+                    onClick={() => handleEdit(item)}
+                    className="text-blue-600 hover:text-blue-900 mr-3"
+                  >
+                    <Edit2 size={18} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    <Trash2 size={18} />
+                  </button>
                 </td>
               </tr>
-            ) : filteredData.length === 0 ? (
-              <tr>
-                <td colSpan={showValue ? 5 : 4} className="px-6 py-8 text-center text-gray-500">
-                  Tidak ada data
-                </td>
-              </tr>
-            ) : (
-              filteredData.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.code}</td>
-                  {showValue && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.value || '-'}</td>}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      item.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {item.isActive ? 'Aktif' : 'Nonaktif'}
-                    </span>
-                    {item.isDefault && (
-                      <span className="ml-2 px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                        Default
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onClick={() => handleEdit(item)} className="text-blue-600 hover:text-blue-900 mr-3">
-                      <Edit2 size={18} />
-                    </button>
-                    <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:text-red-900">
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
@@ -244,6 +268,7 @@ export const GeneralMasterTable: React.FC<Props> = ({
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Contoh: Showroom"
                 />
               </div>
               <div>
@@ -253,19 +278,28 @@ export const GeneralMasterTable: React.FC<Props> = ({
                   value={form.code}
                   onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Contoh: SHOWROOM"
                 />
               </div>
-              {showValue && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{valueLabel}</label>
-                  <input
-                    type="text"
-                    value={form.value}
-                    onChange={(e) => setForm({ ...form, value: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nilai (Optional)</label>
+                <input
+                  type="text"
+                  value={form.value}
+                  onChange={(e) => setForm({ ...form, value: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Contoh: 11 (untuk PPN 11%)"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Urutan</label>
+                <input
+                  type="number"
+                  value={form.sortOrder}
+                  onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value) })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2">
                   <input
@@ -308,4 +342,4 @@ export const GeneralMasterTable: React.FC<Props> = ({
   );
 };
 
-export default GeneralMasterTable;
+export default MasterGeneral;

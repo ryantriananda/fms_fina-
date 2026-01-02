@@ -174,39 +174,26 @@ export const Sidebar: React.FC<Props> = ({
       icon: <Home size={20} />,
       subItems: [
         { label: 'Master Approval', icon: <CheckCircle2 size={16} /> },
-        
-        // Group 1: General Masters
         { label: 'Master Vendor', icon: <Users size={16} /> },
         { label: 'Master PPN', icon: <Percent size={16} /> },
-        { label: 'Master Brand Type', icon: <Stamp size={16} /> },
+        { label: 'Master Tipe Brand', icon: <Tag size={16} /> },
         { label: 'Master Brand', icon: <Tag size={16} /> },
         { label: 'Master Model Kendaraan', icon: <Car size={16} /> },
-        { label: 'Master Komponen Bangunan', icon: <Hammer size={16} /> },
-        { label: 'Master Tipe Dokumen', icon: <FileBadge size={16} /> },
+        { label: 'Master Komponen Bangunan', icon: <Component size={16} /> },
+        { label: 'Master Tipe Dokumen', icon: <FileText size={16} /> },
         { label: 'Master Tipe Utilitas', icon: <Zap size={16} /> },
-        { label: 'Master Operator', icon: <Radio size={16} /> },
-        { label: 'Master Asset Type', icon: <Component size={16} /> },
-        { label: 'Master Department', icon: <Layers size={16} /> },
+        { label: 'Master Operator', icon: <UserCog size={16} /> },
+        { label: 'Master Tipe Aset', icon: <Package size={16} /> },
+        { label: 'Master Departemen', icon: <Layers size={16} /> },
         { label: 'Master Lokasi', icon: <MapPin size={16} /> },
         { label: 'Master Satuan', icon: <Scale size={16} /> },
         { label: 'Master Warna', icon: <Palette size={16} /> },
         { label: 'Master Tipe Gedung', icon: <Landmark size={16} /> },
         { label: 'Master Cost Center', icon: <CreditCard size={16} /> },
-        { label: 'Asset Category', icon: <Box size={16} /> },
-        
-        // Group 2: Configuration Masters
-        { label: 'Jenis Pajak', icon: <Sliders size={16} /> },
-        { label: 'Jenis Pembayaran', icon: <Sliders size={16} /> },
-        { label: 'Jenis Servis', icon: <Sliders size={16} /> },
-        { label: 'Status Mutasi', icon: <Sliders size={16} /> },
-        { label: 'Status Penjualan', icon: <Sliders size={16} /> },
-        { label: 'Status Request', icon: <Sliders size={16} /> },
-        { label: 'Tipe Mutasi', icon: <Sliders size={16} /> },
-        { label: 'Tipe Vendor', icon: <Sliders size={16} /> },
-        { label: 'Role', icon: <UserCog size={16} /> },
-        { label: 'Sync Branchs', icon: <RefreshCw size={16} /> },
-        { label: 'Sync Channels', icon: <RefreshCw size={16} /> },
-        { label: 'Jenis Kendaraan', icon: <Car size={16} /> },
+        { label: 'Kategori Aset', icon: <Box size={16} /> },
+        { label: 'Jenis Pajak', icon: <Stamp size={16} /> },
+        { label: 'Jenis Pembayaran', icon: <DollarSign size={16} /> },
+        { label: 'Jenis Servis', icon: <Wrench size={16} /> },
       ]
     },
   ];
@@ -270,7 +257,7 @@ export const Sidebar: React.FC<Props> = ({
                       </button>
 
                       {/* Submenu */}
-                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded && !isCollapsed ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded && !isCollapsed ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'}`}>
                           <div className="pt-1 pb-2 pl-4 space-y-1">
                               {item.subItems!.map((sub, subIndex) => {
                                   const isSubActive = activeItem === sub.label;

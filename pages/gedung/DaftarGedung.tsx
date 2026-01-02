@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FilterBar } from '../../components/FilterBar';
 import { BuildingTable } from '../../components/BuildingTable';
 import { BuildingModal } from '../../components/BuildingModal';
 import { useAppContext } from '../../contexts/AppContext';
+import { GeneralMasterItem } from '../../types';
+
+const API_URL = 'http://localhost:8080/api';
 
 const DaftarGedung: React.FC = () => {
   const { buildingData, setBuildingData } = useAppContext();
@@ -10,6 +13,23 @@ const DaftarGedung: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
   const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [buildingTypeList, setBuildingTypeList] = useState<GeneralMasterItem[]>([]);
+
+  // Fetch building types from API
+  useEffect(() => {
+    const fetchBuildingTypes = async () => {
+      try {
+        const response = await fetch(`${API_URL}/general-masters/category/BUILDING_TYPE`);
+        if (response.ok) {
+          const result = await response.json();
+          setBuildingTypeList(result.data || result || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch building types:', error);
+      }
+    };
+    fetchBuildingTypes();
+  }, []);
 
   const openModal = (mode: 'create' | 'edit' | 'view', item: any = null) => {
     setModalMode(mode);
@@ -60,6 +80,7 @@ const DaftarGedung: React.FC = () => {
           mode={modalMode}
           initialData={selectedItem}
           existingBuildings={buildingData}
+          buildingTypeList={buildingTypeList}
         />
       )}
     </>
