@@ -13,6 +13,8 @@ type GeneralAsset struct {
 	Type           string    `json:"type"`
 	AssetName      string    `json:"assetName"`
 	Ownership      string    `json:"ownership" gorm:"default:'Own'"`
+	BuildingID     uint      `json:"buildingId" gorm:"index"`
+	Building       Building  `json:"-" gorm:"foreignKey:BuildingID"`
 	AssetLocation  string    `json:"assetLocation"`
 	SubLocation    string    `json:"subLocation"`
 	Department     string    `json:"department"`

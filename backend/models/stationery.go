@@ -8,17 +8,18 @@ import (
 
 type StationeryRequest struct {
 	gorm.Model
-	Type           string    `json:"type"` // ATK or ARK
-	DeliveryType   string    `json:"deliveryType"`
-	LocationID     uint      `json:"locationId" gorm:"index"`
-	Location       string    `json:"location"`
-	Date           time.Time `json:"date"`
-	Remarks        string    `json:"remarks"`
-	Status         string    `json:"status" gorm:"default:'Pending'"`
-	ApprovalStatus string    `json:"approvalStatus" gorm:"default:'Pending'"`
-	RequestedBy    uint      `json:"requestedBy" gorm:"index"`
-	Requester      User      `json:"-" gorm:"foreignKey:RequestedBy"`
-	Items          []StationeryRequestItem `json:"items" gorm:"foreignKey:RequestID"`
+	Type             string           `json:"type"` // ATK or ARK
+	DeliveryType     string           `json:"deliveryType"`
+	LocationID       uint             `json:"locationId" gorm:"index"`
+	DeliveryLocation DeliveryLocation `json:"-" gorm:"foreignKey:LocationID"`
+	Location         string           `json:"location"`
+	Date             time.Time        `json:"date"`
+	Remarks          string           `json:"remarks"`
+	Status           string           `json:"status" gorm:"default:'Pending'"`
+	ApprovalStatus   string           `json:"approvalStatus" gorm:"default:'Pending'"`
+	RequestedBy      uint             `json:"requestedBy" gorm:"index"`
+	Requester        User             `json:"-" gorm:"foreignKey:RequestedBy"`
+	Items            []StationeryRequestItem `json:"items" gorm:"foreignKey:RequestID"`
 }
 
 type StationeryRequestItem struct {

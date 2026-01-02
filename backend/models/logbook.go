@@ -8,6 +8,8 @@ import (
 
 type LogBook struct {
 	gorm.Model
+	BuildingID       uint      `json:"buildingId" gorm:"index"`
+	Building         Building  `json:"-" gorm:"foreignKey:BuildingID"`
 	LokasiModena     string    `json:"lokasiModena"`
 	KategoriTamu     string    `json:"kategoriTamu"` // Customer, Supplier, etc.
 	NamaTamu         string    `json:"namaTamu"`

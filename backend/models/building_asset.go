@@ -40,6 +40,7 @@ type BuildingMaintenance struct {
 	Description      string        `json:"description"`
 	Cost             float64       `json:"cost"`
 	VendorID         uint          `json:"vendorId" gorm:"index"`
+	VendorRef        Vendor        `json:"-" gorm:"foreignKey:VendorID"`
 	Vendor           string        `json:"vendor"`
 	Technician       string        `json:"technician"`
 	Status           string        `json:"status" gorm:"default:'Scheduled'"`

@@ -47,5 +47,6 @@ type MaintenanceSchedule struct {
 	NextMaintenanceDate time.Time     `json:"nextMaintenanceDate"`
 	Status              string        `json:"status"` // Safe, Warning, Overdue
 	VendorID            uint          `json:"vendorId" gorm:"index"`
+	VendorRef           Vendor        `json:"-" gorm:"foreignKey:VendorID"`
 	Vendor              string        `json:"vendor"`
 }

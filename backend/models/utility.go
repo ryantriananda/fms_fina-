@@ -8,6 +8,8 @@ import (
 
 type Utility struct {
 	gorm.Model
+	BuildingID    uint      `json:"buildingId" gorm:"index"`
+	Building      Building  `json:"-" gorm:"foreignKey:BuildingID"`
 	Period        string    `json:"period"`
 	Date          time.Time `json:"date"`
 	Location      string    `json:"location"`

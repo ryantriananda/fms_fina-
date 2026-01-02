@@ -8,6 +8,10 @@ import (
 
 type Mutation struct {
 	gorm.Model
+	VehicleID      uint      `json:"vehicleId" gorm:"index"`
+	Vehicle        Vehicle   `json:"-" gorm:"foreignKey:VehicleID"`
+	GeneralAssetID uint      `json:"generalAssetId" gorm:"index"`
+	GeneralAsset   GeneralAsset `json:"-" gorm:"foreignKey:GeneralAssetID"`
 	NoPolisi       string    `json:"noPolisi"`
 	AssetNumber    string    `json:"assetNumber"`
 	AssetName      string    `json:"assetName"`
