@@ -12,7 +12,7 @@ func SetupRoutes(r *gin.Engine) {
 	r.POST("/api/auth/login", controllers.Login)
 	r.POST("/api/auth/register", controllers.Register)
 
-	// Public Master Data routes (no auth required for dropdown data)
+	// Public Master Data routes (no auth required)
 	r.GET("/api/general-masters", controllers.GetGeneralMasters)
 	r.GET("/api/general-masters/category/:category", controllers.GetMastersByCategory)
 	r.GET("/api/general-masters/:id", controllers.GetGeneralMaster)
@@ -115,7 +115,7 @@ func SetupRoutes(r *gin.Engine) {
 		api.PUT("/logbooks/:id", controllers.UpdateLogBook)
 		api.DELETE("/logbooks/:id", controllers.DeleteLogBook)
 
-		// Stationery (ATK/ARK)
+		// Stationery
 		api.GET("/stationery-requests", controllers.GetStationeryRequests)
 		api.GET("/stationery-requests/:id", controllers.GetStationeryRequest)
 		api.POST("/stationery-requests", controllers.CreateStationeryRequest)
@@ -175,16 +175,16 @@ func SetupRoutes(r *gin.Engine) {
 		api.PUT("/delivery-locations/:id", controllers.UpdateDeliveryLocation)
 		api.DELETE("/delivery-locations/:id", controllers.DeleteDeliveryLocation)
 
-		// General Masters - Bulk create only (protected)
-		api.POST("/general-masters/bulk", controllers.BulkCreateGeneralMasters)
-
-		// Master Categories (manage available categories)
+		// Master Categories
 		api.GET("/master-categories", controllers.GetMasterCategories)
 		api.POST("/master-categories", controllers.CreateMasterCategory)
 		api.PUT("/master-categories/:id", controllers.UpdateMasterCategory)
 		api.DELETE("/master-categories/:id", controllers.DeleteMasterCategory)
 
-		// Compliance & Legal Documents
+		// Bulk create
+		api.POST("/general-masters/bulk", controllers.BulkCreateGeneralMasters)
+
+		// Compliance
 		api.GET("/compliances", controllers.GetCompliances)
 		api.GET("/compliances/:id", controllers.GetCompliance)
 		api.POST("/compliances", controllers.CreateCompliance)

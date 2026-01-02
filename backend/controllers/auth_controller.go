@@ -1,13 +1,11 @@
 package controllers
 
 import (
-	"net/http"
-	"os"
-	"strconv"
-	"time"
-
 	"fms-backend/config"
 	"fms-backend/models"
+	"net/http"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -15,16 +13,15 @@ import (
 )
 
 type LoginInput struct {
-	Email    string `json:"email" binding:"required,email"`
+	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
 type RegisterInput struct {
-	Name     string `json:"name" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
-	Phone    string `json:"phone"`
-	Role     string `json:"role"`
+	Username string `json:"username" binding:"required"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	FullName string `json:"fullName"`
 }
 
 func Login(c *gin.Context) {
@@ -35,30 +32,25 @@ func Login(c *gin.Context) {
 	}
 
 	var user models.User
-	if err := config.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+	if err := config.DB.Where("username = ?", input.Username).First(&user).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
-	// Update last active
-	config.DB.Model(&user).Update("last_active", time.Now())
-
-	// Generate JWT token
-	token, err := generateToken(user)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"token": token,
-		"user":  user.ToResponse(),
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userId": user.ID,
+		"role":   user.Role,
+		"exp":    time.Now().Add(time.Hour * 24).Unix(),
 	})
+
+	tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+
+	c.JSON(http.StatusOK, gin.H{"token": tokenString, "user": user})
 }
 
 func Register(c *gin.Context) {
@@ -68,62 +60,20 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Check if email already exists
-	var existingUser models.User
-	if err := config.DB.Where("email = ?", input.Email).First(&existingUser).Error; err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Email already registered"})
-		return
-	}
-
-	// Hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
-		return
-	}
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 
 	user := models.User{
-		Name:       input.Name,
-		Email:      input.Email,
-		Password:   string(hashedPassword),
-		Phone:      input.Phone,
-		Role:       input.Role,
-		Status:     "Active",
-		JoinDate:   time.Now(),
-		LastActive: time.Now(),
+		Username: input.Username,
+		Email:    input.Email,
+		Password: string(hashedPassword),
+		FullName: input.FullName,
+		Role:     "user",
 	}
 
 	if err := config.DB.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Username or email already exists"})
 		return
 	}
 
-	// Generate JWT token
-	token, err := generateToken(user)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, gin.H{
-		"token": token,
-		"user":  user.ToResponse(),
-	})
-}
-
-func generateToken(user models.User) (string, error) {
-	expiryHours, _ := strconv.Atoi(os.Getenv("JWT_EXPIRY_HOURS"))
-	if expiryHours == 0 {
-		expiryHours = 24
-	}
-
-	claims := jwt.MapClaims{
-		"user_id": user.ID,
-		"email":   user.Email,
-		"role":    user.Role,
-		"exp":     time.Now().Add(time.Hour * time.Duration(expiryHours)).Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
 }

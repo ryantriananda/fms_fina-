@@ -1,39 +1,20 @@
 package models
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import "time"
 
 type Service struct {
-	gorm.Model
-	VehicleID      uint        `json:"vehicleId" gorm:"index"`
-	Vehicle        Vehicle     `json:"-" gorm:"foreignKey:VehicleID"`
-	NoPolisi       string      `json:"noPolisi"`
-	AssetName      string      `json:"aset"`
-	TglRequest     time.Time   `json:"tglRequest"`
-	Channel        string      `json:"channel"`
-	Cabang         string      `json:"cabang"`
-	Status         string      `json:"status" gorm:"default:'Pending'"`
-	StatusApproval string      `json:"statusApproval" gorm:"default:'Pending'"`
-	VendorID       uint        `json:"vendorId" gorm:"index"`
-	VendorRef      Vendor      `json:"-" gorm:"foreignKey:VendorID"`
-	Vendor         string      `json:"vendor"`
-	KmKendaraan    string      `json:"kmKendaraan"`
-	Masalah        string      `json:"masalah"`
-	JenisServis    string      `json:"jenisServis"`
-	EstimasiBiaya  float64     `json:"estimasiBiaya"`
-	Technician     string      `json:"technician"`
-	SpareParts     []SparePart `json:"spareParts" gorm:"foreignKey:ServiceID"`
-}
-
-type SparePart struct {
-	gorm.Model
-	ServiceID uint    `json:"serviceId" gorm:"index"`
-	Service   Service `json:"-" gorm:"foreignKey:ServiceID"`
-	Name      string  `json:"name"`
-	Qty       int     `json:"qty"`
-	Price     float64 `json:"price"`
-	ImageUrl  string  `json:"imageUrl"`
+	ID            uint       `json:"id" gorm:"primaryKey"`
+	VehicleID     uint       `json:"vehicleId"`
+	VendorID      *uint      `json:"vendorId"`
+	TglRequest    *time.Time `json:"tglRequest"`
+	JenisServis   string     `json:"jenisServis"`
+	Masalah       string     `json:"masalah"`
+	EstimasiBiaya float64    `json:"estimasiBiaya"`
+	TglSelesai    *time.Time `json:"tglSelesai"`
+	BiayaAktual   float64    `json:"biayaAktual"`
+	KmServis      int        `json:"kmServis"`
+	Status        string     `json:"status" gorm:"default:'pending'"`
+	Catatan       string     `json:"catatan"`
+	CreatedAt     time.Time  `json:"createdAt"`
+	UpdatedAt     time.Time  `json:"updatedAt"`
 }

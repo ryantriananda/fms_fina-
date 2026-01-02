@@ -1,91 +1,61 @@
 package controllers
 
 import (
-	"net/http"
-
 	"fms-backend/config"
 	"fms-backend/models"
 	"fms-backend/utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetCompliances(c *gin.Context) {
-	var compliances []models.Compliance
+	var items []models.Compliance
 	pagination := utils.GetPagination(c)
-
 	var total int64
-	query := config.DB.Model(&models.Compliance{})
-
-	if status := c.Query("status"); status != "" {
-		query = query.Where("status = ?", status)
-	}
-	if category := c.Query("category"); category != "" {
-		query = query.Where("category = ?", category)
-	}
-	if buildingId := c.Query("buildingId"); buildingId != "" {
-		query = query.Where("building_id = ?", buildingId)
-	}
-
-	query.Count(&total)
-	query.Offset(pagination.Offset).Limit(pagination.Limit).Order("expiry_date ASC").Find(&compliances)
-
-	c.JSON(http.StatusOK, gin.H{
-		"data":       compliances,
-		"total":      total,
-		"page":       pagination.Page,
-		"limit":      pagination.Limit,
-		"totalPages": (total + int64(pagination.Limit) - 1) / int64(pagination.Limit),
-	})
+	config.DB.Model(&models.Compliance{}).Count(&total)
+	config.DB.Scopes(utils.Paginate(&pagination)).Find(&items)
+	pagination.TotalRows = total
+	pagination.TotalPages = int((total + int64(pagination.Limit) - 1) / int64(pagination.Limit))
+	c.JSON(http.StatusOK, gin.H{"data": items, "pagination": pagination})
 }
 
 func GetCompliance(c *gin.Context) {
-	var compliance models.Compliance
-	if err := config.DB.First(&compliance, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Compliance document not found"})
+	var item models.Compliance
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-	c.JSON(http.StatusOK, compliance)
+	c.JSON(http.StatusOK, item)
 }
 
 func CreateCompliance(c *gin.Context) {
-	var compliance models.Compliance
-	if err := c.ShouldBindJSON(&compliance); err != nil {
+	var item models.Compliance
+	if err := c.ShouldBindJSON(&item); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	if err := config.DB.Create(&compliance).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusCreated, compliance)
+	config.DB.Create(&item)
+	c.JSON(http.StatusCreated, item)
 }
 
 func UpdateCompliance(c *gin.Context) {
-	var compliance models.Compliance
-	if err := config.DB.First(&compliance, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Compliance document not found"})
+	var item models.Compliance
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-
-	if err := c.ShouldBindJSON(&compliance); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	config.DB.Save(&compliance)
-	c.JSON(http.StatusOK, compliance)
+	c.ShouldBindJSON(&item)
+	config.DB.Save(&item)
+	c.JSON(http.StatusOK, item)
 }
 
 func DeleteCompliance(c *gin.Context) {
-	var compliance models.Compliance
-	if err := config.DB.First(&compliance, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Compliance document not found"})
+	var item models.Compliance
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-
-	config.DB.Delete(&compliance)
-	c.JSON(http.StatusOK, gin.H{"message": "Compliance document deleted successfully"})
+	config.DB.Delete(&item)
+	c.JSON(http.StatusOK, gin.H{"message": "Deleted"})
 }

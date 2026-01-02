@@ -1,31 +1,23 @@
 package models
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import "time"
 
 type GeneralAsset struct {
-	gorm.Model
-	AssetNumber    string    `json:"assetNumber" gorm:"uniqueIndex;not null"`
-	AssetCategory  string    `json:"assetCategory" gorm:"not null"` // HC, IT, CS
-	Type           string    `json:"type"`
-	AssetName      string    `json:"assetName"`
-	Ownership      string    `json:"ownership" gorm:"default:'Own'"`
-	BuildingID     uint      `json:"buildingId" gorm:"index"`
-	Building       Building  `json:"-" gorm:"foreignKey:BuildingID"`
-	AssetLocation  string    `json:"assetLocation"`
-	SubLocation    string    `json:"subLocation"`
-	Department     string    `json:"department"`
-	Channel        string    `json:"channel"`
-	Status         string    `json:"status" gorm:"default:'Active'"`
-	ApprovalStatus string    `json:"approvalStatus" gorm:"default:'Approved'"`
-	Address        string    `json:"address"`
-	PurchasePrice  float64   `json:"purchasePrice"`
-	PurchaseDate   time.Time `json:"purchaseDate"`
-	Brand          string    `json:"brand"`
-	ModelNumber    string    `json:"modelNumber"`
-	PIC            string    `json:"pic"`
-	SourceCategory string    `json:"sourceCategory"` // Asset HC, Asset IT, etc.
+	ID             uint       `json:"id" gorm:"primaryKey"`
+	KodeAset       string     `json:"kodeAset" gorm:"unique;not null"`
+	NamaAset       string     `json:"namaAset" gorm:"not null"`
+	Kategori       string     `json:"kategori"`
+	Merk           string     `json:"merk"`
+	Model          string     `json:"model"`
+	NoSeri         string     `json:"noSeri"`
+	TahunPerolehan int        `json:"tahunPerolehan"`
+	NilaiPerolehan float64    `json:"nilaiPerolehan"`
+	Kondisi        string     `json:"kondisi"`
+	Lokasi         string     `json:"lokasi"`
+	Department     string     `json:"department"`
+	PIC            string     `json:"pic"`
+	Status         string     `json:"status" gorm:"default:'active'"`
+	TglPerolehan   *time.Time `json:"tglPerolehan"`
+	CreatedAt      time.Time  `json:"createdAt"`
+	UpdatedAt      time.Time  `json:"updatedAt"`
 }

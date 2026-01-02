@@ -1,101 +1,61 @@
 package controllers
 
 import (
-	"net/http"
-
 	"fms-backend/config"
 	"fms-backend/models"
 	"fms-backend/utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetUtilities(c *gin.Context) {
-	var utilities []models.Utility
+	var items []models.Utility
 	pagination := utils.GetPagination(c)
-
 	var total int64
-	query := config.DB.Model(&models.Utility{})
-
-	// Filters
-	if status := c.Query("status"); status != "" {
-		query = query.Where("status = ?", status)
-	}
-	if utilityType := c.Query("type"); utilityType != "" {
-		query = query.Where("type = ?", utilityType)
-	}
-	if location := c.Query("location"); location != "" {
-		query = query.Where("location = ?", location)
-	}
-	if period := c.Query("period"); period != "" {
-		query = query.Where("period = ?", period)
-	}
-
-	query.Count(&total)
-	query.Offset(pagination.Offset).Limit(pagination.Limit).Order("date DESC").Find(&utilities)
-
-	c.JSON(http.StatusOK, gin.H{
-		"data":       utilities,
-		"total":      total,
-		"page":       pagination.Page,
-		"limit":      pagination.Limit,
-		"totalPages": (total + int64(pagination.Limit) - 1) / int64(pagination.Limit),
-	})
+	config.DB.Model(&models.Utility{}).Count(&total)
+	config.DB.Scopes(utils.Paginate(&pagination)).Find(&items)
+	pagination.TotalRows = total
+	pagination.TotalPages = int((total + int64(pagination.Limit) - 1) / int64(pagination.Limit))
+	c.JSON(http.StatusOK, gin.H{"data": items, "pagination": pagination})
 }
 
 func GetUtility(c *gin.Context) {
-	var utility models.Utility
-	if err := config.DB.First(&utility, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Utility record not found"})
+	var item models.Utility
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-	c.JSON(http.StatusOK, utility)
+	c.JSON(http.StatusOK, item)
 }
 
 func CreateUtility(c *gin.Context) {
-	var utility models.Utility
-	if err := c.ShouldBindJSON(&utility); err != nil {
+	var item models.Utility
+	if err := c.ShouldBindJSON(&item); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	// Calculate usage
-	utility.Usage = utility.MeterEnd - utility.MeterStart
-
-	if err := config.DB.Create(&utility).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusCreated, utility)
+	config.DB.Create(&item)
+	c.JSON(http.StatusCreated, item)
 }
 
 func UpdateUtility(c *gin.Context) {
-	var utility models.Utility
-	if err := config.DB.First(&utility, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Utility record not found"})
+	var item models.Utility
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-
-	if err := c.ShouldBindJSON(&utility); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Recalculate usage
-	utility.Usage = utility.MeterEnd - utility.MeterStart
-
-	config.DB.Save(&utility)
-	c.JSON(http.StatusOK, utility)
+	c.ShouldBindJSON(&item)
+	config.DB.Save(&item)
+	c.JSON(http.StatusOK, item)
 }
 
 func DeleteUtility(c *gin.Context) {
-	var utility models.Utility
-	if err := config.DB.First(&utility, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Utility record not found"})
+	var item models.Utility
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-
-	config.DB.Delete(&utility)
-	c.JSON(http.StatusOK, gin.H{"message": "Utility record deleted successfully"})
+	config.DB.Delete(&item)
+	c.JSON(http.StatusOK, gin.H{"message": "Deleted"})
 }

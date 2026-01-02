@@ -1,24 +1,18 @@
 package models
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import "time"
 
 type Utility struct {
-	gorm.Model
-	BuildingID    uint      `json:"buildingId" gorm:"index"`
-	Building      Building  `json:"-" gorm:"foreignKey:BuildingID"`
-	Period        string    `json:"period"`
-	Date          time.Time `json:"date"`
-	Location      string    `json:"location"`
-	Type          string    `json:"type"` // Listrik, Air, Internet
-	MeterStart    float64   `json:"meterStart"`
-	MeterEnd      float64   `json:"meterEnd"`
-	Usage         float64   `json:"usage"`
-	Unit          string    `json:"unit"`
-	Cost          float64   `json:"cost"`
-	Status        string    `json:"status" gorm:"default:'Pending'"` // Paid, Unpaid, Pending
-	AttachmentUrl string    `json:"attachmentUrl"`
+	ID           uint       `json:"id" gorm:"primaryKey"`
+	BuildingID   uint       `json:"buildingId"`
+	TipeUtilitas string     `json:"tipeUtilitas"`
+	Periode      string     `json:"periode"`
+	Pemakaian    float64    `json:"pemakaian"`
+	Satuan       string     `json:"satuan"`
+	Biaya        float64    `json:"biaya"`
+	TglTagihan   *time.Time `json:"tglTagihan"`
+	TglBayar     *time.Time `json:"tglBayar"`
+	Status       string     `json:"status" gorm:"default:'unpaid'"`
+	CreatedAt    time.Time  `json:"createdAt"`
+	UpdatedAt    time.Time  `json:"updatedAt"`
 }

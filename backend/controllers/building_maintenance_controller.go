@@ -1,92 +1,61 @@
 package controllers
 
 import (
-	"net/http"
-
 	"fms-backend/config"
 	"fms-backend/models"
 	"fms-backend/utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetBuildingMaintenances(c *gin.Context) {
-	var maintenances []models.BuildingMaintenance
+	var items []models.BuildingMaintenance
 	pagination := utils.GetPagination(c)
-
 	var total int64
-	query := config.DB.Model(&models.BuildingMaintenance{})
-
-	if status := c.Query("status"); status != "" {
-		query = query.Where("status = ?", status)
-	}
-	if assetId := c.Query("assetId"); assetId != "" {
-		query = query.Where("asset_id = ?", assetId)
-	}
-	if maintenanceType := c.Query("maintenanceType"); maintenanceType != "" {
-		query = query.Where("maintenance_type = ?", maintenanceType)
-	}
-
-	query.Count(&total)
-	query.Offset(pagination.Offset).Limit(pagination.Limit).Order("request_date DESC").Find(&maintenances)
-
-	c.JSON(http.StatusOK, gin.H{
-		"data":       maintenances,
-		"total":      total,
-		"page":       pagination.Page,
-		"limit":      pagination.Limit,
-		"totalPages": (total + int64(pagination.Limit) - 1) / int64(pagination.Limit),
-	})
+	config.DB.Model(&models.BuildingMaintenance{}).Count(&total)
+	config.DB.Scopes(utils.Paginate(&pagination)).Find(&items)
+	pagination.TotalRows = total
+	pagination.TotalPages = int((total + int64(pagination.Limit) - 1) / int64(pagination.Limit))
+	c.JSON(http.StatusOK, gin.H{"data": items, "pagination": pagination})
 }
 
 func GetBuildingMaintenance(c *gin.Context) {
-	var maintenance models.BuildingMaintenance
-	if err := config.DB.First(&maintenance, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Building maintenance not found"})
+	var item models.BuildingMaintenance
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-	c.JSON(http.StatusOK, maintenance)
+	c.JSON(http.StatusOK, item)
 }
 
-
 func CreateBuildingMaintenance(c *gin.Context) {
-	var maintenance models.BuildingMaintenance
-	if err := c.ShouldBindJSON(&maintenance); err != nil {
+	var item models.BuildingMaintenance
+	if err := c.ShouldBindJSON(&item); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	if err := config.DB.Create(&maintenance).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusCreated, maintenance)
+	config.DB.Create(&item)
+	c.JSON(http.StatusCreated, item)
 }
 
 func UpdateBuildingMaintenance(c *gin.Context) {
-	var maintenance models.BuildingMaintenance
-	if err := config.DB.First(&maintenance, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Building maintenance not found"})
+	var item models.BuildingMaintenance
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-
-	if err := c.ShouldBindJSON(&maintenance); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	config.DB.Save(&maintenance)
-	c.JSON(http.StatusOK, maintenance)
+	c.ShouldBindJSON(&item)
+	config.DB.Save(&item)
+	c.JSON(http.StatusOK, item)
 }
 
 func DeleteBuildingMaintenance(c *gin.Context) {
-	var maintenance models.BuildingMaintenance
-	if err := config.DB.First(&maintenance, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Building maintenance not found"})
+	var item models.BuildingMaintenance
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-
-	config.DB.Delete(&maintenance)
-	c.JSON(http.StatusOK, gin.H{"message": "Building maintenance deleted successfully"})
+	config.DB.Delete(&item)
+	c.JSON(http.StatusOK, gin.H{"message": "Deleted"})
 }

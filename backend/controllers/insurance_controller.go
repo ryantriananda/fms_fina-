@@ -1,88 +1,61 @@
 package controllers
 
 import (
-	"net/http"
-
 	"fms-backend/config"
 	"fms-backend/models"
 	"fms-backend/utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetInsurances(c *gin.Context) {
-	var insurances []models.Insurance
+	var items []models.Insurance
 	pagination := utils.GetPagination(c)
-
 	var total int64
-	query := config.DB.Model(&models.Insurance{})
-
-	if category := c.Query("category"); category != "" {
-		query = query.Where("category = ?", category)
-	}
-	if status := c.Query("status"); status != "" {
-		query = query.Where("status = ?", status)
-	}
-
-	query.Count(&total)
-	query.Offset(pagination.Offset).Limit(pagination.Limit).Find(&insurances)
-
-	c.JSON(http.StatusOK, gin.H{
-		"data":       insurances,
-		"total":      total,
-		"page":       pagination.Page,
-		"limit":      pagination.Limit,
-		"totalPages": (total + int64(pagination.Limit) - 1) / int64(pagination.Limit),
-	})
+	config.DB.Model(&models.Insurance{}).Count(&total)
+	config.DB.Scopes(utils.Paginate(&pagination)).Find(&items)
+	pagination.TotalRows = total
+	pagination.TotalPages = int((total + int64(pagination.Limit) - 1) / int64(pagination.Limit))
+	c.JSON(http.StatusOK, gin.H{"data": items, "pagination": pagination})
 }
 
 func GetInsurance(c *gin.Context) {
-	var insurance models.Insurance
-	if err := config.DB.First(&insurance, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Insurance not found"})
+	var item models.Insurance
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-	c.JSON(http.StatusOK, insurance)
+	c.JSON(http.StatusOK, item)
 }
 
 func CreateInsurance(c *gin.Context) {
-	var insurance models.Insurance
-	if err := c.ShouldBindJSON(&insurance); err != nil {
+	var item models.Insurance
+	if err := c.ShouldBindJSON(&item); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	if err := config.DB.Create(&insurance).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusCreated, insurance)
+	config.DB.Create(&item)
+	c.JSON(http.StatusCreated, item)
 }
 
 func UpdateInsurance(c *gin.Context) {
-	var insurance models.Insurance
-	if err := config.DB.First(&insurance, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Insurance not found"})
+	var item models.Insurance
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-
-	if err := c.ShouldBindJSON(&insurance); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	config.DB.Save(&insurance)
-	c.JSON(http.StatusOK, insurance)
+	c.ShouldBindJSON(&item)
+	config.DB.Save(&item)
+	c.JSON(http.StatusOK, item)
 }
 
 func DeleteInsurance(c *gin.Context) {
-	var insurance models.Insurance
-	if err := config.DB.First(&insurance, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Insurance not found"})
+	var item models.Insurance
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-
-	config.DB.Delete(&insurance)
-	c.JSON(http.StatusOK, gin.H{"message": "Insurance deleted successfully"})
+	config.DB.Delete(&item)
+	c.JSON(http.StatusOK, gin.H{"message": "Deleted"})
 }

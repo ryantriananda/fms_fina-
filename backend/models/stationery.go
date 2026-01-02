@@ -1,50 +1,34 @@
 package models
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import "time"
 
 type StationeryRequest struct {
-	gorm.Model
-	Type             string           `json:"type"` // ATK or ARK
-	DeliveryType     string           `json:"deliveryType"`
-	LocationID       uint             `json:"locationId" gorm:"index"`
-	DeliveryLocation DeliveryLocation `json:"-" gorm:"foreignKey:LocationID"`
-	Location         string           `json:"location"`
-	Date             time.Time        `json:"date"`
-	Remarks          string           `json:"remarks"`
-	Status           string           `json:"status" gorm:"default:'Pending'"`
-	ApprovalStatus   string           `json:"approvalStatus" gorm:"default:'Pending'"`
-	RequestedBy      uint             `json:"requestedBy" gorm:"index"`
-	Requester        User             `json:"-" gorm:"foreignKey:RequestedBy"`
-	Items            []StationeryRequestItem `json:"items" gorm:"foreignKey:RequestID"`
-}
-
-type StationeryRequestItem struct {
-	gorm.Model
-	RequestID  uint              `json:"requestId" gorm:"index"`
-	Request    StationeryRequest `json:"-" gorm:"foreignKey:RequestID"`
-	ItemID     uint              `json:"itemId" gorm:"index"`
-	Item       MasterItem        `json:"item" gorm:"foreignKey:ItemID"`
-	Qty        int               `json:"qty"`
-	CategoryID uint              `json:"categoryId"`
-	UOM        string            `json:"uom"`
+	ID           uint       `json:"id" gorm:"primaryKey"`
+	NoRequest    string     `json:"noRequest" gorm:"unique;not null"`
+	TipeRequest  string     `json:"tipeRequest"`
+	UserID       uint       `json:"userId"`
+	Department   string     `json:"department"`
+	TglRequest   *time.Time `json:"tglRequest"`
+	Items        string     `json:"items"`
+	TotalHarga   float64    `json:"totalHarga"`
+	Status       string     `json:"status" gorm:"default:'pending'"`
+	ApprovedBy   *uint      `json:"approvedBy"`
+	TglApproval  *time.Time `json:"tglApproval"`
+	Catatan      string     `json:"catatan"`
+	CreatedAt    time.Time  `json:"createdAt"`
+	UpdatedAt    time.Time  `json:"updatedAt"`
 }
 
 type MasterItem struct {
-	gorm.Model
-	Category          string    `json:"category"` // ATK or ARK
-	ItemName          string    `json:"itemName" gorm:"not null"`
-	ItemCode          string    `json:"itemCode" gorm:"uniqueIndex;not null"`
-	UOM               string    `json:"uom"`
-	RemainingStock    int       `json:"remainingStock"`
-	MinimumStock      int       `json:"minimumStock"`
-	MaximumStock      int       `json:"maximumStock"`
-	RequestedStock    int       `json:"requestedStock"`
-	LastPurchasePrice float64   `json:"lastPurchasePrice"`
-	AveragePrice      float64   `json:"averagePrice"`
-	PurchaseDate      time.Time `json:"purchaseDate"`
-	ImageUrl          string    `json:"imageUrl"`
+	ID          uint      `json:"id" gorm:"primaryKey"`
+	KodeItem    string    `json:"kodeItem" gorm:"unique;not null"`
+	NamaItem    string    `json:"namaItem" gorm:"not null"`
+	Kategori    string    `json:"kategori"`
+	Satuan      string    `json:"satuan"`
+	HargaSatuan float64   `json:"hargaSatuan"`
+	Stok        int       `json:"stok"`
+	MinStok     int       `json:"minStok"`
+	IsActive    bool      `json:"isActive" gorm:"default:true"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }

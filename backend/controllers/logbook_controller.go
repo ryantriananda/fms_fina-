@@ -1,92 +1,61 @@
 package controllers
 
 import (
-	"net/http"
-
 	"fms-backend/config"
 	"fms-backend/models"
 	"fms-backend/utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetLogBooks(c *gin.Context) {
-	var logbooks []models.LogBook
+	var items []models.LogBook
 	pagination := utils.GetPagination(c)
-
 	var total int64
-	query := config.DB.Model(&models.LogBook{})
-
-	// Filters
-	if location := c.Query("location"); location != "" {
-		query = query.Where("lokasi_modena = ?", location)
-	}
-	if kategori := c.Query("kategori"); kategori != "" {
-		query = query.Where("kategori_tamu = ?", kategori)
-	}
-	if namaTamu := c.Query("namaTamu"); namaTamu != "" {
-		query = query.Where("nama_tamu LIKE ?", "%"+namaTamu+"%")
-	}
-
-	query.Count(&total)
-	query.Offset(pagination.Offset).Limit(pagination.Limit).Order("tanggal_kunjungan DESC").Find(&logbooks)
-
-	c.JSON(http.StatusOK, gin.H{
-		"data":       logbooks,
-		"total":      total,
-		"page":       pagination.Page,
-		"limit":      pagination.Limit,
-		"totalPages": (total + int64(pagination.Limit) - 1) / int64(pagination.Limit),
-	})
+	config.DB.Model(&models.LogBook{}).Count(&total)
+	config.DB.Scopes(utils.Paginate(&pagination)).Find(&items)
+	pagination.TotalRows = total
+	pagination.TotalPages = int((total + int64(pagination.Limit) - 1) / int64(pagination.Limit))
+	c.JSON(http.StatusOK, gin.H{"data": items, "pagination": pagination})
 }
 
 func GetLogBook(c *gin.Context) {
-	var logbook models.LogBook
-	if err := config.DB.First(&logbook, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "LogBook not found"})
+	var item models.LogBook
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-	c.JSON(http.StatusOK, logbook)
+	c.JSON(http.StatusOK, item)
 }
 
 func CreateLogBook(c *gin.Context) {
-	var logbook models.LogBook
-	if err := c.ShouldBindJSON(&logbook); err != nil {
+	var item models.LogBook
+	if err := c.ShouldBindJSON(&item); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	if err := config.DB.Create(&logbook).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusCreated, logbook)
+	config.DB.Create(&item)
+	c.JSON(http.StatusCreated, item)
 }
 
 func UpdateLogBook(c *gin.Context) {
-	var logbook models.LogBook
-	if err := config.DB.First(&logbook, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "LogBook not found"})
+	var item models.LogBook
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-
-	if err := c.ShouldBindJSON(&logbook); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	config.DB.Save(&logbook)
-	c.JSON(http.StatusOK, logbook)
+	c.ShouldBindJSON(&item)
+	config.DB.Save(&item)
+	c.JSON(http.StatusOK, item)
 }
 
 func DeleteLogBook(c *gin.Context) {
-	var logbook models.LogBook
-	if err := config.DB.First(&logbook, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "LogBook not found"})
+	var item models.LogBook
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-
-	config.DB.Delete(&logbook)
-	c.JSON(http.StatusOK, gin.H{"message": "LogBook deleted successfully"})
+	config.DB.Delete(&item)
+	c.JSON(http.StatusOK, gin.H{"message": "Deleted"})
 }

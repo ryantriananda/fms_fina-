@@ -1,91 +1,61 @@
 package controllers
 
 import (
-	"net/http"
-
 	"fms-backend/config"
 	"fms-backend/models"
 	"fms-backend/utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetPurchases(c *gin.Context) {
-	var purchases []models.Purchase
+	var items []models.Purchase
 	pagination := utils.GetPagination(c)
-
 	var total int64
-	query := config.DB.Model(&models.Purchase{})
-
-	if status := c.Query("status"); status != "" {
-		query = query.Where("status = ?", status)
-	}
-	if vendorId := c.Query("vendorId"); vendorId != "" {
-		query = query.Where("vendor_id = ?", vendorId)
-	}
-
-	query.Count(&total)
-	query.Offset(pagination.Offset).Limit(pagination.Limit).Order("date DESC").Find(&purchases)
-
-	c.JSON(http.StatusOK, gin.H{
-		"data":       purchases,
-		"total":      total,
-		"page":       pagination.Page,
-		"limit":      pagination.Limit,
-		"totalPages": (total + int64(pagination.Limit) - 1) / int64(pagination.Limit),
-	})
+	config.DB.Model(&models.Purchase{}).Count(&total)
+	config.DB.Scopes(utils.Paginate(&pagination)).Find(&items)
+	pagination.TotalRows = total
+	pagination.TotalPages = int((total + int64(pagination.Limit) - 1) / int64(pagination.Limit))
+	c.JSON(http.StatusOK, gin.H{"data": items, "pagination": pagination})
 }
 
 func GetPurchase(c *gin.Context) {
-	var purchase models.Purchase
-	if err := config.DB.First(&purchase, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Purchase not found"})
+	var item models.Purchase
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-	c.JSON(http.StatusOK, purchase)
+	c.JSON(http.StatusOK, item)
 }
 
 func CreatePurchase(c *gin.Context) {
-	var purchase models.Purchase
-	if err := c.ShouldBindJSON(&purchase); err != nil {
+	var item models.Purchase
+	if err := c.ShouldBindJSON(&item); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	purchase.TotalPrice = float64(purchase.Qty) * purchase.UnitPrice
-
-	if err := config.DB.Create(&purchase).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusCreated, purchase)
+	config.DB.Create(&item)
+	c.JSON(http.StatusCreated, item)
 }
 
 func UpdatePurchase(c *gin.Context) {
-	var purchase models.Purchase
-	if err := config.DB.First(&purchase, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Purchase not found"})
+	var item models.Purchase
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-
-	if err := c.ShouldBindJSON(&purchase); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	purchase.TotalPrice = float64(purchase.Qty) * purchase.UnitPrice
-	config.DB.Save(&purchase)
-	c.JSON(http.StatusOK, purchase)
+	c.ShouldBindJSON(&item)
+	config.DB.Save(&item)
+	c.JSON(http.StatusOK, item)
 }
 
 func DeletePurchase(c *gin.Context) {
-	var purchase models.Purchase
-	if err := config.DB.First(&purchase, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Purchase not found"})
+	var item models.Purchase
+	if err := config.DB.First(&item, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}
-
-	config.DB.Delete(&purchase)
-	c.JSON(http.StatusOK, gin.H{"message": "Purchase deleted successfully"})
+	config.DB.Delete(&item)
+	c.JSON(http.StatusOK, gin.H{"message": "Deleted"})
 }

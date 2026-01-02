@@ -1,20 +1,16 @@
 package models
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import "time"
 
 type Timesheet struct {
-	gorm.Model
-	EmployeeID uint      `json:"employeeId" gorm:"index"`
-	Employee   User      `json:"employee" gorm:"foreignKey:EmployeeID"`
-	Location   string    `json:"location"`
-	Area       string    `json:"area"`
-	Date       time.Time `json:"date"`
-	Shift      string    `json:"shift"`
-	ClockIn    time.Time `json:"clockIn"`
-	ClockOut   time.Time `json:"clockOut"`
-	Status     string    `json:"status"` // Tepat Waktu, Terlambat, Absen
+	ID          uint       `json:"id" gorm:"primaryKey"`
+	UserID      uint       `json:"userId"`
+	Tanggal     *time.Time `json:"tanggal"`
+	JamMasuk    string     `json:"jamMasuk"`
+	JamKeluar   string     `json:"jamKeluar"`
+	Aktivitas   string     `json:"aktivitas"`
+	Lokasi      string     `json:"lokasi"`
+	Status      string     `json:"status" gorm:"default:'pending'"`
+	CreatedAt   time.Time  `json:"createdAt"`
+	UpdatedAt   time.Time  `json:"updatedAt"`
 }

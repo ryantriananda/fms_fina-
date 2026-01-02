@@ -1,26 +1,16 @@
 package models
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import "time"
 
 type TaxKir struct {
-	gorm.Model
-	VehicleID       uint      `json:"vehicleId" gorm:"index"`
-	Vehicle         Vehicle   `json:"-" gorm:"foreignKey:VehicleID"`
-	NoPolisi        string    `json:"noPolisi" gorm:"not null"`
-	AssetName       string    `json:"aset"`
-	TglRequest      time.Time `json:"tglRequest"`
-	Jenis           string    `json:"jenis"` // Pajak STNK or KIR
-	Channel         string    `json:"channel"`
-	Cabang          string    `json:"cabang"`
-	Status          string    `json:"status" gorm:"default:'Pending'"`
-	StatusApproval  string    `json:"statusApproval" gorm:"default:'Pending'"`
-	JatuhTempo      time.Time `json:"jatuhTempo"`
-	EstimasiBiaya   float64   `json:"estimasiBiaya"`
-	TargetSelesai   time.Time `json:"targetSelesai"`
-	JenisPembayaran string    `json:"jenisPembayaran"`
-	AttachmentUrl   string    `json:"attachmentUrl"`
+	ID           uint       `json:"id" gorm:"primaryKey"`
+	VehicleID    uint       `json:"vehicleId"`
+	Tipe         string     `json:"tipe"`
+	TglBerlaku   *time.Time `json:"tglBerlaku"`
+	TglBerakhir  *time.Time `json:"tglBerakhir"`
+	Biaya        float64    `json:"biaya"`
+	Status       string     `json:"status" gorm:"default:'active'"`
+	Catatan      string     `json:"catatan"`
+	CreatedAt    time.Time  `json:"createdAt"`
+	UpdatedAt    time.Time  `json:"updatedAt"`
 }

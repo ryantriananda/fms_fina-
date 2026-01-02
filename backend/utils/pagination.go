@@ -4,12 +4,14 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type Pagination struct {
-	Page   int
-	Limit  int
-	Offset int
+	Page       int   `json:"page"`
+	Limit      int   `json:"limit"`
+	TotalRows  int64 `json:"totalRows"`
+	TotalPages int   `json:"totalPages"`
 }
 
 func GetPagination(c *gin.Context) Pagination {
@@ -19,18 +21,16 @@ func GetPagination(c *gin.Context) Pagination {
 	if page < 1 {
 		page = 1
 	}
-	if limit < 1 {
+	if limit < 1 || limit > 100 {
 		limit = 10
 	}
-	if limit > 100 {
-		limit = 100
-	}
 
-	offset := (page - 1) * limit
+	return Pagination{Page: page, Limit: limit}
+}
 
-	return Pagination{
-		Page:   page,
-		Limit:  limit,
-		Offset: offset,
+func Paginate(pagination *Pagination) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		offset := (pagination.Page - 1) * pagination.Limit
+		return db.Offset(offset).Limit(pagination.Limit)
 	}
 }

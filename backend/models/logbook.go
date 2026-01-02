@@ -1,23 +1,17 @@
 package models
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import "time"
 
 type LogBook struct {
-	gorm.Model
-	BuildingID       uint      `json:"buildingId" gorm:"index"`
-	Building         Building  `json:"-" gorm:"foreignKey:BuildingID"`
-	LokasiModena     string    `json:"lokasiModena"`
-	KategoriTamu     string    `json:"kategoriTamu"` // Customer, Supplier, etc.
-	NamaTamu         string    `json:"namaTamu"`
-	TanggalKunjungan time.Time `json:"tanggalKunjungan"`
-	JamDatang        string    `json:"jamDatang"`
-	JamPulang        string    `json:"jamPulang"`
-	Wanita           int       `json:"wanita"`
-	LakiLaki         int       `json:"lakiLaki"`
-	AnakAnak         int       `json:"anakAnak"`
-	Note             string    `json:"note"`
+	ID          uint       `json:"id" gorm:"primaryKey"`
+	VehicleID   uint       `json:"vehicleId"`
+	UserID      uint       `json:"userId"`
+	Tanggal     *time.Time `json:"tanggal"`
+	Tujuan      string     `json:"tujuan"`
+	KmAwal      int        `json:"kmAwal"`
+	KmAkhir     int        `json:"kmAkhir"`
+	BBM         float64    `json:"bbm"`
+	Keterangan  string     `json:"keterangan"`
+	CreatedAt   time.Time  `json:"createdAt"`
+	UpdatedAt   time.Time  `json:"updatedAt"`
 }
