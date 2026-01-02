@@ -6,7 +6,7 @@ import { ChevronsUpDown, Eye, FolderX, Pencil, Trash2 } from 'lucide-react';
 interface Props {
   data: ContractRecord[];
   onEdit?: (item: ContractRecord) => void;
-  onDelete?: (id: number) => void;
+  onDelete?: (id: string) => void;
   onView?: (item: ContractRecord) => void;
 }
 

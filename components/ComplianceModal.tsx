@@ -56,7 +56,7 @@ export const ComplianceModal: React.FC<Props> = ({
           const diffTime = expiry.getTime() - today.getTime();
           const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
           
-          let status = 'Safe';
+          let status: ReminderRecord['status'] = 'Safe';
           if (days < 0) status = 'Urgent'; // Expired
           else if (days <= 30) status = 'Urgent';
           else if (days <= 90) status = 'Warning';

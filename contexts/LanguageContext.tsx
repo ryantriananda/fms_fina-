@@ -17,17 +17,27 @@ const translations: Record<string, Record<Language, string>> = {
   'Dashboard': { id: 'Dashboard', en: 'Dashboard' },
   'Beranda': { id: 'Beranda', en: 'Home' },
   
+  // --- SIDEBAR GROUP HEADERS ---
+  'Asset Management': { id: 'Manajemen Aset', en: 'Asset Management' },
+  'Facility Services': { id: 'Layanan Fasilitas', en: 'Facility Services' },
+  'Consumables': { id: 'Barang Pakai Habis', en: 'Consumables' },
+  'Daily Operations': { id: 'Operasional Harian', en: 'Daily Operations' },
+  'Administration': { id: 'Administrasi', en: 'Administration' },
+
   // --- MODULES (SIDEBAR PARENTS) ---
   'ATK': { id: 'ATK', en: 'Stationery' },
   'ARK': { id: 'ARK', en: 'Household' },
   'General Asset': { id: 'Aset Umum', en: 'General Asset' },
-  'Log Book': { id: 'Buku Tamu', en: 'Log Book' },
+  'Log Book': { id: 'Log Book', en: 'Log Book' }, // Log Book stays Log Book usually
   'Kendaraan': { id: 'Kendaraan', en: 'Vehicle' },
   'Gedung': { id: 'Gedung', en: 'Building' },
-  'Timesheet': { id: 'Absensi', en: 'Timesheet' },
+  'Timesheet': { id: 'Absensi', en: 'Timesheet' }, // Map Timesheet to Absensi
   'Vendor': { id: 'Vendor', en: 'Vendor' },
   'Manajemen User': { id: 'Manajemen User', en: 'User Management' },
   'Master Data': { id: 'Data Master', en: 'Master Data' },
+  'Loker': { id: 'Loker', en: 'Locker' },
+  'MODENA Pod': { id: 'MODENA Pod', en: 'MODENA Pod' },
+  'Stock Opname': { id: 'Stock Opname', en: 'Stock Opname' },
 
   // --- SUB MENUS (SIDEBAR CHILDREN) ---
   // ATK
@@ -39,6 +49,14 @@ const translations: Record<string, Record<Language, string>> = {
   'Daftar ARK': { id: 'Permintaan ARK', en: 'Household Request' },
   'Household Request Approval': { id: 'Persetujuan ARK', en: 'Household Approval' },
   'Master ARK': { id: 'Master ARK', en: 'Master Household' },
+
+  // Loker
+  'Daftar Loker': { id: 'Daftar Loker', en: 'Locker List' },
+  'Request Locker': { id: 'Permintaan Loker', en: 'Locker Request' },
+
+  // Pod
+  'Pod Census': { id: 'Sensus Pod', en: 'Pod Census' },
+  'Request MODENA Pod': { id: 'Permintaan Pod', en: 'Pod Request' },
 
   // General Asset
   'Asset HC': { id: 'Aset HC', en: 'HC Asset' },
@@ -89,6 +107,10 @@ const translations: Record<string, Record<Language, string>> = {
   'Sync Channels': { id: 'Sync Channel', en: 'Sync Channels' },
   'Jenis Kendaraan': { id: 'Jenis Kendaraan', en: 'Vehicle Type' },
   'Master Approval': { id: 'Master Approval', en: 'Master Approval' },
+  'Master Komponen Bangunan': { id: 'Master Komponen Bangunan', en: 'Master Building Components' },
+  'Master Tipe Dokumen': { id: 'Master Tipe Dokumen', en: 'Master Document Types' },
+  'Master Tipe Utilitas': { id: 'Master Tipe Utilitas', en: 'Master Utility Types' },
+  'Master Model Kendaraan': { id: 'Master Model Kendaraan', en: 'Master Vehicle Model' },
 
   // --- TABS & FILTERS ---
   'SEMUA': { id: 'SEMUA', en: 'ALL' },
@@ -110,6 +132,7 @@ const translations: Record<string, Record<Language, string>> = {
   'SAFE': { id: 'AMAN', en: 'SAFE' },
   'LIVE': { id: 'LIVE', en: 'LIVE' },
   'ENDING SOON': { id: 'SEGERA BERAKHIR', en: 'ENDING SOON' },
+  'LIST': { id: 'DAFTAR', en: 'LIST' },
 
   // --- BUTTON ACTIONS ---
   'Add': { id: 'Tambah', en: 'Add' },
@@ -138,6 +161,9 @@ const translations: Record<string, Record<Language, string>> = {
   'New Request': { id: 'Permintaan Baru', en: 'New Request' },
   'Add Workflow': { id: 'Tambah Workflow', en: 'Add Workflow' },
   'New Auction': { id: 'Lelang Baru', en: 'New Auction' },
+  'Add Locker': { id: 'Tambah Loker', en: 'Add Locker' },
+  'Add Unit': { id: 'Tambah Unit', en: 'Add Unit' },
+  'Start Count': { id: 'Mulai Hitung', en: 'Start Count' },
   
   // --- UI LABELS ---
   'Search...': { id: 'Cari...', en: 'Search...' },

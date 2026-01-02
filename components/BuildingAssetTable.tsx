@@ -9,11 +9,10 @@ interface Props {
   data: BuildingAssetRecord[];
   onEdit?: (item: BuildingAssetRecord) => void;
   onView?: (item: BuildingAssetRecord) => void;
-  onDelete?: (id: string) => void;
   onAction?: (item: BuildingAssetRecord, action: 'Approve' | 'Reject' | 'Revise') => void;
 }
 
-export const BuildingAssetTable: React.FC<Props> = ({ data, onEdit, onView, onDelete, onAction }) => {
+export const BuildingAssetTable: React.FC<Props> = ({ data, onEdit, onView, onAction }) => {
   
   const getApprovalBadge = (status: BuildingAssetRecord['approvalStatus']) => {
     switch (status) {
@@ -158,9 +157,6 @@ export const BuildingAssetTable: React.FC<Props> = ({ data, onEdit, onView, onDe
                          </button>
                          <button onClick={() => onEdit?.(item)} className="p-2 text-gray-300 hover:text-black transition-all">
                             <Pencil size={18} />
-                         </button>
-                         <button onClick={() => onDelete?.(item.id)} className="p-2 text-gray-300 hover:text-red-500 transition-all">
-                            <XCircle size={18} />
                          </button>
                     </div>
                 </td>

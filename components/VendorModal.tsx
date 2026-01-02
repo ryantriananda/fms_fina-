@@ -131,7 +131,7 @@ export const VendorModal: React.FC<Props> = ({ isOpen, onClose, onSave, initialD
                                 disabled={isView}
                                 className="w-full bg-white border border-gray-200 rounded-2xl px-5 py-4 pl-12 text-[13px] font-black text-black focus:border-black outline-none disabled:bg-gray-50 appearance-none shadow-sm cursor-pointer"
                                 value={form.type || ''}
-                                onChange={(e) => setForm({...form, type: e.target.value})}
+                                onChange={(e) => setForm({...form, type: e.target.value as any})}
                             >
                                 <option value="Goods">Goods</option>
                                 <option value="Service">Service</option>

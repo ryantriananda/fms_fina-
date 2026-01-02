@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { InsuranceRecord } from '../types';
-import { Eye, Pencil, Trash2, Shield, AlertCircle, CheckCircle, Clock } from 'lucide-react';
-import { Pagination, usePagination } from './Pagination';
+import { ChevronsUpDown, Eye, Pencil, Trash2, Shield, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 
 interface Props {
   data: InsuranceRecord[];
@@ -12,8 +11,6 @@ interface Props {
 }
 
 export const InsuranceTable: React.FC<Props> = ({ data, onEdit, onView, onDelete }) => {
-  const pagination = usePagination(data, 10);
-
   const getStatusStyle = (status: string) => {
       switch(status) {
           case 'Active': return 'bg-[#E8FDF5] text-[#059669] border-[#10B981]/20';
@@ -49,7 +46,7 @@ export const InsuranceTable: React.FC<Props> = ({ data, onEdit, onView, onDelete
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {pagination.paginatedData.map((item) => (
+            {data.map((item) => (
               <tr key={item.id} className="bg-white hover:bg-[#FDFDFD] transition-all group cursor-pointer" onClick={() => onView?.(item)}>
                 <td className="p-6 pl-8">
                     <span className="font-mono font-bold text-black text-[12px]">{item.policyNumber}</span>
@@ -107,7 +104,7 @@ export const InsuranceTable: React.FC<Props> = ({ data, onEdit, onView, onDelete
                 </td>
               </tr>
             ))}
-            {pagination.paginatedData.length === 0 && (
+            {data.length === 0 && (
                 <tr>
                     <td colSpan={8} className="p-24 text-center">
                         <div className="flex flex-col items-center opacity-30">
@@ -120,15 +117,6 @@ export const InsuranceTable: React.FC<Props> = ({ data, onEdit, onView, onDelete
           </tbody>
         </table>
       </div>
-
-      <Pagination
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-        totalItems={pagination.totalItems}
-        itemsPerPage={pagination.itemsPerPage}
-        onPageChange={pagination.onPageChange}
-        onItemsPerPageChange={pagination.onItemsPerPageChange}
-      />
     </div>
   );
 };

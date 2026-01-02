@@ -2,7 +2,6 @@
 import React from 'react';
 import { VehicleContractRecord } from '../types';
 import { ChevronsUpDown, Eye, Pencil, Trash2, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
-import { Pagination, usePagination } from './Pagination';
 
 interface Props {
   data: VehicleContractRecord[];
@@ -13,7 +12,6 @@ interface Props {
 }
 
 export const VehicleContractTable: React.FC<Props> = ({ data, onEdit, onView, onDelete, onAction }) => {
-  const pagination = usePagination(data, 10);
   
   const getStatusBadge = (status: string) => {
       const s = (status || '').toLowerCase();
@@ -90,8 +88,8 @@ export const VehicleContractTable: React.FC<Props> = ({ data, onEdit, onView, on
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 text-sm text-gray-700">
-            {pagination.paginatedData.length > 0 ? (
-                pagination.paginatedData.map((item) => (
+            {data.length > 0 ? (
+                data.map((item) => (
                     <tr key={item.id} className="bg-white hover:bg-gray-50 transition-colors cursor-pointer group">
                         <td className="p-4 font-bold text-gray-900">{item.noKontrak}</td>
                         <td className="p-4">
@@ -129,15 +127,6 @@ export const VehicleContractTable: React.FC<Props> = ({ data, onEdit, onView, on
           </tbody>
         </table>
       </div>
-
-      <Pagination
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-        totalItems={pagination.totalItems}
-        itemsPerPage={pagination.itemsPerPage}
-        onPageChange={pagination.onPageChange}
-        onItemsPerPageChange={pagination.onItemsPerPageChange}
-      />
     </div>
   );
 };

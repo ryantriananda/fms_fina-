@@ -1,9 +1,8 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RouterProvider } from 'react-router-dom';
-import { router } from './router';
+import App from './App';
 import { LanguageProvider } from './contexts/LanguageContext';
-import { AppProvider } from './contexts/AppContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -14,9 +13,7 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <LanguageProvider>
-      <AppProvider>
-        <RouterProvider router={router} />
-      </AppProvider>
+      <App />
     </LanguageProvider>
   </React.StrictMode>
 );

@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { TimesheetRecord } from '../types';
-import { Pencil, Trash2, MapPin, CheckSquare, Eye } from 'lucide-react';
-import { Pagination, usePagination } from './Pagination';
+import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Pencil, Smartphone, Trash2, MapPin, CheckSquare, Clock, Eye } from 'lucide-react';
 
 interface Props {
   data: TimesheetRecord[];
@@ -12,8 +11,6 @@ interface Props {
 }
 
 export const TimesheetTable: React.FC<Props> = ({ data, onEdit, onDelete, onView }) => {
-  const pagination = usePagination(data, 10);
-
   const getStatusStyle = (status: string) => {
       switch(status) {
           case 'Tepat Waktu': return 'bg-green-50 text-green-700 border-green-200';
@@ -49,13 +46,13 @@ export const TimesheetTable: React.FC<Props> = ({ data, onEdit, onDelete, onView
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50 text-[12px] text-gray-700">
-            {pagination.paginatedData.map((item, index) => (
+            {data.map((item, index) => (
               <tr 
                 key={item.id} 
                 className="bg-white hover:bg-[#FDFDFD] transition-all cursor-pointer group"
                 onClick={() => onView?.(item)}
               >
-                <td className="p-6 text-center font-bold text-gray-300 pl-8">{(pagination.currentPage - 1) * pagination.itemsPerPage + index + 1}</td>
+                <td className="p-6 text-center font-bold text-gray-300 pl-8">{index + 1}</td>
                 
                 {/* Employee Cell */}
                 <td className="p-6 border-r border-gray-50">
@@ -154,14 +151,30 @@ export const TimesheetTable: React.FC<Props> = ({ data, onEdit, onDelete, onView
         </table>
       </div>
       
-      <Pagination
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-        totalItems={pagination.totalItems}
-        itemsPerPage={pagination.itemsPerPage}
-        onPageChange={pagination.onPageChange}
-        onItemsPerPageChange={pagination.onItemsPerPageChange}
-      />
+      {/* Pagination Footer */}
+      <div className="px-10 py-8 bg-[#FAFAFA] border-t border-gray-100 flex items-center justify-between">
+            <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                Showing <span className="text-black ml-1">{data.length} records</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+                 <button className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 hover:border-black text-gray-300 hover:text-black transition-all bg-white shadow-sm active:scale-95">
+                    <ChevronsLeft size={16} />
+                 </button>
+                 <button className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 hover:border-black text-gray-300 hover:text-black transition-all bg-white shadow-sm active:scale-95">
+                    <ChevronLeft size={16} />
+                 </button>
+                 
+                 <div className="bg-black text-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-[11px] shadow-xl shadow-black/20">1</div>
+                 
+                 <button className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 hover:border-black text-gray-300 hover:text-black transition-all bg-white shadow-sm active:scale-95">
+                    <ChevronRight size={16} />
+                 </button>
+                 <button className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 hover:border-black text-gray-300 hover:text-black transition-all bg-white shadow-sm active:scale-95">
+                    <ChevronsRight size={16} />
+                 </button>
+            </div>
+      </div>
     </div>
   );
 };

@@ -591,3 +591,67 @@ export interface PurchaseRecord {
   status: string;
   attachmentUrl?: string;
 }
+
+// --- NEW MODULE TYPES ---
+
+export interface ModenaPodRecord {
+  id: number;
+  lantai: string;
+  jenisKamar: string;
+  nomorKamar: string;
+  namaPenghuni: string;
+  statusLokerBarang: string;
+  statusLokerPantry: string;
+  jadwalLaundry: string;
+  keterangan: string;
+}
+
+export interface LockerRecord {
+  id: number;
+  lockerNumber: string;
+  floor: string;
+  area: string;
+  status: 'Terisi' | 'Kosong' | 'Kunci Hilang';
+  assignedTo?: string; // Occupant Name
+  department?: string; // Occupant Dept
+  spareKeyStatus: 'Ada' | 'Tidak Ada';
+  lastAuditDate: string;
+  remarks?: string;
+}
+
+export interface LockerRequestRecord {
+  id: string;
+  requesterName: string;
+  department: string;
+  requestDate: string;
+  reason: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  preferredLocation?: string; // e.g. "Lantai 1", "No Preference"
+  requesterRole?: string;
+}
+
+export interface PodRequestRecord {
+  id: string;
+  requesterName: string;
+  requesterRole?: string;
+  department: string;
+  requestDate: string; // Replaces checkIn/Out for this UI
+  floorPreference?: string;
+  roomType: string;
+  reason?: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  checkInDate?: string; // kept for compatibility if needed
+  checkOutDate?: string; // kept for compatibility if needed
+}
+
+export interface StockOpnameRecord {
+  id: string;
+  date: string;
+  location: string;
+  itemCategory: string; // ATK, ARK, Asset
+  totalItems: number;
+  matchedItems: number;
+  discrepancyItems: number;
+  status: 'Draft' | 'Completed' | 'Review';
+  auditor: string;
+}

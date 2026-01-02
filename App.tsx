@@ -33,6 +33,13 @@ import { MasterApprovalTable } from './components/MasterApprovalTable';
 import { TimesheetTable } from './components/TimesheetTable'; 
 import { InsuranceTable } from './components/InsuranceTable'; 
 
+// New Tables for Facility Services
+import { LockerTable } from './components/LockerTable';
+import { ModenaPodTable } from './components/ModenaPodTable';
+import { StockOpnameTable } from './components/StockOpnameTable';
+import { LockerRequestTable } from './components/LockerRequestTable';
+import { PodRequestTable } from './components/PodRequestTable';
+
 import { VehicleModal } from './components/VehicleModal';
 import { BuildingModal } from './components/BuildingModal';
 import { BuildingAssetItemModal } from './components/BuildingAssetItemModal';
@@ -55,8 +62,12 @@ import { TimesheetModal } from './components/TimesheetModal';
 import { WorkflowActionModal } from './components/WorkflowActionModal';
 import { ComplianceModal } from './components/ComplianceModal';
 import { InsuranceModal } from './components/InsuranceModal';
+import { LockerModal } from './components/LockerModal';
+import { LockerRequestModal } from './components/LockerRequestModal';
+import { PodCensusModal } from './components/PodCensusModal';
+import { PodRequestModal } from './components/PodRequestModal';
 
-import { Zap, Droplets, TrendingUp, Sun, LayoutDashboard } from 'lucide-react';
+import { Zap, Droplets, TrendingUp, Sun, LayoutDashboard, Home, Box } from 'lucide-react';
 import { 
   MOCK_VEHICLE_DATA, 
   MOCK_TAX_KIR_DATA, 
@@ -104,7 +115,12 @@ import {
   MOCK_SALES_DATA,
   MOCK_INSURANCE_DATA,
   MOCK_MAINTENANCE_SCHEDULE_DATA,
-  MOCK_VEHICLE_REMINDER_DATA
+  MOCK_VEHICLE_REMINDER_DATA,
+  MOCK_LOCKER_DATA,
+  MOCK_STOCK_OPNAME_DATA,
+  MOCK_LOCKER_REQUEST_DATA,
+  MOCK_POD_REQUEST_DATA,
+  MOCK_POD_DATA
 } from './constants';
 import { 
   VehicleRecord, 
@@ -132,7 +148,12 @@ import {
   TimesheetRecord,
   InsuranceRecord,
   MaintenanceScheduleRecord,
-  VehicleReminderRecord
+  VehicleReminderRecord,
+  LockerRecord,
+  ModenaPodRecord,
+  StockOpnameRecord,
+  LockerRequestRecord,
+  PodRequestRecord
 } from './types';
 import { useLanguage } from './contexts/LanguageContext';
 
@@ -140,7 +161,15 @@ import { useLanguage } from './contexts/LanguageContext';
 const getInitialData = <T,>(key: string, fallback: T): T => {
   try {
     const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : fallback;
+    // If stored data is empty array but fallback has data, use fallback (Reset mechanism)
+    if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length === 0 && Array.isArray(fallback) && fallback.length > 0) {
+            return fallback;
+        }
+        return parsed;
+    }
+    return fallback;
   } catch (e) {
     console.warn(`Error reading ${key} from localStorage`, e);
     return fallback;
@@ -261,6 +290,13 @@ const App: React.FC = () => {
   const [complianceData, setComplianceData] = useState<ReminderRecord[]>(() => getInitialData('complianceData', MOCK_REMINDER_DATA));
   const [maintenanceScheduleData, setMaintenanceScheduleData] = useState<MaintenanceScheduleRecord[]>(() => getInitialData('maintenanceScheduleData', MOCK_MAINTENANCE_SCHEDULE_DATA));
   const [vehicleReminderData, setVehicleReminderData] = useState<VehicleReminderRecord[]>(() => getInitialData('vehicleReminderData', MOCK_VEHICLE_REMINDER_DATA));
+
+  // NEW MODULES STATES
+  const [lockerData, setLockerData] = useState<LockerRecord[]>(() => getInitialData('lockerData', MOCK_LOCKER_DATA));
+  const [podData, setPodData] = useState<ModenaPodRecord[]>(() => getInitialData('podData', MOCK_POD_DATA));
+  const [stockOpnameData, setStockOpnameData] = useState<StockOpnameRecord[]>(() => getInitialData('stockOpnameData', MOCK_STOCK_OPNAME_DATA));
+  const [lockerRequestData, setLockerRequestData] = useState<LockerRequestRecord[]>(() => getInitialData('lockerRequestData', MOCK_LOCKER_REQUEST_DATA));
+  const [podRequestData, setPodRequestData] = useState<PodRequestRecord[]>(() => getInitialData('podRequestData', MOCK_POD_REQUEST_DATA));
 
   // INSURANCE STATES
   const [vehicleInsuranceData, setVehicleInsuranceData] = useState<InsuranceRecord[]>(() => {
@@ -383,6 +419,9 @@ const App: React.FC = () => {
   useEffect(() => { localStorage.setItem('vehicleData', JSON.stringify(vehicleData)); }, [vehicleData]);
   useEffect(() => { localStorage.setItem('buildingData', JSON.stringify(buildingData)); }, [buildingData]);
   useEffect(() => { localStorage.setItem('insuranceData', JSON.stringify([...vehicleInsuranceData, ...buildingInsuranceData])); }, [vehicleInsuranceData, buildingInsuranceData]);
+  useEffect(() => { localStorage.setItem('podData', JSON.stringify(podData)); }, [podData]);
+  useEffect(() => { localStorage.setItem('lockerData', JSON.stringify(lockerData)); }, [lockerData]);
+  useEffect(() => { localStorage.setItem('stockOpnameData', JSON.stringify(stockOpnameData)); }, [stockOpnameData]);
   
   // Handler Helpers
   const openModal = (type: string, mode: 'create' | 'edit' | 'view' = 'create', item: any = null) => {
@@ -421,7 +460,43 @@ const App: React.FC = () => {
         if (modalMode === 'create') setComplianceData([...complianceData, { ...data, id: `DOC-${Date.now()}` }]);
         else setComplianceData(complianceData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
         break;
-      // ... Add other cases as needed ...
+      case 'VENDOR':
+        if (modalMode === 'create') setVendorData([...vendorData, { ...data, id: `V-${Date.now()}` }]);
+        else setVendorData(vendorData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
+        break;
+      case 'MST_VENDOR':
+        if (modalMode === 'create') setMasterVendorData([...masterVendorData, { ...data, id: `MV-${Date.now()}` }]);
+        else setMasterVendorData(masterVendorData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
+        break;
+      // ... New Modules Saving Logic ...
+      case 'POD':
+        if (modalMode === 'create') setPodData([...podData, { ...data, id: Date.now() }]);
+        else setPodData(podData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
+        break;
+      case 'LOCKER':
+        if (modalMode === 'create') setLockerData([...lockerData, { ...data, id: Date.now() }]);
+        else setLockerData(lockerData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
+        break;
+      case 'STOCK_OPNAME':
+        if (modalMode === 'create') setStockOpnameData([...stockOpnameData, { ...data, id: `SO-${Date.now()}` }]);
+        else setStockOpnameData(stockOpnameData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
+        break;
+      case 'POD_REQUEST':
+        if (modalMode === 'create') {
+            setPodRequestData([...podRequestData, { ...data, id: `REQ-POD-${Date.now()}` }]);
+        } else {
+            setPodRequestData(podRequestData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
+        }
+        break;
+      case 'LOCKER_REQUEST':
+        // If mode is create, append to data with new ID
+        if (modalMode === 'create') {
+            setLockerRequestData([...lockerRequestData, { ...data, id: `REQ-LCK-${Date.now()}` }]);
+        } else {
+            setLockerRequestData(lockerRequestData.map(d => d.id === selectedItem.id ? { ...d, ...data } : d));
+        }
+        break;
+      
       case 'GEN_MASTER':
         // Generic Master Handling
         const newItem = { id: modalMode === 'create' ? Date.now() : selectedItem.id, name: data };
@@ -477,6 +552,34 @@ const App: React.FC = () => {
         />
     </>
   );
+
+  // New filters for Pod
+  const [podFilters, setPodFilters] = useState({ lantai: '', jenisKamar: '' });
+  const filteredPodData = useMemo(() => {
+      return podData.filter(p => {
+          const matchesTab = activeTab === 'SEMUA' || activeTab === '' || p.lantai === activeTab;
+          const matchesLantai = !podFilters.lantai || p.lantai === podFilters.lantai;
+          const matchesJenisKamar = !podFilters.jenisKamar || p.jenisKamar === podFilters.jenisKamar;
+          return matchesTab && matchesLantai && matchesJenisKamar;
+      });
+  }, [podData, activeTab, podFilters]);
+
+  // Statistics for Pods
+  const podStats = useMemo(() => {
+    return podData.reduce((acc, curr) => ({
+        pria: acc.pria + (curr.lantai.includes('Pria') ? 1 : 0),
+        perempuan: acc.perempuan + (curr.lantai.includes('Perempuan') ? 1 : 0),
+        total: acc.total + 1
+    }), { pria: 0, perempuan: 0, total: 0 });
+  }, [podData]);
+
+  // Filtered Locker Data
+  const filteredLockerData = useMemo(() => {
+    if (activeTab === 'Terisi') return lockerData.filter(l => l.status === 'Terisi');
+    if (activeTab === 'Kosong') return lockerData.filter(l => l.status === 'Kosong');
+    if (activeTab === 'Kunci Hilang') return lockerData.filter(l => l.status === 'Kunci Hilang');
+    return lockerData;
+  }, [lockerData, activeTab]);
 
   const renderModuleContent = () => {
     switch (activeModule) {
@@ -612,6 +715,69 @@ const App: React.FC = () => {
             <>
                 <FilterBar tabs={['SEMUA', 'OPEN BID', 'SOLD']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('GA_SALES', 'create')} customAddLabel="Disposal Request" />
                 <SalesTable data={gaSalesData} onEdit={(item) => openModal('GA_SALES', 'edit', item)} onView={(item) => openModal('GA_SALES', 'view', item)} onDelete={() => {}} />
+            </>
+        );
+
+        // --- NEW FACILITY MODULES ---
+        case 'Pod Census': return (
+            <>
+                <div className="flex items-center gap-6 bg-white border border-gray-100 rounded-2xl px-6 py-3 shadow-sm mb-6">
+                    <div className="flex items-center gap-2">
+                        <Home size={14} className="text-gray-400" />
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Census Status</span>
+                    </div>
+                    <div className="h-6 w-[1px] bg-gray-100"></div>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                            <span className="text-[10px] font-black text-gray-400 uppercase">Pria</span>
+                            <span className="text-[12px] font-black">{podStats.pria}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-pink-500"></div>
+                            <span className="text-[10px] font-black text-gray-400 uppercase">Perempuan</span>
+                            <span className="text-[12px] font-black">{podStats.perempuan}</span>
+                        </div>
+                    </div>
+                    <div className="h-6 w-[1px] bg-gray-100"></div>
+                    <div className="bg-black text-white px-3 py-1 rounded-lg text-[10px] font-black">
+                        {podStats.total} TOTAL UNIT
+                    </div>
+                </div>
+                <FilterBar 
+                    tabs={['SEMUA', 'Lt 2 Pria', 'Lt 2 Perempuan', 'Lt 3 Pria', 'Lt 3 Perempuan']} 
+                    activeTab={activeTab} 
+                    onTabChange={setActiveTab} 
+                    onAddClick={() => openModal('POD', 'create')} 
+                    customAddLabel="Add Unit"
+                    podFilters={podFilters}
+                    onPodFilterChange={(field, value) => setPodFilters(prev => ({ ...prev, [field]: value }))}
+                />
+                <ModenaPodTable data={filteredPodData} onView={(item) => openModal('POD', 'view', item)} onEdit={(item) => openModal('POD', 'edit', item)} />
+            </>
+        );
+        case 'Request MODENA Pod': return (
+            <>
+                <FilterBar tabs={['SEMUA', 'Pending', 'Approved', 'Rejected']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('POD_REQUEST', 'create')} customAddLabel="New Request" />
+                <PodRequestTable data={podRequestData} onView={(item) => openModal('POD_REQUEST', 'view', item)} />
+            </>
+        );
+        case 'Daftar Loker': return (
+            <>
+                <FilterBar tabs={['SEMUA', 'Terisi', 'Kosong', 'Kunci Hilang']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('LOCKER', 'create')} customAddLabel="Add Locker" />
+                <LockerTable data={filteredLockerData} onView={(item) => openModal('LOCKER', 'view', item)} onEdit={(item) => openModal('LOCKER', 'edit', item)} />
+            </>
+        );
+        case 'Request Locker': return (
+            <>
+                <FilterBar tabs={['SEMUA', 'Pending', 'Approved', 'Rejected']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('LOCKER_REQUEST', 'create')} customAddLabel="New Request" />
+                <LockerRequestTable data={lockerRequestData} onView={(item) => openModal('LOCKER_REQUEST', 'view', item)} />
+            </>
+        );
+        case 'Stock Opname': return (
+            <>
+                <FilterBar tabs={['SEMUA', 'Matched', 'Discrepancy']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('STOCK_OPNAME', 'create')} customAddLabel="Start Count" />
+                <StockOpnameTable data={stockOpnameData} onView={(item) => openModal('STOCK_OPNAME', 'view', item)} onEdit={(item) => openModal('STOCK_OPNAME', 'edit', item)} />
             </>
         );
 
@@ -770,6 +936,13 @@ const App: React.FC = () => {
             {modalType === 'TIMESHEET' && <TimesheetModal isOpen={isModalOpen} onClose={closeModal} onSave={(d) => { setTimesheetData([...timesheetData, { ...d, id: Date.now().toString() } as any]); closeModal(); }} buildingList={buildingData} userList={userData} />}
             {modalType === 'LOGBOOK' && <AddStockModal isOpen={isModalOpen} onClose={closeModal} moduleName="Log Book" onSaveLogBook={(d) => { setLogBookData([...logBookData, { ...d, id: Date.now().toString() } as any]); closeModal(); }} />}
             
+            {/* New Facility Modals */}
+            {modalType === 'POD' && <PodCensusModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} />} 
+            {modalType === 'LOCKER' && <LockerModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} />}
+            {modalType === 'STOCK_OPNAME' && <AddStockModal isOpen={isModalOpen} onClose={closeModal} moduleName="STOCK_OPNAME" onSaveLogBook={(d) => handleSaveData(d)} />}
+            {modalType === 'LOCKER_REQUEST' && <LockerRequestModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} currentUser={userData[0]} />}
+            {modalType === 'POD_REQUEST' && <PodRequestModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} currentUser={userData[0]} />}
+
             {modalType === 'VENDOR' && <VendorModal isOpen={isModalOpen} onClose={closeModal} onSave={(d) => { setVendorData([...vendorData, { ...d, id: Date.now().toString() } as any]); closeModal(); }} />}
             {modalType === 'USER' && <UserModal isOpen={isModalOpen} onClose={closeModal} onSave={(d) => { setUserData([...userData, { ...d, id: Date.now().toString() } as any]); closeModal(); }} departmentList={masterDepartment} locationList={masterLocation} roleList={masterRole} />}
             {modalType === 'MST_APPROVAL' && <MasterApprovalModal isOpen={isModalOpen} onClose={closeModal} onSave={(d) => { setMasterApprovalData([...masterApprovalData, { ...d, id: Date.now().toString() } as any]); closeModal(); }} branchList={masterLocation} roleList={masterRole} userList={userData} />}

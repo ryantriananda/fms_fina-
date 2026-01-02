@@ -1,311 +1,106 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search } from 'lucide-react';
 
-const API_URL = 'http://localhost:8080/api';
-
-interface GeneralMaster {
-  id: number;
-  category: string;
-  name: string;
-  code: string;
-  value?: string;
-  description?: string;
-  sortOrder: number;
-  isActive: boolean;
-  isDefault: boolean;
-}
+import React from 'react';
+import { GeneralMasterItem } from '../types';
+import { Pencil, Trash2, ChevronLeft, ChevronRight, MoreHorizontal, Car, Truck, Bike, Bus, Layers } from 'lucide-react';
 
 interface Props {
-  category: string;
-  title: string;
-  description?: string;
-  showValue?: boolean;
-  valueLabel?: string;
+  data: GeneralMasterItem[];
+  onEdit: (item: GeneralMasterItem) => void;
+  onDelete: (id: number) => void;
+  title?: string;
 }
 
-export const GeneralMasterTable: React.FC<Props> = ({ 
-  category, 
-  title, 
-  description,
-  showValue = false,
-  valueLabel = 'Nilai'
-}) => {
-  const [data, setData] = useState<GeneralMaster[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<GeneralMaster | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({
-    name: '',
-    code: '',
-    value: '',
-    description: '',
-    sortOrder: 0,
-    isActive: true,
-    isDefault: false,
-  });
+export const GeneralMasterTable: React.FC<Props> = ({ data, onEdit, onDelete, title }) => {
+  const isVehicleType = title?.toLowerCase().includes('kendaraan');
 
-  useEffect(() => {
-    fetchData();
-  }, [category]);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/general-masters/category/${category}`);
-      if (response.ok) {
-        const result = await response.json();
-        setData(result || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-    } finally {
-      setLoading(false);
-    }
+  const getIcon = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes('motor') || n.includes('bike') || n.includes('roda dua')) return <Bike size={18} />;
+    if (n.includes('truck') || n.includes('truk') || n.includes('box')) return <Truck size={18} />;
+    if (n.includes('bus')) return <Bus size={18} />;
+    return <Car size={18} />;
   };
-
-  const handleSave = async () => {
-    try {
-      const payload = {
-        ...form,
-        category: category,
-      };
-
-      const url = editingItem 
-        ? `${API_URL}/general-masters/${editingItem.id}`
-        : `${API_URL}/general-masters`;
-      
-      const method = editingItem ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        fetchData();
-        handleCloseModal();
-      }
-    } catch (error) {
-      console.error('Failed to save:', error);
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm('Yakin ingin menghapus data ini?')) return;
-    
-    try {
-      const response = await fetch(`${API_URL}/general-masters/${id}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        fetchData();
-      }
-    } catch (error) {
-      console.error('Failed to delete:', error);
-    }
-  };
-
-  const handleEdit = (item: GeneralMaster) => {
-    setEditingItem(item);
-    setForm({
-      name: item.name,
-      code: item.code,
-      value: item.value || '',
-      description: item.description || '',
-      sortOrder: item.sortOrder,
-      isActive: item.isActive,
-      isDefault: item.isDefault,
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingItem(null);
-    setForm({
-      name: '',
-      code: '',
-      value: '',
-      description: '',
-      sortOrder: 0,
-      isActive: true,
-      isDefault: false,
-    });
-  };
-
-  const filteredData = data.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.code.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
-        {description && <p className="text-sm text-gray-600">{description}</p>}
-      </div>
-
-      {/* Toolbar */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6 flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Cari..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <span className="text-sm text-gray-500">{filteredData.length} data</span>
-        </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={20} />
-          Tambah Data
-        </button>
-      </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
-              {showValue && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{valueLabel}</th>}
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+    <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden transition-all duration-500">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-separate border-spacing-0">
+          <thead>
+            <tr className="bg-[#F9FAFB] border-b border-gray-200">
+              <th className="p-6 w-24 text-center text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-100">#</th>
+              <th className="p-6 text-[10px] font-black text-black uppercase tracking-[0.15em] border-b border-gray-100">Item Description / Category Name</th>
+              <th className="p-6 w-40 text-center text-[10px] font-black text-black uppercase tracking-[0.15em] border-b border-gray-100">Action</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan={showValue ? 5 : 4} className="px-6 py-8 text-center text-gray-500">
-                  Loading...
-                </td>
-              </tr>
-            ) : filteredData.length === 0 ? (
-              <tr>
-                <td colSpan={showValue ? 5 : 4} className="px-6 py-8 text-center text-gray-500">
-                  Tidak ada data
-                </td>
-              </tr>
+          <tbody className="divide-y divide-gray-50 text-[12px] text-gray-700">
+            {data.length > 0 ? (
+                data.map((item, index) => (
+                    <tr key={item.id} className="bg-white hover:bg-[#FDFDFD] transition-all group">
+                        <td className="p-6 text-center font-bold text-gray-300 text-[11px]">{index + 1}</td>
+                        <td className="p-6">
+                            <div className="flex items-center gap-5">
+                                <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-black border border-gray-100 shadow-sm group-hover:bg-black group-hover:text-white transition-all duration-500 group-hover:rotate-6 group-hover:scale-110">
+                                    {isVehicleType ? getIcon(item.name) : <Layers size={18} />}
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="font-black text-black uppercase tracking-tight text-[14px]">
+                                        {item.name}
+                                    </span>
+                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Sistem ID: {item.id}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td className="p-6 text-center">
+                            <div className="flex items-center justify-center gap-3">
+                                <button 
+                                    onClick={() => onEdit(item)}
+                                    className="p-3 text-gray-400 hover:text-black bg-white hover:bg-gray-100 rounded-xl transition-all border border-transparent hover:border-gray-200 shadow-sm hover:shadow-md"
+                                    title="Edit Item"
+                                >
+                                    <Pencil size={16} />
+                                </button>
+                                <button 
+                                    onClick={() => onDelete(item.id)}
+                                    className="p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100 shadow-sm hover:shadow-md"
+                                    title="Hapus Item"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                ))
             ) : (
-              filteredData.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.code}</td>
-                  {showValue && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.value || '-'}</td>}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      item.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {item.isActive ? 'Aktif' : 'Nonaktif'}
-                    </span>
-                    {item.isDefault && (
-                      <span className="ml-2 px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                        Default
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onClick={() => handleEdit(item)} className="text-blue-600 hover:text-blue-900 mr-3">
-                      <Edit2 size={18} />
-                    </button>
-                    <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:text-red-900">
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
+                <tr>
+                    <td colSpan={3} className="p-32 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 border border-gray-100">
+                                <MoreHorizontal size={32} className="text-gray-200" />
+                            </div>
+                            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-300">Belum ada data tersedia</p>
+                        </div>
+                    </td>
                 </tr>
-              ))
             )}
           </tbody>
         </table>
       </div>
-
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
-              {editingItem ? 'Edit Data' : 'Tambah Data Baru'}
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nama *</label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kode *</label>
-                <input
-                  type="text"
-                  value={form.code}
-                  onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              {showValue && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{valueLabel}</label>
-                  <input
-                    type="text"
-                    value={form.value}
-                    onChange={(e) => setForm({ ...form, value: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              )}
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={form.isActive}
-                    onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                    className="rounded"
-                  />
-                  <span className="text-sm text-gray-700">Aktif</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={form.isDefault}
-                    onChange={(e) => setForm({ ...form, isDefault: e.target.checked })}
-                    className="rounded"
-                  />
-                  <span className="text-sm text-gray-700">Default</span>
-                </label>
-              </div>
+       {/* Pagination Footer */}
+       <div className="px-10 py-8 border-t border-gray-100 bg-[#FAFAFA] flex items-center justify-between">
+            <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                Total <span className="text-black ml-1 font-black">{data.length} Master Items</span>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={handleCloseModal}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Simpan
-              </button>
+            
+            <div className="flex items-center gap-3">
+                 <button className="w-11 h-11 flex items-center justify-center rounded-xl border border-gray-200 hover:border-black text-gray-300 hover:text-black transition-all bg-white shadow-sm active:scale-95">
+                    <ChevronLeft size={18} />
+                 </button>
+                 <div className="bg-black text-white w-11 h-11 flex items-center justify-center rounded-xl font-black text-[12px] shadow-2xl shadow-black/20">1</div>
+                 <button className="w-11 h-11 flex items-center justify-center rounded-xl border border-gray-200 hover:border-black text-gray-300 hover:text-black transition-all bg-white shadow-sm active:scale-95">
+                    <ChevronRight size={18} />
+                 </button>
             </div>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 };
-
-export default GeneralMasterTable;

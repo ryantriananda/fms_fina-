@@ -63,7 +63,11 @@ export const ServiceLogTable: React.FC<Props> = ({ data, onEdit, onView, onDelet
           </thead>
           <tbody className="divide-y divide-gray-50 text-[12px]">
             {data.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50/30 transition-colors group">
+              <tr 
+                key={item.id} 
+                onClick={() => onView?.(item)}
+                className="hover:bg-gray-50/30 transition-colors group cursor-pointer"
+              >
                 <td className="p-5 pl-8">
                   <span className="font-bold text-black">{item.id}</span>
                 </td>

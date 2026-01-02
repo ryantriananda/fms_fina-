@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { VendorRecord } from '../types';
-import { ChevronsUpDown, Eye, Pencil, Trash2, Mail, Phone, MapPin, User, Tag } from 'lucide-react';
-import { Pagination, usePagination } from './Pagination';
+import { ChevronsUpDown, Eye, Pencil, Trash2, Mail, Phone, MapPin, User, Tag, Briefcase } from 'lucide-react';
 
 interface Props {
   data: VendorRecord[];
@@ -12,10 +11,8 @@ interface Props {
 }
 
 export const VendorTable: React.FC<Props> = ({ data, onEdit, onView, onDelete }) => {
-  const pagination = usePagination(data, 10);
-
   return (
-    <div className="bg-white rounded-[1.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden transition-all duration-500">
+    <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden transition-all duration-500">
       <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full min-w-[1400px] text-left border-collapse">
           <thead>
@@ -44,24 +41,29 @@ export const VendorTable: React.FC<Props> = ({ data, onEdit, onView, onDelete })
               <th className="p-6 w-32 text-center text-[10px] font-black text-black uppercase tracking-[0.15em]">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
-            {pagination.paginatedData.map((item, index) => (
+          <tbody className="divide-y divide-gray-50 text-[12px]">
+            {data.map((item, index) => (
               <tr 
                 key={item.id} 
                 className="bg-white hover:bg-[#FDFDFD] transition-all group cursor-pointer"
                 onClick={() => onView?.(item)}
               >
-                <td className="p-6 text-center font-bold text-gray-300 text-[11px] pl-8">{(pagination.currentPage - 1) * pagination.itemsPerPage + index + 1}</td>
+                <td className="p-6 text-center font-bold text-gray-300 pl-8">{index + 1}</td>
                 <td className="p-6">
-                    <div className="flex flex-col">
-                        <span className="font-black text-black text-[13px] uppercase tracking-tight">{item.vendorName}</span>
-                        <span className="text-[10px] font-mono font-bold text-blue-600 bg-blue-50 w-fit px-2 py-0.5 rounded mt-1">{item.vendorCode}</span>
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-black border border-gray-100 shadow-sm">
+                            <Briefcase size={18} />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-black text-black text-[13px] uppercase tracking-tight">{item.vendorName}</span>
+                            <span className="text-[10px] font-mono font-bold text-blue-600 bg-blue-50 w-fit px-2 py-0.5 rounded mt-1">{item.vendorCode}</span>
+                        </div>
                     </div>
                 </td>
                 <td className="p-6">
                     <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-black"></span>
+                            <span className={`w-1.5 h-1.5 rounded-full ${item.type === 'Goods' ? 'bg-orange-500' : 'bg-blue-500'}`}></span>
                             <span className="text-[11px] font-black text-gray-700 uppercase">{item.type}</span>
                         </div>
                         <div className="flex items-center gap-1 text-[10px] text-gray-400 font-bold uppercase tracking-wider ml-3">
@@ -97,28 +99,28 @@ export const VendorTable: React.FC<Props> = ({ data, onEdit, onView, onDelete })
                     </span>
                 </td>
                 <td className="p-6 text-center">
-                    <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-gray-600">
+                    <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
                         <User size={12} className="text-gray-400" />
                         {item.picName || '-'}
                     </div>
                 </td>
-                <td className="p-6 text-center">
+                <td className="p-6 text-center pr-8">
                     <div className="flex items-center justify-center gap-2">
                         <button 
                           onClick={(e) => { e.stopPropagation(); onView?.(item); }}
-                          className="p-2 text-gray-400 hover:text-black bg-white hover:bg-gray-100 rounded-xl transition-all border border-transparent hover:border-gray-200"
+                          className="p-2 text-gray-300 hover:text-black bg-white hover:bg-gray-50 rounded-xl transition-all border border-transparent hover:border-gray-200"
                         >
                             <Eye size={16} />
                         </button>
                         <button 
                           onClick={(e) => { e.stopPropagation(); onEdit?.(item); }}
-                          className="p-2 text-gray-400 hover:text-blue-600 bg-white hover:bg-blue-50 rounded-xl transition-all border border-transparent hover:border-blue-100"
+                          className="p-2 text-gray-300 hover:text-blue-600 bg-white hover:bg-blue-50 rounded-xl transition-all border border-transparent hover:border-blue-100"
                         >
                             <Pencil size={16} />
                         </button>
                          <button 
                           onClick={(e) => { e.stopPropagation(); onDelete?.(item.id); }}
-                          className="p-2 text-gray-400 hover:text-red-600 bg-white hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100"
+                          className="p-2 text-gray-300 hover:text-red-600 bg-white hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100"
                         >
                             <Trash2 size={16} />
                         </button>
@@ -126,18 +128,19 @@ export const VendorTable: React.FC<Props> = ({ data, onEdit, onView, onDelete })
                 </td>
               </tr>
             ))}
+            {data.length === 0 && (
+                <tr>
+                    <td colSpan={7} className="p-24 text-center">
+                        <div className="flex flex-col items-center justify-center opacity-30">
+                            <Briefcase size={48} className="text-gray-400 mb-4" />
+                            <p className="text-[11px] font-black uppercase tracking-[0.3em]">No Vendors Found</p>
+                        </div>
+                    </td>
+                </tr>
+            )}
           </tbody>
         </table>
       </div>
-
-      <Pagination
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-        totalItems={pagination.totalItems}
-        itemsPerPage={pagination.itemsPerPage}
-        onPageChange={pagination.onPageChange}
-        onItemsPerPageChange={pagination.onItemsPerPageChange}
-      />
     </div>
   );
 };

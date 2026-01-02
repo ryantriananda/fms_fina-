@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Save, Wrench, Calendar, DollarSign, FileText, Building, User, UploadCloud, Trash2, Clock, CheckCircle2, AlertCircle, PlayCircle, Star, Image as ImageIcon } from 'lucide-react';
 import { BuildingMaintenanceRecord, BuildingAssetRecord } from '../types';
-import { SearchableSelect, SelectOption } from './SearchableSelect';
 
 interface Props {
   isOpen: boolean;
@@ -201,35 +200,19 @@ export const BuildingMaintenanceModal: React.FC<Props> = ({
                         
                         <div>
                             <Label required>Pilih Aset Gedung</Label>
-                            <SearchableSelect
-                                options={assetList.map(asset => ({
-                                    value: asset.id,
-                                    label: `${asset.assetName} (${asset.assetCode})`,
-                                    subLabel: `${asset.buildingName} - ${asset.floor} (${asset.roomName})`
-                                }))}
-                                value={form.assetId || ''}
-                                onChange={(val) => {
-                                    const asset = assetList.find(a => a.id === val);
-                                    if (asset) {
-                                        setForm({
-                                            ...form,
-                                            assetId: asset.id,
-                                            assetName: asset.assetName,
-                                            buildingLocation: `${asset.buildingName} - ${asset.floor} (${asset.roomName})`
-                                        });
-                                    } else {
-                                        setForm({
-                                            ...form,
-                                            assetId: '',
-                                            assetName: '',
-                                            buildingLocation: ''
-                                        });
-                                    }
-                                }}
-                                placeholder="-- Pilih Aset --"
+                            <select 
                                 disabled={isView || mode === 'edit'}
-                                emptyMessage="Tidak ada data aset"
-                            />
+                                className="w-full bg-white border border-gray-200 rounded-2xl px-5 py-4 text-[13px] font-black text-black focus:border-black outline-none disabled:bg-gray-50 shadow-sm cursor-pointer appearance-none"
+                                value={form.assetId || ''}
+                                onChange={handleAssetChange}
+                            >
+                                <option value="">-- Pilih Aset --</option>
+                                {assetList.map(asset => (
+                                    <option key={asset.id} value={asset.id}>
+                                        {asset.assetName} ({asset.assetCode})
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <InputField 

@@ -7,7 +7,7 @@ interface Props {
   tabs: string[];
   activeTab: string;
   onTabChange: (tab: string) => void;
-  onAddClick?: () => void;
+  onAddClick: () => void;
   onExportClick?: () => void;
   onSyncClick?: () => void;
   searchPlaceholder?: string;

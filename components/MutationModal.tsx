@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, MapPin, Building, Info, AlertTriangle, User, Package, Car, Tag, Filter, DollarSign, UploadCloud, Trash2, Image as ImageIcon, FileText, CheckSquare } from 'lucide-react';
 import { MutationRecord, VehicleRecord, GeneralAssetRecord, BuildingAssetRecord } from '../types';
-import { SearchableSelect, SelectOption } from './SearchableSelect';
 
 interface Props {
   isOpen: boolean;
@@ -325,70 +324,40 @@ export const MutationModal: React.FC<Props> = ({
                             </div>
 
                             {assetType === 'VEHICLE' ? (
-                                <SearchableSelect
-                                    options={vehicleList.map(v => ({
-                                        value: v.noPolisi,
-                                        label: `${v.noPolisi} - ${v.nama}`,
-                                        subLabel: `${v.merek} ${v.model} • ${v.cabang}`
-                                    }))}
-                                    value={form.noPolisi || ''}
-                                    onChange={(val) => {
-                                        const vehicle = vehicleList.find(v => v.noPolisi === val);
-                                        if (vehicle) {
-                                            setForm(prev => ({
-                                                ...prev,
-                                                noPolisi: vehicle.noPolisi,
-                                                cabangAset: vehicle.cabang,
-                                                lokasiAsal: vehicle.cabang,
-                                                picBefore: vehicle.pengguna || ''
-                                            }));
-                                        } else {
-                                            setForm(prev => ({ ...prev, noPolisi: val, cabangAset: '', lokasiAsal: '', picBefore: '' }));
-                                        }
-                                    }}
-                                    placeholder="-- Pilih Kendaraan --"
+                                <select 
                                     disabled={isView || mode === 'edit'}
-                                    icon={Car}
-                                    emptyMessage="Tidak ada data kendaraan"
-                                />
+                                    className="w-full bg-[#F8F9FA] border-none rounded-2xl px-5 py-4 text-[12px] font-black text-black outline-none shadow-sm focus:ring-2 focus:ring-black/5 disabled:text-gray-400 appearance-none cursor-pointer"
+                                    value={form.noPolisi || ''}
+                                    onChange={handleVehicleChange}
+                                >
+                                    <option value="">-- Pilih Kendaraan --</option>
+                                    {vehicleList.map(v => (
+                                        <option key={v.id} value={v.noPolisi}>{v.noPolisi} - {v.nama} ({v.cabang})</option>
+                                    ))}
+                                </select>
                             ) : (
-                                <SearchableSelect
-                                    options={filteredGeneralAssets.map(a => {
+                                <select 
+                                    disabled={isView || mode === 'edit'}
+                                    className="w-full bg-[#F8F9FA] border-none rounded-2xl px-5 py-4 text-[12px] font-black text-black outline-none shadow-sm focus:ring-2 focus:ring-black/5 disabled:text-gray-400 appearance-none cursor-pointer"
+                                    value={form.assetNumber || ''}
+                                    onChange={handleGeneralAssetChange}
+                                >
+                                    <option value="">-- Pilih Aset {categoryFilter !== 'ALL' ? `(${categoryFilter})` : ''} --</option>
+                                    {filteredGeneralAssets.map(a => {
+                                        // Handle different field names
                                         const code = a.assetNumber || a.assetCode;
                                         const name = a.assetName || a.type;
                                         const loc = a.assetLocation || a.buildingName;
-                                        const val = a.id || code;
-                                        return {
-                                            value: val,
-                                            label: `${code} - ${name}`,
-                                            subLabel: `${loc} ${categoryFilter === 'ALL' && a.sourceCategory ? `[${a.sourceCategory}]` : ''}`
-                                        };
+                                        // Use ID if available for uniqueness, otherwise code
+                                        const val = a.id || code; 
+                                        
+                                        return (
+                                            <option key={a.id} value={val}>
+                                                {code} - {name} ({loc}) {categoryFilter === 'ALL' && a.sourceCategory ? `[${a.sourceCategory}]` : ''}
+                                            </option>
+                                        );
                                     })}
-                                    value={form.assetNumber || ''}
-                                    onChange={(val) => {
-                                        const asset = generalAssetList.find(a => a.id === val || a.assetNumber === val || a.assetCode === val);
-                                        if (asset) {
-                                            const assetNumber = asset.assetNumber || asset.assetCode;
-                                            const assetName = asset.assetName || asset.type;
-                                            const location = asset.assetLocation || asset.buildingName;
-                                            const pic = asset.pic || '';
-                                            setForm(prev => ({
-                                                ...prev,
-                                                assetNumber: assetNumber,
-                                                assetName: assetName,
-                                                cabangAset: location,
-                                                lokasiAsal: asset.floor ? `${location} - ${asset.floor} (${asset.roomName})` : location,
-                                                picBefore: pic
-                                            }));
-                                        } else {
-                                            setForm(prev => ({ ...prev, assetNumber: val, assetName: '', cabangAset: '', lokasiAsal: '', picBefore: '' }));
-                                        }
-                                    }}
-                                    placeholder={`-- Pilih Aset ${categoryFilter !== 'ALL' ? `(${categoryFilter})` : ''} --`}
-                                    disabled={isView || mode === 'edit'}
-                                    icon={Package}
-                                    emptyMessage="Tidak ada data aset"
-                                />
+                                </select>
                             )}
                         </div>
 
