@@ -1,5 +1,5 @@
 
-import { AssetRecord, MasterItem, VehicleRecord, TaxKirRecord, MasterVendorRecord, DeliveryLocationRecord, LogBookRecord, BuildingRecord, ReminderRecord, VehicleContractRecord, GeneralMasterItem, UserRecord, BuildingAssetRecord, BuildingMaintenanceRecord, UtilityRecord, GeneralAssetRecord, VendorRecord, TimesheetRecord, ServiceRecord, MutationRecord, SalesRecord, InsuranceRecord, MaintenanceScheduleRecord, VehicleReminderRecord, LockerRecord, ModenaPodRecord, StockOpnameRecord, LockerRequestRecord, PodRequestRecord } from './types';
+import { AssetRecord, MasterItem, VehicleRecord, TaxKirRecord, MasterVendorRecord, DeliveryLocationRecord, LogBookRecord, BuildingRecord, ReminderRecord, VehicleContractRecord, GeneralMasterItem, UserRecord, BuildingAssetRecord, BuildingMaintenanceRecord, UtilityRecord, GeneralAssetRecord, VendorRecord, TimesheetRecord, ServiceRecord, MutationRecord, SalesRecord, InsuranceRecord, MaintenanceScheduleRecord, VehicleReminderRecord, LockerRecord, ModenaPodRecord, StockOpnameRecord, LockerRequestRecord, PodRequestRecord, MasterPodRecord, MasterLockerRecord } from './types';
 
 // ... (previous mocks unchanged until Locker Data)
 
@@ -237,4 +237,20 @@ export const MOCK_POD_REQUEST_DATA: PodRequestRecord[] = [
 
 export const MOCK_STOCK_OPNAME_DATA: StockOpnameRecord[] = [
     { id: 'SO-2024-03', date: '2024-03-31', location: 'Gudang ATK Lt. 2', itemCategory: 'ATK', totalItems: 150, matchedItems: 148, discrepancyItems: 2, status: 'Review', auditor: 'Tim GA' },
+];
+
+export const MOCK_MASTER_POD_DATA: MasterPodRecord[] = [
+    { id: 1, lantai: 'Lt 2 Pria', jenisKamar: 'Single Bed', nomorKamar: '201', status: 'Occupied', occupiedBy: 'Agus Setiawan' },
+    { id: 2, lantai: 'Lt 2 Pria', jenisKamar: 'Double Bed', nomorKamar: '202', status: 'Available' },
+    { id: 3, lantai: 'Lt 3 Perempuan', jenisKamar: 'Single Bed', nomorKamar: '301', status: 'Occupied', occupiedBy: 'Rina Wati' },
+];
+
+export const MOCK_MASTER_LOCKER_GOODS_DATA: MasterLockerRecord[] = [
+    { id: 1, lockerNumber: 'G-001', floor: 'Lantai 1', type: 'Goods', status: 'Active', remarks: 'Near Entrance' },
+    { id: 2, lockerNumber: 'G-002', floor: 'Lantai 1', type: 'Goods', status: 'Active', remarks: '' },
+];
+
+export const MOCK_MASTER_LOCKER_PANTRY_DATA: MasterLockerRecord[] = [
+    { id: 101, lockerNumber: 'P-001', floor: 'Lantai 2', type: 'Pantry', status: 'Active', remarks: 'Staff Only' },
+    { id: 102, lockerNumber: 'P-002', floor: 'Lantai 2', type: 'Pantry', status: 'Maintenance', remarks: 'Broken Hinge' },
 ];

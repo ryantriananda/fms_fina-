@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Save, List, Calendar, CheckCircle, FileText, User, Package, MapPin, History, Check, XCircle, Clock, Users, MessageSquare } from 'lucide-react';
-import { VehicleRecord, LogBookRecord, AssetRecord, StationeryRequestRecord, StationeryRequestItem } from '../types';
+import { VehicleRecord, LogBookRecord, AssetRecord, StationeryRequestRecord, StationeryRequestItem, MasterPodRecord, MasterLockerRecord } from '../types';
 import { MOCK_MASTER_DATA, MOCK_MASTER_ARK_DATA, MOCK_ATK_CATEGORY, MOCK_ARK_CATEGORY, MOCK_UOM_DATA } from '../constants';
 
 interface Props {
@@ -13,6 +13,9 @@ interface Props {
   initialAssetData?: AssetRecord;
   initialLogBookData?: LogBookRecord;
   mode?: 'create' | 'edit' | 'view';
+  // New props for Master Data support
+  onSavePod?: (data: Partial<MasterPodRecord>) => void;
+  onSaveMasterLocker?: (data: Partial<MasterLockerRecord>) => void;
 }
 
 export const AddStockModal: React.FC<Props> = ({ 
@@ -21,6 +24,8 @@ export const AddStockModal: React.FC<Props> = ({
     moduleName = 'ATK', 
     onSaveStationeryRequest,
     onSaveLogBook,
+    onSavePod,
+    onSaveMasterLocker,
     initialAssetData,
     initialLogBookData,
     mode = 'create'
@@ -47,6 +52,10 @@ export const AddStockModal: React.FC<Props> = ({
   const isArkModule = moduleName.includes('ARK') || moduleName.includes('Household');
   const isLogBook = moduleName === 'Log Book';
   const isViewMode = mode === 'view';
+
+  // Placeholder Master Form States
+  const [masterPodForm, setMasterPodForm] = useState<Partial<MasterPodRecord>>({});
+  const [masterLockerForm, setMasterLockerForm] = useState<Partial<MasterLockerRecord>>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -91,6 +100,10 @@ export const AddStockModal: React.FC<Props> = ({
   const handleSave = () => {
       if (isLogBook && onSaveLogBook) {
           onSaveLogBook(logBookForm);
+      } else if (onSavePod && moduleName.includes('Pod')) {
+          onSavePod(masterPodForm);
+      } else if (onSaveMasterLocker && moduleName.includes('Loker')) {
+          onSaveMasterLocker(masterLockerForm);
       } else if (onSaveStationeryRequest) {
           onSaveStationeryRequest({ ...stationeryRequestForm, items: requestItems });
       }
@@ -234,10 +247,53 @@ export const AddStockModal: React.FC<Props> = ({
       </div>
   );
 
+  // Simplified Master Data Forms
+  const renderMasterPodForm = () => (
+      <div className="bg-white p-8 rounded-2xl border border-gray-200">
+          <SectionHeader icon={Package} title="MASTER POD DETAILS" />
+          <div className="space-y-4">
+              <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Nomor Kamar</label>
+                  <input type="text" className="w-full border p-2 rounded" placeholder="201" onChange={(e) => setMasterPodForm({...masterPodForm, nomorKamar: e.target.value})} />
+              </div>
+              <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Lantai</label>
+                  <input type="text" className="w-full border p-2 rounded" placeholder="Lt 2 Pria" onChange={(e) => setMasterPodForm({...masterPodForm, lantai: e.target.value})} />
+              </div>
+              <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Jenis Kamar</label>
+                  <input type="text" className="w-full border p-2 rounded" placeholder="Single Bed" onChange={(e) => setMasterPodForm({...masterPodForm, jenisKamar: e.target.value})} />
+              </div>
+          </div>
+      </div>
+  );
+
+  const renderMasterLockerForm = () => (
+      <div className="bg-white p-8 rounded-2xl border border-gray-200">
+          <SectionHeader icon={Package} title="MASTER LOCKER DETAILS" />
+          <div className="space-y-4">
+              <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Locker Number</label>
+                  <input type="text" className="w-full border p-2 rounded" placeholder="L-001" onChange={(e) => setMasterLockerForm({...masterLockerForm, lockerNumber: e.target.value})} />
+              </div>
+              <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Floor</label>
+                  <input type="text" className="w-full border p-2 rounded" placeholder="Lantai 1" onChange={(e) => setMasterLockerForm({...masterLockerForm, floor: e.target.value})} />
+              </div>
+              <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Remarks</label>
+                  <input type="text" className="w-full border p-2 rounded" placeholder="Note" onChange={(e) => setMasterLockerForm({...masterLockerForm, remarks: e.target.value})} />
+              </div>
+          </div>
+      </div>
+  );
+
   if (!isOpen) return null;
 
   let modalTitle = '';
   if (isLogBook) modalTitle = isViewMode ? 'Detail Buku Tamu' : 'Input Tamu Baru';
+  else if (moduleName.includes('Pod')) modalTitle = 'Add Master Pod';
+  else if (moduleName.includes('Loker')) modalTitle = 'Add Master Locker';
   else if (isArkModule) modalTitle = isViewMode ? 'View Request Details' : 'Create Household Request';
   else modalTitle = isViewMode ? 'View Request Details' : 'Create Stationery Request';
 
@@ -258,7 +314,10 @@ export const AddStockModal: React.FC<Props> = ({
         
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-            {isLogBook ? renderLogBookForm() : (
+            {isLogBook ? renderLogBookForm() : 
+             moduleName.includes('Pod') ? renderMasterPodForm() :
+             moduleName.includes('Loker') ? renderMasterLockerForm() :
+            (
             <div className="space-y-6">
                  {/* ORDER SETUP Section */}
                  <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">

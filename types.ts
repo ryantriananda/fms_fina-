@@ -655,3 +655,21 @@ export interface StockOpnameRecord {
   status: 'Draft' | 'Completed' | 'Review';
   auditor: string;
 }
+
+export interface MasterPodRecord {
+  id: number;
+  lantai: string;
+  jenisKamar: string;
+  nomorKamar: string;
+  status: 'Available' | 'Occupied' | 'Maintenance';
+  occupiedBy?: string;
+}
+
+export interface MasterLockerRecord {
+  id: number;
+  lockerNumber: string;
+  floor: string;
+  type: 'Goods' | 'Pantry';
+  status: 'Active' | 'Inactive' | 'Maintenance';
+  remarks?: string;
+}

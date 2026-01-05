@@ -1,8 +1,4 @@
 
-// @google/genai Coding Guidelines: This file uses standard React components and hooks.
-// Type mismatches between BuildingRecord and BuildingAssetRecord are resolved using 'any' casts to satisfy TypeScript 
-// while keeping the existing UI logic.
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
@@ -19,7 +15,7 @@ import { BuildingMaintenanceTable } from './components/BuildingMaintenanceTable'
 import { UtilityTable } from './components/UtilityTable'; 
 import { ReminderTable } from './components/ReminderTable';
 import { MaintenanceReminderTable } from './components/MaintenanceReminderTable'; 
-import { VehicleReminderTable } from './components/VehicleReminderTable'; // Added
+import { VehicleReminderTable } from './components/VehicleReminderTable';
 import { GeneralMasterTable } from './components/GeneralMasterTable';
 import { StationeryRequestTable } from './components/StationeryRequestTable';
 import { MasterAtkTable } from './components/MasterAtkTable';
@@ -39,6 +35,8 @@ import { ModenaPodTable } from './components/ModenaPodTable';
 import { StockOpnameTable } from './components/StockOpnameTable';
 import { LockerRequestTable } from './components/LockerRequestTable';
 import { PodRequestTable } from './components/PodRequestTable';
+import { MasterModenaPodTable } from './components/MasterModenaPodTable';
+import { MasterLockerTable } from './components/MasterLockerTable';
 
 import { VehicleModal } from './components/VehicleModal';
 import { BuildingModal } from './components/BuildingModal';
@@ -66,6 +64,8 @@ import { LockerModal } from './components/LockerModal';
 import { LockerRequestModal } from './components/LockerRequestModal';
 import { PodCensusModal } from './components/PodCensusModal';
 import { PodRequestModal } from './components/PodRequestModal';
+import { ImportExcelModal } from './components/ImportExcelModal';
+import { ConfirmationModal } from './components/ConfirmationModal';
 
 import { Zap, Droplets, TrendingUp, Sun, LayoutDashboard, Home, Box } from 'lucide-react';
 import { 
@@ -120,7 +120,10 @@ import {
   MOCK_STOCK_OPNAME_DATA,
   MOCK_LOCKER_REQUEST_DATA,
   MOCK_POD_REQUEST_DATA,
-  MOCK_POD_DATA
+  MOCK_POD_DATA,
+  MOCK_MASTER_POD_DATA,
+  MOCK_MASTER_LOCKER_GOODS_DATA,
+  MOCK_MASTER_LOCKER_PANTRY_DATA
 } from './constants';
 import { 
   VehicleRecord, 
@@ -153,7 +156,9 @@ import {
   ModenaPodRecord,
   StockOpnameRecord,
   LockerRequestRecord,
-  PodRequestRecord
+  PodRequestRecord,
+  MasterPodRecord,
+  MasterLockerRecord
 } from './types';
 import { useLanguage } from './contexts/LanguageContext';
 
@@ -297,6 +302,9 @@ const App: React.FC = () => {
   const [stockOpnameData, setStockOpnameData] = useState<StockOpnameRecord[]>(() => getInitialData('stockOpnameData', MOCK_STOCK_OPNAME_DATA));
   const [lockerRequestData, setLockerRequestData] = useState<LockerRequestRecord[]>(() => getInitialData('lockerRequestData', MOCK_LOCKER_REQUEST_DATA));
   const [podRequestData, setPodRequestData] = useState<PodRequestRecord[]>(() => getInitialData('podRequestData', MOCK_POD_REQUEST_DATA));
+  const [masterPodData, setMasterPodData] = useState<MasterPodRecord[]>(() => getInitialData('masterPodData', MOCK_MASTER_POD_DATA));
+  const [masterLockerGoodsData, setMasterLockerGoodsData] = useState<MasterLockerRecord[]>(() => getInitialData('masterLockerGoodsData', MOCK_MASTER_LOCKER_GOODS_DATA));
+  const [masterLockerPantryData, setMasterLockerPantryData] = useState<MasterLockerRecord[]>(() => getInitialData('masterLockerPantryData', MOCK_MASTER_LOCKER_PANTRY_DATA));
 
   // INSURANCE STATES
   const [vehicleInsuranceData, setVehicleInsuranceData] = useState<InsuranceRecord[]>(() => {
@@ -404,6 +412,9 @@ const App: React.FC = () => {
       action: 'Approve' | 'Reject' | 'Revise';
       module: string;
   } | null>(null);
+
+  const [isImportExcelModalOpen, setIsImportExcelModalOpen] = useState(false);
+  const [isCloseTransactionConfirmOpen, setIsCloseTransactionConfirmOpen] = useState(false);
 
   // Combined Asset List for General Asset Mutation/Sales
   const combinedGeneralAssets = useMemo(() => {
@@ -516,6 +527,28 @@ const App: React.FC = () => {
     closeModal();
   };
 
+  const handleSaveMasterLocker = (data: Partial<MasterLockerRecord>) => {
+    // This function handles saving from the AddStockModal when used for Master Lockers
+    const isGoods = activeTab === 'Loker Barang'; 
+    const targetSet = isGoods ? setMasterLockerGoodsData : setMasterLockerPantryData;
+    const targetData = isGoods ? masterLockerGoodsData : masterLockerPantryData;
+
+    if (modalMode === 'create') {
+        const newRecord: MasterLockerRecord = {
+            id: Date.now(),
+            lockerNumber: data.lockerNumber || 'NEW',
+            floor: data.floor || 'Lt 2 Pria',
+            type: isGoods ? 'Goods' : 'Pantry',
+            status: data.status || 'Active',
+            remarks: data.remarks
+        };
+        targetSet([newRecord, ...targetData]);
+    } else {
+        targetSet(targetData.map(item => item.id === data.id ? { ...item, ...data } : item));
+    }
+    closeModal();
+  };
+
   // ... (Workflow Logic) ...
   const handleInitiateWorkflow = (item: any, action: 'Approve' | 'Reject' | 'Revise', module: string) => {
       setPendingWorkflow({ item, action, module });
@@ -538,6 +571,10 @@ const App: React.FC = () => {
       }
       setWorkflowModalOpen(false);
       setPendingWorkflow(null);
+  };
+
+  const handleImportExcelClick = () => {
+    setIsImportExcelModalOpen(true);
   };
 
   // Helper to render General Master Page
@@ -850,6 +887,25 @@ const App: React.FC = () => {
                     <MasterVendorTable data={masterVendorData} onEdit={(item) => openModal('MST_VENDOR', 'edit', item)} />
                 </>
             );
+        case 'Master MODENA Pod': 
+            return (
+                <>
+                    <FilterBar 
+                        tabs={['Semua', 'Loker Barang', 'Loker Pantry']} 
+                        activeTab={activeTab} 
+                        onTabChange={setActiveTab} 
+                        onAddClick={() => openModal('MASTER_POD_CATALOG', 'create')} 
+                        customAddLabel={`Add ${activeTab === 'Semua' ? 'Pod' : 'Locker'}`}
+                    />
+                    {activeTab === 'Loker Barang' ? (
+                        <MasterLockerTable data={masterLockerGoodsData} title="GOODS LOCKER CATALOG" onEdit={(item) => openModal('MASTER_POD_CATALOG', 'edit', item)} />
+                    ) : activeTab === 'Loker Pantry' ? (
+                        <MasterLockerTable data={masterLockerPantryData} title="PANTRY LOCKER CATALOG" onEdit={(item) => openModal('MASTER_POD_CATALOG', 'edit', item)} />
+                    ) : (
+                        <MasterModenaPodTable data={masterPodData} onEdit={(item) => openModal('MASTER_POD_CATALOG', 'edit', item)} />
+                    )}
+                </>
+            );
         
         // --- GENERIC MASTER DATA ---
         case 'Master PPN': return renderGeneralMasterPage('Master PPN', masterPPN, setMasterPPN);
@@ -943,6 +999,7 @@ const App: React.FC = () => {
             {/* Use the new dedicated component for Locker Request */}
             {modalType === 'LOCKER_REQUEST' && <LockerRequestModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} currentUser={userData[0]} />}
             {modalType === 'POD_REQUEST' && <PodRequestModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} currentUser={userData[0]} />}
+            {modalType === 'MASTER_POD_CATALOG' && <AddStockModal isOpen={isModalOpen} onClose={closeModal} moduleName={activeTab === 'Semua' ? 'Master MODENA Pod' : (activeTab === 'Loker Barang' ? 'Master Loker Barang' : 'Master Loker Pantry')} onSavePod={(d) => { setMasterPodData([...masterPodData, { ...d, id: Date.now() } as any]); closeModal(); }} onSaveMasterLocker={handleSaveMasterLocker} />}
 
             {modalType === 'VENDOR' && <VendorModal isOpen={isModalOpen} onClose={closeModal} onSave={(d) => { setVendorData([...vendorData, { ...d, id: Date.now().toString() } as any]); closeModal(); }} />}
             {modalType === 'USER' && <UserModal isOpen={isModalOpen} onClose={closeModal} onSave={(d) => { setUserData([...userData, { ...d, id: Date.now().toString() } as any]); closeModal(); }} departmentList={masterDepartment} locationList={masterLocation} roleList={masterRole} />}
@@ -968,6 +1025,27 @@ const App: React.FC = () => {
               onSubmit={handleConfirmWorkflow}
           />
       )}
+
+      <ImportExcelModal 
+        isOpen={isImportExcelModalOpen} 
+        onClose={() => setIsImportExcelModalOpen(false)} 
+        onImport={(file) => {
+            console.log("Importing file:", file.name);
+            setIsImportExcelModalOpen(false);
+        }} 
+        title={`IMPORT ${activeModule.toUpperCase()}`} 
+      />
+      
+      <ConfirmationModal 
+        isOpen={isCloseTransactionConfirmOpen}
+        onClose={() => setIsCloseTransactionConfirmOpen(false)}
+        onConfirm={() => {
+            console.log("Confirmed action");
+            setIsCloseTransactionConfirmOpen(false);
+        }}
+        title="Confirm Action"
+        message="Are you sure you want to proceed?"
+      />
     </div>
   );
 };
