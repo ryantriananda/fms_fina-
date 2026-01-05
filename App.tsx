@@ -940,6 +940,7 @@ const App: React.FC = () => {
             {modalType === 'POD' && <PodCensusModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} />} 
             {modalType === 'LOCKER' && <LockerModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} />}
             {modalType === 'STOCK_OPNAME' && <AddStockModal isOpen={isModalOpen} onClose={closeModal} moduleName="STOCK_OPNAME" onSaveLogBook={(d) => handleSaveData(d)} />}
+            {/* Use the new dedicated component for Locker Request */}
             {modalType === 'LOCKER_REQUEST' && <LockerRequestModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} currentUser={userData[0]} />}
             {modalType === 'POD_REQUEST' && <PodRequestModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveData} initialData={selectedItem} mode={modalMode} currentUser={userData[0]} />}
 
