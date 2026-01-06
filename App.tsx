@@ -60,7 +60,6 @@ import { LockerTable } from './components/LockerTable';
 import { LockerModal } from './components/LockerModal';
 import { LockerRequestTable } from './components/LockerRequestTable';
 import { LockerRequestModal } from './components/LockerRequestModal';
-import { StockOpnameTable } from './components/StockOpnameTable';
 
 // Daily Ops & Admin
 import { LogBookTable } from './components/LogBookTable';
@@ -83,7 +82,7 @@ import {
     VehicleReminderRecord, MutationRecord, SalesRecord, BuildingRecord, UtilityRecord, ReminderRecord, 
     GeneralAssetRecord, BuildingMaintenanceRecord, MaintenanceScheduleRecord, InsuranceRecord, 
     InsuranceProviderRecord, ModenaPodRecord, PodRequestRecord, LockerRecord, LockerRequestRecord, 
-    StockOpnameRecord, LogBookRecord, TimesheetRecord, VendorRecord, UserRecord, MasterApprovalRecord, 
+    LogBookRecord, TimesheetRecord, VendorRecord, UserRecord, MasterApprovalRecord, 
     GeneralMasterItem, DeliveryLocationRecord
 } from './types';
 
@@ -94,7 +93,7 @@ import {
     MOCK_BUILDING_DATA, MOCK_UTILITY_DATA, MOCK_REMINDER_DATA, MOCK_BUILDING_MAINTENANCE_DATA,
     MOCK_GENERAL_ASSET_DATA, MOCK_INSURANCE_DATA, MOCK_INSURANCE_PROVIDERS,
     MOCK_POD_DATA, MOCK_POD_REQUEST_DATA, MOCK_LOCKER_DATA, MOCK_LOCKER_REQUEST_DATA,
-    MOCK_STOCK_OPNAME_DATA, MOCK_LOGBOOK_DATA, MOCK_TIMESHEET_DATA, MOCK_VENDOR_DATA, 
+    MOCK_LOGBOOK_DATA, MOCK_TIMESHEET_DATA, MOCK_VENDOR_DATA, 
     MOCK_USER_DATA, MOCK_GENERAL_MASTER_DATA, MOCK_BRAND_DATA, MOCK_COLOR_DATA, MOCK_BUILDING_ASSETS,
     MOCK_PPN_DATA, MOCK_BRAND_TYPE_DATA, MOCK_VEHICLE_MODEL_DATA, MOCK_BUILDING_COMPONENT_DATA,
     MOCK_DOC_TYPE_DATA, MOCK_UTILITY_TYPE_DATA, MOCK_OPERATOR_DATA, MOCK_ASSET_TYPE_DATA,
@@ -149,7 +148,6 @@ export const App: React.FC = () => {
   const [podRequests, setPodRequests] = useState<PodRequestRecord[]>(MOCK_POD_REQUEST_DATA);
   const [lockers, setLockers] = useState<LockerRecord[]>(MOCK_LOCKER_DATA);
   const [lockerRequests, setLockerRequests] = useState<LockerRequestRecord[]>(MOCK_LOCKER_REQUEST_DATA);
-  const [stockOpnames, setStockOpnames] = useState<StockOpnameRecord[]>(MOCK_STOCK_OPNAME_DATA);
 
   // Daily Ops & Admin
   const [logBooks, setLogBooks] = useState<LogBookRecord[]>(MOCK_LOGBOOK_DATA);
@@ -590,13 +588,6 @@ export const App: React.FC = () => {
               <>
                   <FilterBar tabs={['SEMUA', 'PENDING', 'APPROVED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('LOCKER_REQUEST', 'create')} customAddLabel="Request Locker" />
                   <LockerRequestTable data={lockerRequests} onView={(i) => openModal('LOCKER_REQUEST', 'view', i)} />
-              </>
-          );
-      case 'Stock Opname':
-          return (
-              <>
-                  <FilterBar tabs={['SEMUA', 'COMPLETED', 'DRAFT']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => {}} customAddLabel="Start Count" />
-                  <StockOpnameTable data={stockOpnames} />
               </>
           );
 

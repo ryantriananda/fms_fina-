@@ -181,7 +181,6 @@ export const Sidebar: React.FC<Props> = ({
             { label: 'Request Locker', icon: <FileText size={16} /> },
         ]
     },
-    { label: 'Stock Opname', icon: <ClipboardList size={20} /> },
 
     // 5. CONSUMABLES (ATK & ARK)
     { 
