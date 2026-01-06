@@ -216,7 +216,7 @@ export const MOCK_VEHICLE_TYPE_DATA: GeneralMasterItem[] = [{ id: 1, name: 'MPV'
 export const MOCK_GENERAL_MASTER_DATA = {
     jenisPajak: [{ id: 1, name: 'Pajak STNK' }, { id: 2, name: 'KIR' }],
     jenisPembayaran: [{ id: 1, name: 'Kasbon' }, { id: 2, name: 'Reimburse' }, { id: 3, name: 'Corporate Card' }],
-    jenisServis: [{ id: 1, name: 'Servis Rutin' }, { id: 2, name: 'Ganti Oli' }, { id: 3, name: 'Ganti Ban' }, { id: 4, name: 'Tune Up' }],
+    jenisServis: [{ id: 1, name: 'Servis Rutin' }, { id: 2, name: 'Perbaikan' }],
     statusMutasi: [{ id: 1, name: 'Draft' }, { id: 2, name: 'Pending Approval' }, { id: 3, name: 'Approved' }, { id: 4, name: 'Completed' }],
     statusPenjualan: [{ id: 1, name: 'Open Bidding' }, { id: 2, name: 'Sold' }, { id: 3, name: 'Scrapped' }],
     statusRequest: [{ id: 1, name: 'Pending' }, { id: 2, name: 'Approved' }, { id: 3, name: 'Rejected' }],

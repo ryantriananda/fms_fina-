@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Save, Car, FileText, UploadCloud, Trash2, CheckCircle2, Clock, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { X, Save, Car, FileText, UploadCloud, Trash2, CheckCircle2, Clock, Image as ImageIcon, Info, Hash, Calendar, Tag, Droplets } from 'lucide-react';
 import { VehicleContractRecord, VehicleRecord } from '../types';
 
 interface Props {
@@ -45,6 +45,11 @@ export const VehicleContractModal: React.FC<Props> = ({
     approvalStatus: 'Pending'
   });
 
+  // Derive selected vehicle details dynamically
+  const selectedVehicle = useMemo(() => {
+      return vehicleList.find(v => v.noPolisi === form.noPolisi);
+  }, [form.noPolisi, vehicleList]);
+
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
@@ -84,13 +89,8 @@ export const VehicleContractModal: React.FC<Props> = ({
           setForm(prev => ({
               ...prev,
               noPolisi: vehicle.noPolisi,
-              aset: vehicle.nama,
-              merek: vehicle.merek,
-              tipeKendaraan: vehicle.tipeKendaraan,
-              model: vehicle.model,
-              tahunPembuatan: vehicle.tahunPembuatan,
-              warna: vehicle.warna,
-              isiSilinder: vehicle.isiSilinder,
+              aset: vehicle.nama, // Keep for backward compatibility/display
+              vendor: prev.vendor, // Don't overwrite vendor if manually set
               channel: vehicle.channel,
               cabang: vehicle.cabang
           }));
@@ -195,18 +195,31 @@ export const VehicleContractModal: React.FC<Props> = ({
     </label>
   );
 
-  const InputField = ({ label, value, field, type = "text", disabled = false, placeholder = "", className = "", required = false }: any) => (
-    <div className={className}>
+  const InputField = ({ label, value, field, type = "text", disabled = false, placeholder = "", className = "", required = false, icon: Icon }: any) => (
+    <div className={`relative ${className}`}>
       <Label required={required}>{label}</Label>
-      <input 
-        type={type} 
-        disabled={isView || disabled}
-        className={`w-full bg-white border border-gray-100 rounded-2xl px-5 py-4 text-[12px] font-black text-black focus:border-black outline-none transition-all placeholder:text-gray-200 shadow-sm ${disabled ? 'bg-gray-50 text-gray-500' : ''}`}
-        value={value || ''}
-        placeholder={placeholder}
-        onChange={(e) => setForm({...form, [field]: e.target.value})}
-      />
+      <div className="relative">
+        <input 
+            type={type} 
+            disabled={isView || disabled}
+            className={`w-full bg-white border border-gray-100 rounded-2xl px-5 py-4 ${Icon ? 'pl-11' : ''} text-[12px] font-black text-black focus:border-black outline-none transition-all placeholder:text-gray-200 shadow-sm ${disabled ? 'bg-gray-50 text-gray-500' : ''}`}
+            value={value || ''}
+            placeholder={placeholder}
+            onChange={(e) => setForm({...form, [field]: e.target.value})}
+        />
+        {Icon && <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />}
+      </div>
     </div>
+  );
+
+  const SpecField = ({ label, value, icon: Icon }: { label: string, value?: string, icon?: any }) => (
+      <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100/50">
+          <div className="flex items-center gap-2 mb-1.5">
+              {Icon && <Icon size={12} className="text-gray-400" />}
+              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{label}</span>
+          </div>
+          <p className="text-[12px] font-black text-black truncate" title={value}>{value || '-'}</p>
+      </div>
   );
 
   const tabs = ['DETAILS', 'DOKUMEN', 'WORKFLOW'];
@@ -248,73 +261,92 @@ export const VehicleContractModal: React.FC<Props> = ({
         <div className="flex-1 overflow-y-auto p-12 custom-scrollbar bg-[#FBFBFB]">
           
           {activeTab === 'DETAILS' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-in fade-in slide-in-from-bottom-2">
+                
+                {/* Left Column: Contract Info */}
                 <div className="space-y-12">
-                <div className="bg-white p-10 rounded-[2rem] border border-gray-100 shadow-sm relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-black opacity-5"></div>
-                    <SectionHeader title="CONTRACT SETUP" sub="General Contract Information" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <InputField label="No. Kontrak" value={form.noKontrak} field="noKontrak" required placeholder="KTR/MDC/2024/001" className="md:col-span-2" />
-                    <InputField label="Vendor / Lessor" value={form.vendor} field="vendor" required placeholder="PT. TRAC ASTRA / MPMRent" className="md:col-span-2" />
-                    <InputField label="Tanggal Mulai" value={form.tglMulai} field="tglMulai" type="date" required />
-                    <InputField label="Tanggal Berakhir" value={form.tglBerakhir} field="tglBerakhir" type="date" required />
+                    <div className="bg-white p-10 rounded-[2rem] border border-gray-100 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-black opacity-5"></div>
+                        <SectionHeader title="GENERAL CONTRACT INFORMATION" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <InputField label="No. Kontrak" value={form.noKontrak} field="noKontrak" required placeholder="KTR/MDC/2024/001" className="md:col-span-2" />
+                            <InputField label="Vendor / Lessor" value={form.vendor} field="vendor" required placeholder="PT. TRAC ASTRA / MPMRent" className="md:col-span-2" />
+                            <InputField label="Tanggal Mulai" value={form.tglMulai} field="tglMulai" type="date" required />
+                            <InputField label="Tanggal Berakhir" value={form.tglBerakhir} field="tglBerakhir" type="date" required />
+                        </div>
                     </div>
-                </div>
 
-                <div className="bg-white p-10 rounded-[2rem] border border-gray-100 shadow-sm">
-                    <SectionHeader title="VEHICLE SPECIFICATION" sub="Core Unit Details (Auto-Filled)" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="md:col-span-2">
-                        <Label required>Pilih Unit Kendaraan</Label>
-                        <div className="relative">
-                            <select 
-                                disabled={isView || mode === 'edit'}
-                                className="w-full bg-white border border-gray-100 rounded-2xl px-5 py-4 text-[12px] font-black text-black focus:border-black outline-none disabled:bg-gray-50 appearance-none shadow-sm transition-all cursor-pointer"
-                                value={form.noPolisi || ''}
-                                onChange={handleVehicleChange}
-                            >
-                                <option value="">-- Pilih Kendaraan dari Master Data --</option>
-                                {vehicleList.map((v) => (
-                                    <option key={v.id} value={v.noPolisi}>{v.noPolisi} - {v.nama}</option>
-                                ))}
-                            </select>
-                            {!isView && mode !== 'edit' && (
-                                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
-                                    <Car size={16} />
+                    <div className="bg-white p-10 rounded-[2rem] border border-gray-100 shadow-sm">
+                        <SectionHeader title="VEHICLE SPECIFICATION" sub="Core Unit Details (Auto-Filled)" />
+                        <div className="grid grid-cols-1 gap-8">
+                            <div>
+                                <Label required>Pilih Unit Kendaraan</Label>
+                                <div className="relative">
+                                    <select 
+                                        disabled={isView || mode === 'edit'}
+                                        className="w-full bg-white border border-gray-100 rounded-2xl px-5 py-4 text-[12px] font-black text-black focus:border-black outline-none disabled:bg-gray-50 appearance-none shadow-sm transition-all cursor-pointer"
+                                        value={form.noPolisi || ''}
+                                        onChange={handleVehicleChange}
+                                    >
+                                        <option value="">-- Pilih Kendaraan dari Master Data --</option>
+                                        {vehicleList.map((v) => (
+                                            <option key={v.id} value={v.noPolisi}>{v.noPolisi} - {v.nama}</option>
+                                        ))}
+                                    </select>
+                                    {!isView && mode !== 'edit' && (
+                                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
+                                            <Car size={16} />
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                            </div>
+
+                            {/* Detailed Read-Only Specs Grid */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+                                <div className="col-span-2 md:col-span-3">
+                                    <SpecField label="Deskripsi Unit" value={selectedVehicle?.nama} icon={Info} />
+                                </div>
+                                <SpecField label="Merek / Brand" value={selectedVehicle?.merek} icon={Tag} />
+                                <SpecField label="Tipe Kendaraan" value={selectedVehicle?.tipeKendaraan} icon={Car} />
+                                <SpecField label="Model" value={selectedVehicle?.model} />
+                                
+                                <SpecField label="Tahun Pembuatan" value={selectedVehicle?.tahunPembuatan} icon={Calendar} />
+                                <SpecField label="Warna" value={selectedVehicle?.warna} />
+                                <SpecField label="Isi Silinder" value={selectedVehicle?.isiSilinder} icon={Droplets} />
+                                
+                                <SpecField label="No. Rangka" value={selectedVehicle?.noRangka} icon={Hash} />
+                                <SpecField label="No. Mesin" value={selectedVehicle?.noMesin} icon={Hash} />
+                                <SpecField label="No. BPKB" value={selectedVehicle?.noBpkb} icon={FileText} />
+                            </div>
                         </div>
                     </div>
-                    <InputField label="Deskripsi Unit" value={form.aset} field="aset" disabled={true} />
-                    <InputField label="Merek" value={form.merek} field="merek" disabled={true} />
-                    </div>
-                </div>
                 </div>
 
+                {/* Right Column: Allocation & Cost */}
                 <div className="space-y-12">
-                <div className="bg-white p-10 rounded-[2rem] border border-gray-100 shadow-sm">
-                    <SectionHeader title="ALLOCATION & COST" sub="Assigned Dept & Financials" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <InputField label="Channel" value={form.channel} field="channel" disabled={true} />
-                    <InputField label="Dept / Cabang" value={form.cabang} field="cabang" disabled={true} />
-                    <InputField label="Pengguna Utama" value={form.penggunaUtama} field="penggunaUtama" placeholder="Nama User" className="md:col-span-2" />
-                    
-                    <div className="relative md:col-span-2">
-                        <Label required>Biaya Sewa (IDR / Bulan)</Label>
-                        <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-300">RP</span>
-                        <input 
-                            type="number" 
-                            className="w-full bg-white border border-gray-100 rounded-2xl pl-10 pr-6 py-4 text-[13px] font-black text-black focus:border-black outline-none shadow-sm transition-all"
-                            value={form.biayaSewa || ''}
-                            onChange={(e) => setForm({...form, biayaSewa: e.target.value})}
-                            disabled={isView}
-                            placeholder="0"
-                        />
+                    <div className="bg-white p-10 rounded-[2rem] border border-gray-100 shadow-sm">
+                        <SectionHeader title="ASSIGNED DEPT & FINANCIALS" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <InputField label="Channel" value={form.channel} field="channel" disabled={true} />
+                            <InputField label="Dept / Cabang" value={form.cabang} field="cabang" disabled={true} />
+                            <InputField label="Pengguna Utama" value={form.penggunaUtama} field="penggunaUtama" placeholder="Nama User" className="md:col-span-2" />
+                            
+                            <div className="relative md:col-span-2">
+                                <Label required>Biaya Sewa (IDR / Bulan)</Label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-300">RP</span>
+                                    <input 
+                                        type="number" 
+                                        className="w-full bg-white border border-gray-100 rounded-2xl pl-10 pr-6 py-4 text-[13px] font-black text-black focus:border-black outline-none shadow-sm transition-all"
+                                        value={form.biayaSewa || ''}
+                                        onChange={(e) => setForm({...form, biayaSewa: e.target.value})}
+                                        disabled={isView}
+                                        placeholder="0"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    </div>
-                </div>
                 </div>
             </div>
           )}

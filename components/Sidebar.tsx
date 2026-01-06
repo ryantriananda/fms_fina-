@@ -126,7 +126,7 @@ export const Sidebar: React.FC<Props> = ({
         label: 'Kendaraan', 
         icon: <Car size={20} />,
         subItems: [
-            { label: 'Daftar Aset', icon: <Database size={16} /> },
+            { label: 'Daftar Kendaraan', icon: <Database size={16} /> },
             { label: 'Kontrak Kendaraan', icon: <Briefcase size={16} /> },
             { label: 'Servis', icon: <Wrench size={16} /> },
             { label: 'Pajak & KIR', icon: <FileText size={16} /> },

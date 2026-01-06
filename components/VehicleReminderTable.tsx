@@ -1,14 +1,16 @@
 
 import React from 'react';
 import { VehicleReminderRecord } from '../types';
-import { ChevronsUpDown, Calendar, AlertTriangle, CheckCircle2, Clock, Truck, FileText, Repeat } from 'lucide-react';
+import { ChevronsUpDown, Calendar, AlertTriangle, CheckCircle2, Clock, Truck, FileText, Repeat, Pencil, Trash2 } from 'lucide-react';
 
 interface Props {
   data: VehicleReminderRecord[];
   onAction?: (item: VehicleReminderRecord) => void;
+  onEdit?: (item: VehicleReminderRecord) => void;
+  onDelete?: (id: string) => void;
 }
 
-export const VehicleReminderTable: React.FC<Props> = ({ data, onAction }) => {
+export const VehicleReminderTable: React.FC<Props> = ({ data, onAction, onEdit, onDelete }) => {
 
   const getStatusDetail = (status: string, expiryDate: string) => {
       const today = new Date();
@@ -86,7 +88,7 @@ export const VehicleReminderTable: React.FC<Props> = ({ data, onAction }) => {
               <th className="p-5 w-40 text-center">
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">STATUS</span>
               </th>
-              <th className="p-5 w-32 text-center pr-8">
+              <th className="p-5 w-48 text-center pr-8">
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">ACTION</span>
               </th>
             </tr>
@@ -134,12 +136,29 @@ export const VehicleReminderTable: React.FC<Props> = ({ data, onAction }) => {
                                 </div>
                             </td>
                             <td className="p-5 text-center pr-8">
-                                <button 
-                                    onClick={() => onAction?.(item)} 
-                                    className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-black/10 transition-all active:scale-95 flex items-center justify-center gap-2 mx-auto"
-                                >
-                                    <Repeat size={12} /> Renew
-                                </button>
+                                <div className="flex items-center justify-center gap-2">
+                                    <button 
+                                        onClick={() => onAction?.(item)} 
+                                        className="bg-black hover:bg-gray-800 text-white p-2 rounded-xl shadow-lg shadow-black/10 transition-all active:scale-95"
+                                        title="Renew"
+                                    >
+                                        <Repeat size={14} />
+                                    </button>
+                                    <button 
+                                        onClick={() => onEdit?.(item)}
+                                        className="bg-white hover:bg-gray-50 text-gray-500 p-2 rounded-xl border border-gray-200 transition-all active:scale-95"
+                                        title="Edit Reminder"
+                                    >
+                                        <Pencil size={14} />
+                                    </button>
+                                    <button 
+                                        onClick={() => onDelete?.(item.id)}
+                                        className="bg-white hover:bg-red-50 text-red-500 p-2 rounded-xl border border-gray-200 hover:border-red-200 transition-all active:scale-95"
+                                        title="Delete Reminder"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     );

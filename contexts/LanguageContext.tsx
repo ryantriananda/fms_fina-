@@ -65,7 +65,7 @@ const translations: Record<string, Record<Language, string>> = {
   'General Asset List': { id: 'Daftar Aset Umum', en: 'General Asset List' },
 
   // Kendaraan
-  'Daftar Aset': { id: 'Daftar Aset', en: 'Asset List' },
+  'Daftar Kendaraan': { id: 'Daftar Kendaraan', en: 'Vehicle List' }, // UPDATED KEY
   'Kontrak Kendaraan': { id: 'Kontrak Kendaraan', en: 'Vehicle Contract' },
   'Servis': { id: 'Servis', en: 'Service' },
   'Pajak & KIR': { id: 'Pajak & KIR', en: 'Tax & KIR' },

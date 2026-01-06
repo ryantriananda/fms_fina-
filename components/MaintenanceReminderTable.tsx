@@ -1,14 +1,16 @@
 
 import React from 'react';
 import { MaintenanceScheduleRecord } from '../types';
-import { ChevronsUpDown, Eye, Trash2, Calendar, AlertTriangle, CheckCircle2, Clock, Wrench } from 'lucide-react';
+import { ChevronsUpDown, Eye, Trash2, Calendar, AlertTriangle, CheckCircle2, Clock, Wrench, Pencil } from 'lucide-react';
 
 interface Props {
   data: MaintenanceScheduleRecord[];
   onAction?: (item: MaintenanceScheduleRecord) => void;
+  onEdit?: (item: MaintenanceScheduleRecord) => void;
+  onDelete?: (id: string) => void;
 }
 
-export const MaintenanceReminderTable: React.FC<Props> = ({ data, onAction }) => {
+export const MaintenanceReminderTable: React.FC<Props> = ({ data, onAction, onEdit, onDelete }) => {
 
   const getStatusDetail = (status: string, nextDate: string) => {
       const today = new Date();
@@ -73,7 +75,7 @@ export const MaintenanceReminderTable: React.FC<Props> = ({ data, onAction }) =>
               <th className="p-5 w-40 text-center">
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">STATUS</span>
               </th>
-              <th className="p-5 w-32 text-center pr-8">
+              <th className="p-5 w-48 text-center pr-8">
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">ACTION</span>
               </th>
             </tr>
@@ -125,12 +127,29 @@ export const MaintenanceReminderTable: React.FC<Props> = ({ data, onAction }) =>
                                 </div>
                             </td>
                             <td className="p-5 text-center pr-8">
-                                <button 
-                                    onClick={() => onAction?.(item)} 
-                                    className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-black/10 transition-all active:scale-95 flex items-center justify-center gap-2 mx-auto"
-                                >
-                                    <Wrench size={12} /> Create Ticket
-                                </button>
+                                <div className="flex items-center justify-center gap-2">
+                                    <button 
+                                        onClick={() => onAction?.(item)} 
+                                        className="bg-black hover:bg-gray-800 text-white p-2 rounded-xl shadow-lg shadow-black/10 transition-all active:scale-95"
+                                        title="Create Ticket"
+                                    >
+                                        <Wrench size={14} />
+                                    </button>
+                                    <button 
+                                        onClick={() => onEdit?.(item)}
+                                        className="bg-white hover:bg-gray-50 text-gray-500 p-2 rounded-xl border border-gray-200 transition-all active:scale-95"
+                                        title="Edit Schedule"
+                                    >
+                                        <Pencil size={14} />
+                                    </button>
+                                    <button 
+                                        onClick={() => onDelete?.(item.id)}
+                                        className="bg-white hover:bg-red-50 text-red-500 p-2 rounded-xl border border-gray-200 hover:border-red-200 transition-all active:scale-95"
+                                        title="Delete Schedule"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     );

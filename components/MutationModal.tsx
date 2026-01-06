@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, MapPin, Building, Info, AlertTriangle, User, Package, Car, Tag, Filter, DollarSign, UploadCloud, Trash2, Image as ImageIcon, FileText, CheckSquare } from 'lucide-react';
+import { X, Send, MapPin, Building, Info, AlertTriangle, User, Package, Car, Tag, Filter, DollarSign, UploadCloud, Trash2, Image as ImageIcon, FileText, CheckSquare, ChevronDown, ChevronUp, Edit3 } from 'lucide-react';
 import { MutationRecord, VehicleRecord, GeneralAssetRecord, BuildingAssetRecord } from '../types';
 
 interface Props {
@@ -16,6 +16,35 @@ interface Props {
 
 type DocKeys = 'front' | 'rear' | 'right' | 'left' | 'interior' | 'stnk';
 
+// Excel Checklist Structure
+const VEHICLE_CHECKLIST_ITEMS = {
+  'I. Kelistrikan': [
+    'Automatic Light Switch', 'Lampu Jauh', 'Lampu Kecil', 'Lampu Kota',
+    'Lampu Sign Depan', 'Lampu Sign Belakang', 'Lampu Kabut', 'Lampu Belakang',
+    'Lampu Rem', 'Lampu Mundur', 'Lampu Plafond', 'Lampu Dashboard',
+    'Klakson', 'Radio', 'Antena', 'Tape Player', 'Compact Disc',
+    'Cassette', 'CD Player', 'Alarm-Remote', 'Jam', 'Central Lock',
+    'Power Window', 'High Mount Stop Lamp'
+  ],
+  'II. Interior': [
+    'Karpet', 'Safety Belt', 'Air Conditioner', 'Lighter', 'Asbak',
+    'Cover Ban Serep (dalam)'
+  ],
+  'III. Eksterior': [
+    'Windshield Washer', 'Wiper Blade', 'Spion Luar', 'Spion Dalam',
+    'Tutup Bahan Bakar', 'Body Moulding', 'Dop Roda', 'Ban Serep',
+    'Cover Ban Serep (luar)', 'Emblem', 'Kaca Film', 'Pentil Roda', 'Mud Guard'
+  ],
+  'IV. Perlengkapan': [
+    'Tang', 'Kunci Ring', 'Kunci Pas', 'Kunci Roda', 'Kunci Busi',
+    'Kunci Steer', 'Obeng', 'Handle Towing', 'Dongkrak',
+    'Handle Dongkrak', 'Ganjal Ban', 'Segitiga Pengaman', 'P3K'
+  ],
+  'V. Dokumen': [
+    'STNK', 'KIR', 'Buku Manual', 'Buku Service'
+  ]
+};
+
 export const MutationModal: React.FC<Props> = ({ 
     isOpen, 
     onClose, 
@@ -27,7 +56,7 @@ export const MutationModal: React.FC<Props> = ({
     assetType = 'VEHICLE'
 }) => {
   const [activeTab, setActiveTab] = useState('DETAILS');
-  const [categoryFilter, setCategoryFilter] = useState('ALL'); // New State for Filter
+  const [categoryFilter, setCategoryFilter] = useState('ALL'); // New Filter State
   
   // Document Upload States
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -50,7 +79,17 @@ export const MutationModal: React.FC<Props> = ({
     picAfter: '',
     assetType: assetType,
     biayaMutasi: '',
-    checklistCondition: []
+    checklistCondition: [],
+    checklistNotes: {}
+  });
+
+  // Checklist expansion state
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
+      'I. Kelistrikan': true,
+      'II. Interior': true,
+      'III. Eksterior': true,
+      'IV. Perlengkapan': true,
+      'V. Dokumen': true
   });
 
   // Helper to find selected asset regardless of type
@@ -93,7 +132,8 @@ export const MutationModal: React.FC<Props> = ({
             picAfter: '',
             assetType: assetType,
             biayaMutasi: '',
-            checklistCondition: []
+            checklistCondition: [],
+            checklistNotes: {}
         });
         setDocPreviews({ front: null, rear: null, right: null, left: null, interior: null, stnk: null });
         setCategoryFilter('ALL'); // Reset filter on open
@@ -182,6 +222,21 @@ export const MutationModal: React.FC<Props> = ({
           setForm({ ...form, checklistCondition: [...current, item] });
       }
   };
+
+  const handleChecklistNoteChange = (item: string, value: string) => {
+      if (isView) return;
+      setForm(prev => ({
+          ...prev,
+          checklistNotes: {
+              ...prev.checklistNotes,
+              [item]: value
+          }
+      }));
+  };
+
+  const toggleCategory = (category: string) => {
+      setExpandedCategories(prev => ({...prev, [category]: !prev[category]}));
+  }
 
   const handleSave = () => {
       // Map previews to form fields before saving
@@ -531,24 +586,63 @@ export const MutationModal: React.FC<Props> = ({
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
                     <input type="file" ref={fileInputRef} className="hidden" accept="image/*,application/pdf" onChange={handleFileChange} />
                     
-                    {/* Checklist Section */}
+                    {/* Checklist Section - Grouped by Category */}
                     <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
                         <div className="flex items-center gap-3 mb-6">
                             <CheckSquare size={18} className="text-black"/>
                             <h3 className="text-[11px] font-black text-black uppercase tracking-widest">Physical Condition Checklist</h3>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {['Body / Exterior', 'Interior / Cabin', 'Engine / Mesin', 'Tires / Ban', 'Lights / Lampu', 'Tools / Kunci', 'Spare Tire', 'Ac / Pendingin'].map((item) => (
-                                <label key={item} className="flex items-center gap-3 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all">
-                                    <input 
-                                        type="checkbox" 
-                                        className="w-4 h-4 rounded text-black focus:ring-black border-gray-300"
-                                        checked={form.checklistCondition?.includes(item)}
-                                        onChange={() => toggleChecklist(item)}
-                                        disabled={isView}
-                                    />
-                                    <span className="text-[10px] font-bold text-gray-600 uppercase">{item}</span>
-                                </label>
+                        
+                        <div className="space-y-6">
+                            {Object.entries(VEHICLE_CHECKLIST_ITEMS).map(([category, items]) => (
+                                <div key={category} className="rounded-2xl border border-gray-100 overflow-hidden">
+                                    <div 
+                                        className="bg-[#F8F9FA] px-6 py-4 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
+                                        onClick={() => toggleCategory(category)}
+                                    >
+                                        <h4 className="text-[10px] font-black text-black uppercase tracking-widest">{category}</h4>
+                                        {expandedCategories[category] ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
+                                    </div>
+                                    
+                                    {expandedCategories[category] && (
+                                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {items.map((item) => {
+                                                const isChecked = form.checklistCondition?.includes(item);
+                                                const currentNote = form.checklistNotes?.[item] || '';
+                                                
+                                                return (
+                                                    <div key={item} className={`flex flex-col p-3 rounded-xl transition-all border ${isChecked ? 'bg-black/5 border-black' : 'bg-white border-gray-100 hover:border-gray-200'}`}>
+                                                        <label className="flex items-center justify-between cursor-pointer mb-2">
+                                                            <span className={`text-[10px] font-bold uppercase truncate mr-2 ${isChecked ? 'text-black' : 'text-gray-500'}`}>{item}</span>
+                                                            <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isChecked ? 'bg-black border-black' : 'border-gray-300'}`}>
+                                                                {isChecked && <div className="w-2 h-2 rounded-full bg-white"></div>}
+                                                            </div>
+                                                            <input 
+                                                                type="checkbox" 
+                                                                className="hidden"
+                                                                checked={isChecked}
+                                                                onChange={() => toggleChecklist(item)}
+                                                                disabled={isView}
+                                                            />
+                                                        </label>
+                                                        {isChecked && (
+                                                            <div className="animate-in fade-in slide-in-from-top-1 duration-200">
+                                                                <input
+                                                                    type="text"
+                                                                    disabled={isView}
+                                                                    className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-[9px] font-medium text-black outline-none focus:border-black placeholder:text-gray-400"
+                                                                    placeholder="Keterangan / Kondisi (Opsional)"
+                                                                    value={currentNote}
+                                                                    onChange={(e) => handleChecklistNoteChange(item, e.target.value)}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     </div>
