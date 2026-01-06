@@ -590,6 +590,8 @@ export interface LockerRecord {
   spareKeyStatus: 'Ada' | 'Tidak Ada';
   lastAuditDate: string;
   remarks?: string;
+  occupantRole?: string;
+  occupantJobTitle?: string;
 }
 
 export interface LockerRequestRecord {
@@ -601,6 +603,13 @@ export interface LockerRequestRecord {
   reason: string;
   preferredLocation?: string;
   status: 'Pending' | 'Approved' | 'Rejected';
+  
+  // New fields for Locker Request
+  requestType?: string;
+  lockerNumber?: string;
+  floor?: string;
+  jobTitle?: string;
+  statusLocker?: 'Terisi' | 'Kosong' | 'Kunci Hilang';
 }
 
 export interface MasterLockerRecord {
@@ -624,23 +633,68 @@ export interface LogBookRecord {
   lakiLaki: number;
   anakAnak: number;
   note?: string;
+  
+  // Added fields for new design
+  email?: string;
+  phone?: string;
+  identityCardNumber?: string;
+  visitorCardNumber?: string;
+  countAdult?: number;
+  countIndividual?: number;
+  countChild?: number;
+}
+
+// New Types for Enhanced Timesheet
+export interface TimesheetActivity {
+    id: string;
+    activityType: string; // "Penyapuan lantai", "Patroli", etc.
+    location?: string;
+    startTime: string; // HH:mm
+    endTime: string; // HH:mm
+    duration: number; // hours (decimal)
+    notes?: string;
+    photo?: string; // Base64 or URL
+    linkedAssetId?: string; // For technicians to link to an asset
+    linkedAssetName?: string; // Display name
+    
+    // Deep Dive additions
+    checklist?: { label: string; checked: boolean }[]; // For Cleaning
+    isQrVerified?: boolean; // For Security
+    incidentDescription?: string; // For Security
+    spareParts?: string; // For Technician (simple string for now)
+    rejectionNote?: string; // For Revision Flow
 }
 
 export interface TimesheetRecord {
   id: string;
   employee: {
       name: string;
-      role: string;
+      role: 'Cleaning' | 'Security' | 'Teknisi' | 'Staff';
       avatar: string;
       phone?: string;
+      id?: string;
   };
-  location: string;
-  area: string;
+  location: string; // Gedung
+  area: string; // Area Spesifik
   date: string;
-  shift: string;
+  shift: 'Pagi' | 'Siang' | 'Malam';
   clockIn: string;
   clockOut: string;
-  status: 'Tepat Waktu' | 'Terlambat' | 'Absen';
+  status: 'Tepat Waktu' | 'Terlambat' | 'Absen' | 'Izin' | 'Libur';
+  
+  // New Complex Fields
+  activities: TimesheetActivity[];
+  totalHours: number;
+  generalNotes?: string;
+  coordinates?: { lat: number; lng: number; timestamp: string };
+  supervisorApproval?: {
+      approvedBy: string;
+      approvedAt: string;
+      status: 'Pending' | 'Approved' | 'Rejected' | 'Revised';
+      signatureUrl?: string;
+  };
+  
+  // Deprecated/Legacy fields mapping (optional to keep for compatibility)
   tasks?: string[];
   photos?: string[];
 }

@@ -1,15 +1,16 @@
 
 import React from 'react';
 import { StockOpnameRecord } from '../types';
-import { ChevronsUpDown, Eye, Calendar, User, Package, Hash, AlertTriangle, CheckCircle2, Clock, XCircle, FileCheck } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Eye, Calendar, User, FileCheck, XCircle, Hash } from 'lucide-react';
 
 interface Props {
   data: StockOpnameRecord[];
   onView?: (item: StockOpnameRecord) => void;
   onEdit?: (item: StockOpnameRecord) => void;
+  onAction?: (item: StockOpnameRecord, action: 'Approve' | 'Reject') => void;
 }
 
-export const StockOpnameTable: React.FC<Props> = ({ data, onView, onEdit }) => {
+export const StockOpnameTable: React.FC<Props> = ({ data, onView, onEdit, onAction }) => {
   
   const getStatusBadge = (status: string) => {
       if (status === 'MATCHED') {
@@ -54,11 +55,14 @@ export const StockOpnameTable: React.FC<Props> = ({ data, onView, onEdit }) => {
               <th className="p-6 w-48 text-[10px] font-black text-gray-400 uppercase tracking-widest">PERFORMED BY</th>
               <th className="p-6 w-32 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">MATCH STATUS</th>
               <th className="p-6 w-32 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">APPROVAL</th>
+              {onAction && <th className="p-6 w-32 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">WORKFLOW</th>}
               <th className="p-6 w-24 text-center pr-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">ACTION</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {data.map((item) => (
+            {data.map((item) => {
+              const isPending = item.statusApproval === 'Pending';
+              return (
               <tr key={item.id} className="bg-white hover:bg-[#FDFDFD] transition-all group cursor-pointer" onClick={() => onView?.(item)}>
                 <td className="p-6 pl-8">
                     <span className="font-mono font-bold text-black text-[12px] bg-gray-50 px-2 py-1 rounded border border-gray-100">
@@ -108,32 +112,46 @@ export const StockOpnameTable: React.FC<Props> = ({ data, onView, onEdit }) => {
                 <td className="p-6 text-center">
                     {getApprovalBadge(item.statusApproval)}
                 </td>
+                
+                {onAction && (
+                    <td className="p-6 text-center">
+                        {isPending ? (
+                            <div className="flex items-center justify-center gap-2">
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); onAction(item, 'Approve'); }} 
+                                    className="p-2 text-white bg-green-500 hover:bg-green-600 transition-all rounded-xl shadow-lg shadow-green-500/20 active:scale-95"
+                                    title="Approve"
+                                >
+                                    <CheckCircle2 size={16} />
+                                </button>
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); onAction(item, 'Reject'); }} 
+                                    className="p-2 text-white bg-red-500 hover:bg-red-600 transition-all rounded-xl shadow-lg shadow-red-500/20 active:scale-95"
+                                    title="Reject"
+                                >
+                                    <XCircle size={16} />
+                                </button>
+                            </div>
+                        ) : (
+                            <span className="text-[9px] font-bold text-gray-300 italic uppercase">Done</span>
+                        )}
+                    </td>
+                )}
+
                 <td className="p-6 text-center pr-8">
-                    <div className="flex items-center justify-center gap-2">
-                         {item.statusApproval === 'Pending' ? (
-                             <button 
-                                onClick={(e) => { e.stopPropagation(); onEdit?.(item); }} 
-                                className="p-2 text-white bg-black hover:bg-gray-800 transition-all rounded-xl shadow-lg active:scale-95"
-                                title="Approve/Reject"
-                             >
-                                <FileCheck size={16} />
-                             </button>
-                         ) : (
-                             <button 
-                                onClick={(e) => { e.stopPropagation(); onView?.(item); }} 
-                                className="p-2 text-gray-300 hover:text-black transition-all bg-white hover:bg-gray-50 rounded-xl border border-transparent hover:border-gray-200"
-                                title="View Details"
-                             >
-                                <Eye size={16} />
-                             </button>
-                         )}
-                    </div>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); onView?.(item); }} 
+                        className="p-2 text-gray-300 hover:text-black transition-all bg-white hover:bg-gray-50 rounded-xl border border-transparent hover:border-gray-200"
+                        title="View Details"
+                    >
+                        <Eye size={16} />
+                    </button>
                 </td>
               </tr>
-            ))}
+            )})}
             {data.length === 0 && (
                 <tr>
-                    <td colSpan={10} className="p-24 text-center">
+                    <td colSpan={onAction ? 11 : 10} className="p-24 text-center">
                         <div className="flex flex-col items-center opacity-30">
                             <Hash size={48} className="text-gray-400 mb-4" />
                             <p className="text-[11px] font-black uppercase tracking-[0.3em]">No Opname Records Found</p>
@@ -145,7 +163,7 @@ export const StockOpnameTable: React.FC<Props> = ({ data, onView, onEdit }) => {
           {data.length > 0 && (
               <tfoot>
                   <tr className="bg-[#FAFAFA]">
-                      <td colSpan={10} className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-t border-gray-100">
+                      <td colSpan={onAction ? 11 : 10} className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-t border-gray-100">
                           Total {data.length} Opname Records Tracked
                       </td>
                   </tr>

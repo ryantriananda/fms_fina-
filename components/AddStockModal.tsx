@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { X, Save, List, Calendar, CheckCircle, FileText, User, Package, MapPin, History, Check, XCircle, Clock, Users, MessageSquare, Send, Trash2, ChevronDown, Plus, RotateCcw, Edit3, Layers } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, Save, List, Calendar, CheckCircle, FileText, User, Package, MapPin, History, Check, XCircle, Clock, Users, MessageSquare, Send, Trash2, ChevronDown, Plus, RotateCcw, Edit3, Layers, Mail, Smartphone, CreditCard, Baby, Minus } from 'lucide-react';
 import { VehicleRecord, LogBookRecord, AssetRecord, StationeryRequestRecord, StationeryRequestItem, MasterPodRecord, MasterLockerRecord } from '../types';
 import { MOCK_MASTER_DATA, MOCK_MASTER_ARK_DATA, MOCK_ATK_CATEGORY, MOCK_ARK_CATEGORY, MOCK_UOM_DATA } from '../constants';
 
@@ -50,12 +50,19 @@ export const AddStockModal: React.FC<Props> = ({
   // LogBook State
   const [logBookForm, setLogBookForm] = useState<Partial<LogBookRecord>>({
       tanggalKunjungan: new Date().toISOString().split('T')[0],
-      jamDatang: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-      lokasiModena: 'Jakarta Head Office',
+      jamDatang: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }),
+      lokasiModena: 'SATRIO',
       kategoriTamu: 'Visitor',
-      wanita: 0,
-      lakiLaki: 0,
-      anakAnak: 0
+      // Mapped to specific counters
+      countAdult: 0,
+      countIndividual: 1,
+      countChild: 0,
+      namaTamu: '',
+      email: '',
+      phone: '',
+      identityCardNumber: '',
+      visitorCardNumber: '',
+      note: ''
   });
 
   const isArkModule = moduleName.includes('ARK') || moduleName.includes('Household');
@@ -85,12 +92,19 @@ export const AddStockModal: React.FC<Props> = ({
             } else {
                 setLogBookForm({
                     tanggalKunjungan: new Date().toISOString().split('T')[0],
-                    jamDatang: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-                    lokasiModena: 'Jakarta Head Office',
-                    kategoriTamu: 'Visitor',
-                    wanita: 0,
-                    lakiLaki: 0,
-                    anakAnak: 0
+                    jamDatang: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }),
+                    jamPulang: '',
+                    lokasiModena: 'SATRIO',
+                    kategoriTamu: 'CUSTOMER',
+                    countAdult: 0,
+                    countIndividual: 1,
+                    countChild: 0,
+                    namaTamu: '',
+                    email: '',
+                    phone: '',
+                    identityCardNumber: '',
+                    visitorCardNumber: '',
+                    note: ''
                 });
             }
         } else {
@@ -126,7 +140,15 @@ export const AddStockModal: React.FC<Props> = ({
 
   const handleSave = () => {
       if (isLogBook && onSaveLogBook) {
-          onSaveLogBook(logBookForm);
+          // Map back to legacy fields if needed, or just save new structure
+          const legacyMapped: Partial<LogBookRecord> = {
+              ...logBookForm,
+              // Map counts to legacy fields if backend expects them
+              lakiLaki: logBookForm.countAdult,
+              wanita: logBookForm.countIndividual, // Example mapping
+              anakAnak: logBookForm.countChild
+          };
+          onSaveLogBook(legacyMapped);
       } else if (onSavePod && moduleName.includes('Pod')) {
           onSavePod({});
       } else if (onSaveMasterLocker && moduleName.includes('Loker')) {
@@ -176,7 +198,229 @@ export const AddStockModal: React.FC<Props> = ({
     </div>
   );
 
-  // New Form Design for ATK/ARK
+  // LOGBOOK SPECIFIC COMPONENTS
+  const CounterControl = ({ label, count, onChange, color, icon: Icon }: { label: string, count: number, onChange: (val: number) => void, color: string, icon: any }) => (
+      <div className="flex flex-col items-center justify-center p-4 bg-white rounded-[1.2rem] shadow-sm border border-gray-100 h-full">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${color} bg-opacity-10`}>
+              <Icon size={18} className={color.replace('bg-', 'text-')} />
+          </div>
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">{label}</span>
+          <div className="flex items-center gap-4">
+              <button 
+                onClick={() => count > 0 && onChange(count - 1)}
+                className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-black transition-colors"
+                disabled={isViewMode}
+              >
+                  <Minus size={12} />
+              </button>
+              <span className="text-[20px] font-black text-black w-6 text-center">{count}</span>
+              <button 
+                onClick={() => onChange(count + 1)}
+                className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors shadow-lg shadow-black/20"
+                disabled={isViewMode}
+              >
+                  <Plus size={12} />
+              </button>
+          </div>
+      </div>
+  );
+
+  const LabeledInput = ({ label, value, onChange, placeholder, type = 'text', icon: Icon }: any) => (
+      <div className="mb-1">
+          <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">{label}</label>
+          <div className="relative">
+              <input 
+                  type={type}
+                  className="w-full bg-white border border-gray-200 rounded-2xl px-5 py-4 pl-12 text-[12px] font-black text-black outline-none focus:border-black transition-all placeholder:text-gray-300 shadow-sm"
+                  placeholder={placeholder}
+                  value={value || ''}
+                  onChange={(e) => onChange(e.target.value)}
+                  disabled={isViewMode}
+              />
+              {Icon && <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />}
+          </div>
+      </div>
+  );
+
+  // New Log Book Layout
+  const renderLogBookForm = () => (
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+           
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+               {/* Column 1: Breakdown & Notes */}
+               <div className="space-y-8">
+                   {/* Card: Breakdown Visitor */}
+                   <div className="bg-[#FBFBFB] p-6 rounded-[2rem] border border-gray-200/60 shadow-sm">
+                       <SectionHeader icon={Users} title="BREAKDOWN VISITOR" />
+                       <div className="grid grid-cols-3 gap-3">
+                           <CounterControl 
+                                label="Group" 
+                                count={logBookForm.countAdult || 0} 
+                                onChange={(val) => setLogBookForm({...logBookForm, countAdult: val})}
+                                color="bg-pink-500"
+                                icon={Users}
+                           />
+                           <CounterControl 
+                                label="Individu" 
+                                count={logBookForm.countIndividual || 0} 
+                                onChange={(val) => setLogBookForm({...logBookForm, countIndividual: val})}
+                                color="bg-blue-500"
+                                icon={User}
+                           />
+                           <CounterControl 
+                                label="Child" 
+                                count={logBookForm.countChild || 0} 
+                                onChange={(val) => setLogBookForm({...logBookForm, countChild: val})}
+                                color="bg-orange-500"
+                                icon={Baby}
+                           />
+                       </div>
+                   </div>
+
+                   {/* Card: Notes */}
+                   <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col h-full min-h-[200px]">
+                        <div className="flex items-center gap-2 mb-4">
+                            <FileText size={16} className="text-gray-400" />
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">CATATAN / NOTES</span>
+                        </div>
+                        <textarea 
+                            className="flex-1 w-full bg-[#F8F9FA] border-none rounded-2xl p-5 text-[12px] font-medium text-black outline-none resize-none placeholder:text-gray-300 focus:ring-2 focus:ring-black/5"
+                            placeholder="Tulis catatan kunjungan di sini..."
+                            value={logBookForm.note}
+                            onChange={(e) => setLogBookForm({...logBookForm, note: e.target.value})}
+                            disabled={isViewMode}
+                        />
+                   </div>
+               </div>
+
+               {/* Column 2 & 3: Details */}
+               <div className="md:col-span-2 space-y-8">
+                   {/* Card: Guest Details */}
+                   <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
+                        <SectionHeader icon={User} title="GUEST DETAILS" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <LabeledInput 
+                                label="NAMA TAMU" 
+                                value={logBookForm.namaTamu} 
+                                onChange={(val: string) => setLogBookForm({...logBookForm, namaTamu: val})} 
+                                placeholder="BUDI SANTOSO" 
+                                icon={User}
+                            />
+                            <div className="mb-1">
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">KATEGORI TAMU</label>
+                                <div className="relative">
+                                    <select 
+                                        className="w-full bg-white border border-gray-200 rounded-2xl px-5 py-4 pl-12 text-[12px] font-black text-black outline-none focus:border-black appearance-none cursor-pointer shadow-sm uppercase"
+                                        value={logBookForm.kategoriTamu}
+                                        onChange={(e) => setLogBookForm({...logBookForm, kategoriTamu: e.target.value as any})}
+                                        disabled={isViewMode}
+                                    >
+                                        <option value="CUSTOMER">CUSTOMER</option>
+                                        <option value="SUPPLIER">SUPPLIER</option>
+                                        <option value="VISITOR">VISITOR</option>
+                                        <option value="INTERNAL">INTERNAL</option>
+                                    </select>
+                                    <Users size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />
+                                    <ChevronDown size={16} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                </div>
+                            </div>
+                            <LabeledInput 
+                                label="EMAIL" 
+                                value={logBookForm.email} 
+                                onChange={(val: string) => setLogBookForm({...logBookForm, email: val})} 
+                                placeholder="budi.santoso@example.com" 
+                                type="email"
+                                icon={Mail}
+                            />
+                            <LabeledInput 
+                                label="NOMOR HP" 
+                                value={logBookForm.phone} 
+                                onChange={(val: string) => setLogBookForm({...logBookForm, phone: val})} 
+                                placeholder="08123456789" 
+                                type="tel"
+                                icon={Smartphone}
+                            />
+                        </div>
+                   </div>
+
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                       {/* Card: Identity & Access */}
+                       <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
+                            <SectionHeader icon={CreditCard} title="IDENTITY & ACCESS" />
+                            <div className="space-y-6">
+                                <LabeledInput 
+                                    label="NO. KTP/SIM/PASPOR" 
+                                    value={logBookForm.identityCardNumber} 
+                                    onChange={(val: string) => setLogBookForm({...logBookForm, identityCardNumber: val})} 
+                                    placeholder="3171..." 
+                                    icon={CreditCard}
+                                />
+                                <LabeledInput 
+                                    label="NO. VISITOR CARD" 
+                                    value={logBookForm.visitorCardNumber} 
+                                    onChange={(val: string) => setLogBookForm({...logBookForm, visitorCardNumber: val})} 
+                                    placeholder="V-001" 
+                                    icon={CreditCard}
+                                />
+                            </div>
+                       </div>
+
+                       {/* Card: Visit Details */}
+                       <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
+                            <SectionHeader icon={MapPin} title="VISIT DETAILS" />
+                            <div className="space-y-6">
+                                <div className="mb-1">
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">LOKASI MODENA</label>
+                                    <div className="relative">
+                                        <select 
+                                            className="w-full bg-white border border-gray-200 rounded-2xl px-5 py-4 pl-12 text-[12px] font-black text-black outline-none focus:border-black appearance-none cursor-pointer shadow-sm uppercase"
+                                            value={logBookForm.lokasiModena}
+                                            onChange={(e) => setLogBookForm({...logBookForm, lokasiModena: e.target.value})}
+                                            disabled={isViewMode}
+                                        >
+                                            <option value="SATRIO">SATRIO</option>
+                                            <option value="SURYOPRANOTO">SURYOPRANOTO</option>
+                                            <option value="WAREHOUSE">WAREHOUSE</option>
+                                        </select>
+                                        <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />
+                                        <ChevronDown size={16} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                    </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-4">
+                                    <LabeledInput 
+                                        label="TANGGAL" 
+                                        value={logBookForm.tanggalKunjungan} 
+                                        onChange={(val: string) => setLogBookForm({...logBookForm, tanggalKunjungan: val})} 
+                                        type="date"
+                                        icon={Calendar}
+                                    />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <LabeledInput 
+                                            label="IN" 
+                                            value={logBookForm.jamDatang} 
+                                            onChange={(val: string) => setLogBookForm({...logBookForm, jamDatang: val})} 
+                                            type="time"
+                                        />
+                                        <LabeledInput 
+                                            label="OUT" 
+                                            value={logBookForm.jamPulang} 
+                                            onChange={(val: string) => setLogBookForm({...logBookForm, jamPulang: val})} 
+                                            type="time"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+      </div>
+  );
+
+  const renderMasterForm = () => <div className="p-8"><p>Master Form Placeholder</p></div>;
+
+  // Existing renderRequestForm ... (Keep existing code for ATK/ARK)
   const renderRequestForm = () => (
       <div className="space-y-6">
           
@@ -402,26 +646,10 @@ export const AddStockModal: React.FC<Props> = ({
       </div>
   );
 
-  const renderLogBookForm = () => (
-      <div className="space-y-8">
-           <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
-              <SectionHeader icon={User} title="GUEST INFORMATION" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">NAMA TAMU</label>
-                      <input type="text" className="w-full border border-gray-200 rounded-xl px-5 py-4 text-[12px] font-black" value={logBookForm.namaTamu} onChange={(e) => setLogBookForm({...logBookForm, namaTamu: e.target.value})} disabled={isViewMode} />
-                  </div>
-              </div>
-           </div>
-      </div>
-  );
-
-  const renderMasterForm = () => <div className="p-8"><p>Master Form Placeholder</p></div>;
-
   if (!isOpen) return null;
 
   let modalTitle = '';
-  if (isLogBook) modalTitle = isViewMode ? 'DETAIL BUKU TAMU' : 'INPUT TAMU BARU';
+  if (isLogBook) modalTitle = isViewMode ? 'EDIT LOG BOOK ENTRY' : 'CREATE LOG BOOK ENTRY';
   else if (moduleName.includes('Pod')) modalTitle = 'ADD MASTER POD';
   else if (moduleName.includes('Loker')) modalTitle = 'ADD MASTER LOCKER';
   else if (isArkModule) modalTitle = isViewMode ? 'HOUSEHOLD REQUEST DETAILS' : 'CREATE HOUSEHOLD REQUEST';
@@ -429,7 +657,7 @@ export const AddStockModal: React.FC<Props> = ({
 
   return (
     <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center backdrop-blur-[2px] p-4 animate-in fade-in duration-200">
-      <div className={`bg-[#F8F9FA] w-full ${isViewMode ? 'max-w-6xl' : 'max-w-5xl'} rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col transform transition-all scale-100 max-h-[95vh]`}>
+      <div className={`bg-[#F8F9FA] w-full ${isLogBook || isViewMode ? 'max-w-6xl' : 'max-w-5xl'} rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col transform transition-all scale-100 max-h-[95vh]`}>
         
         {/* Header */}
         <div className="px-10 py-8 bg-white border-b border-gray-100 flex items-center justify-between shrink-0">
@@ -492,13 +720,15 @@ export const AddStockModal: React.FC<Props> = ({
             ) : (
                 <>
                     <button onClick={onClose} className="px-10 py-4 text-[11px] font-black uppercase tracking-widest text-gray-400 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 hover:text-black transition-all">
-                        CANCEL
+                        BATAL
                     </button>
-                    <button className="px-10 py-4 text-[11px] font-black uppercase tracking-widest text-gray-400 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 hover:text-black transition-all">
-                        SAVE DRAFT
-                    </button>
-                    <button onClick={handleSave} className="px-12 py-4 text-[11px] font-black uppercase tracking-widest text-white bg-black rounded-2xl hover:bg-gray-900 shadow-xl shadow-black/20 transition-all active:scale-95">
-                        SAVE DATA
+                    {!isLogBook && (
+                        <button className="px-10 py-4 text-[11px] font-black uppercase tracking-widest text-gray-400 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 hover:text-black transition-all">
+                            SAVE DRAFT
+                        </button>
+                    )}
+                    <button onClick={handleSave} className="px-12 py-4 text-[11px] font-black uppercase tracking-widest text-white bg-black rounded-2xl hover:bg-gray-900 shadow-xl shadow-black/20 transition-all active:scale-95 flex items-center gap-2">
+                        {isLogBook ? <FileText size={16} /> : null} SIMPAN DATA
                     </button>
                 </>
             )}

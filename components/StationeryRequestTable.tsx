@@ -1,17 +1,16 @@
 
 import React from 'react';
 import { AssetRecord } from '../types';
-import { ChevronsUpDown, ChevronLeft, ChevronRight, Eye, Check, Package, Clock } from 'lucide-react';
+import { ChevronsUpDown, ChevronLeft, ChevronRight, Eye, CheckCircle2, XCircle, Package, Clock } from 'lucide-react';
 
 interface Props {
   data: AssetRecord[];
   onView?: (item: AssetRecord) => void;
   isApprovalMode?: boolean;
-  onApprove?: (item: AssetRecord) => void;
-  onReject?: (item: AssetRecord) => void;
+  onAction?: (item: AssetRecord, action: 'Approve' | 'Reject') => void;
 }
 
-export const StationeryRequestTable: React.FC<Props> = ({ data, onView, isApprovalMode = false, onApprove }) => {
+export const StationeryRequestTable: React.FC<Props> = ({ data, onView, isApprovalMode = false, onAction }) => {
   
   const getStatusBadge = (status: string) => {
       const s = status.toLowerCase();
@@ -36,7 +35,6 @@ export const StationeryRequestTable: React.FC<Props> = ({ data, onView, isApprov
                   <ChevronsUpDown size={12} className="text-gray-300 group-hover:text-black transition-colors"/>
                 </div>
               </th>
-              {/* Items Column Added */}
               <th className="px-6 w-64 group cursor-pointer hover:bg-gray-100 transition-colors">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-black text-black uppercase tracking-[0.15em]">ITEMS REQUESTED</span>
@@ -57,11 +55,17 @@ export const StationeryRequestTable: React.FC<Props> = ({ data, onView, isApprov
               </th>
               <th className="px-6 w-40 text-center text-[10px] font-black text-black uppercase tracking-[0.15em]">DATE</th>
               <th className="px-6 w-48 text-center text-[10px] font-black text-black uppercase tracking-[0.15em]">STATUS</th>
+              {isApprovalMode && (
+                  <th className="px-6 w-40 text-center text-[10px] font-black text-black uppercase tracking-[0.15em]">WORKFLOW</th>
+              )}
               <th className="px-6 w-32 text-center pr-10 text-[10px] font-black text-black uppercase tracking-[0.15em]">ACTION</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {data.map((item, index) => (
+            {data.map((item, index) => {
+              const isPending = item.status === 'Waiting Approval' || item.status === 'Pending';
+              
+              return (
               <tr key={item.id} className="bg-white hover:bg-[#FDFDFD] transition-all group cursor-pointer h-24" onClick={() => onView?.(item)}>
                 <td className="pl-10 text-center font-bold text-gray-300 text-[11px]">{index + 1}</td>
                 <td className="px-6">
@@ -114,29 +118,44 @@ export const StationeryRequestTable: React.FC<Props> = ({ data, onView, isApprov
                 <td className="px-6 text-center">
                     {getStatusBadge(item.status)}
                 </td>
-                <td className="px-6 text-center pr-10">
-                    <div className="flex items-center justify-center gap-2">
-                        {isApprovalMode && (item.status === 'Waiting Approval' || item.status === 'Pending') && (
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); onApprove?.(item); }}
-                                className="text-white bg-[#10B981] hover:bg-green-600 transition-all p-2.5 rounded-xl shadow-lg shadow-green-200 active:scale-95 transform hover:-translate-y-0.5"
-                                title="Approve"
-                            >
-                                <Check size={16} strokeWidth={3} />
-                            </button>
+                
+                {/* Workflow Column */}
+                {isApprovalMode && (
+                    <td className="px-6 text-center">
+                        {isPending && onAction ? (
+                            <div className="flex items-center justify-center gap-2">
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); onAction(item, 'Approve'); }}
+                                    className="text-white bg-[#10B981] hover:bg-green-600 transition-all p-2.5 rounded-xl shadow-lg shadow-green-200 active:scale-95 transform hover:-translate-y-0.5"
+                                    title="Approve"
+                                >
+                                    <CheckCircle2 size={16} strokeWidth={2.5} />
+                                </button>
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); onAction(item, 'Reject'); }}
+                                    className="text-white bg-red-500 hover:bg-red-600 transition-all p-2.5 rounded-xl shadow-lg shadow-red-200 active:scale-95 transform hover:-translate-y-0.5"
+                                    title="Reject"
+                                >
+                                    <XCircle size={16} strokeWidth={2.5} />
+                                </button>
+                            </div>
+                        ) : (
+                            <span className="text-[9px] font-bold text-gray-300 italic uppercase">Processed</span>
                         )}
-                        
-                        <button 
-                            onClick={(e) => { e.stopPropagation(); onView?.(item); }}
-                            className="text-gray-400 hover:text-black transition-all p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 active:scale-90 border border-transparent hover:border-gray-200"
-                            title="View Details"
-                        >
-                            <Eye size={16} />
-                        </button>
-                    </div>
+                    </td>
+                )}
+
+                <td className="px-6 text-center pr-10">
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); onView?.(item); }}
+                        className="text-gray-300 hover:text-black transition-all p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 active:scale-90 border border-transparent hover:border-gray-200"
+                        title="View Details"
+                    >
+                        <Eye size={16} />
+                    </button>
                 </td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </table>
       </div>
@@ -146,7 +165,7 @@ export const StationeryRequestTable: React.FC<Props> = ({ data, onView, isApprov
             <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
                 Showing <span className="text-black ml-1">{data.length} records</span>
             </div>
-            
+            {/* Pagination buttons */}
             <div className="flex items-center gap-2">
                  <button className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 hover:border-black text-gray-300 hover:text-black transition-all bg-white shadow-sm active:scale-95">
                     <ChevronLeft size={16} />

@@ -9,6 +9,7 @@ interface Props {
   onTabChange: (tab: string) => void;
   onAddClick: () => void;
   onExportClick?: () => void;
+  onImportClick?: () => void;
   onSyncClick?: () => void;
   searchPlaceholder?: string;
   moduleName?: string;
@@ -26,6 +27,7 @@ export const FilterBar: React.FC<Props> = ({
   onTabChange, 
   onAddClick, 
   onExportClick,
+  onImportClick,
   onSyncClick,
   searchPlaceholder, 
   moduleName,
@@ -107,7 +109,10 @@ export const FilterBar: React.FC<Props> = ({
                 </button>
             )}
             {!hideImport && (
-                <button className="flex items-center gap-2 px-4 h-full border-r border-gray-100 text-gray-500 hover:text-black hover:bg-gray-50 transition-all text-[10px] font-black uppercase tracking-widest">
+                <button 
+                  onClick={onImportClick}
+                  className="flex items-center gap-2 px-4 h-full border-r border-gray-100 text-gray-500 hover:text-black hover:bg-gray-50 transition-all text-[10px] font-black uppercase tracking-widest"
+                >
                 <Upload size={14} /> <span className="hidden sm:inline">{t('IMPORT')}</span>
                 </button>
             )}

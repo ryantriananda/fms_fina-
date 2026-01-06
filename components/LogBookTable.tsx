@@ -1,16 +1,17 @@
 
 import React from 'react';
 import { LogBookRecord } from '../types';
-import { ChevronsUpDown, Eye, Pencil, User, Users, Baby, MapPin, Clock, Calendar, MessageSquare, MoreHorizontal, ChevronLeft, ChevronRight, Activity } from 'lucide-react';
+import { ChevronsUpDown, Eye, Pencil, User, Users, Baby, MapPin, Clock, Calendar, MessageSquare, MoreHorizontal, ChevronLeft, ChevronRight, Activity, Trash2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface Props {
   data: LogBookRecord[];
   onEdit?: (item: LogBookRecord) => void;
   onView?: (item: LogBookRecord) => void;
+  onDelete?: (id: string) => void;
 }
 
-export const LogBookTable: React.FC<Props> = ({ data, onEdit, onView }) => {
+export const LogBookTable: React.FC<Props> = ({ data, onEdit, onView, onDelete }) => {
   const { t } = useLanguage();
 
   return (
@@ -47,7 +48,7 @@ export const LogBookTable: React.FC<Props> = ({ data, onEdit, onView }) => {
               <th className="p-5 w-44 text-center text-[10px] font-black text-black uppercase tracking-[0.15em]">Time Log</th>
               <th className="p-5 w-56 text-center text-[10px] font-black text-black uppercase tracking-[0.15em]">Breakdown</th>
               <th className="p-5 text-[10px] font-black text-black uppercase tracking-[0.15em]">{t('Note')}</th>
-              <th className="p-5 w-24 text-center text-[10px] font-black text-black uppercase tracking-[0.15em]">Action</th>
+              <th className="p-5 w-32 text-center text-[10px] font-black text-black uppercase tracking-[0.15em]">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -136,6 +137,12 @@ export const LogBookTable: React.FC<Props> = ({ data, onEdit, onView }) => {
                                 className="text-gray-400 hover:text-black transition-all p-2 rounded-xl hover:bg-gray-100 active:scale-90"
                             >
                                 <Pencil size={18} />
+                            </button>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); onDelete?.(item.id); }}
+                                className="text-gray-400 hover:text-red-500 transition-all p-2 rounded-xl hover:bg-red-50 active:scale-90"
+                            >
+                                <Trash2 size={18} />
                             </button>
                         </div>
                     </td>

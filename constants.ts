@@ -1,3 +1,4 @@
+
 import { 
     AssetRecord, MasterItem, VehicleRecord, TaxKirRecord, MasterVendorRecord, 
     DeliveryLocationRecord, LogBookRecord, BuildingRecord, ReminderRecord, 
@@ -8,6 +9,21 @@ import {
     StockOpnameRecord, LockerRequestRecord, PodRequestRecord, MasterPodRecord, 
     MasterLockerRecord, InsuranceProviderRecord 
 } from './types';
+
+export const ACTIVITY_TYPES = {
+    Cleaning: ["Penyapuan lantai", "Mop lantai", "Pembersihan kamar mandi", "Sanitasi area", "Pengantaran sampah", "Pembersihan kaca"],
+    Security: ["Patroli area", "Pemeriksaan identitas", "Kontrol akses", "CCTV check", "Penerimaan tamu", "Pengamanan vendor"],
+    Teknisi: ["Perbaikan AC", "Instalasi kabel", "Maintenance perangkat", "Penggantian suku cadang", "Uji coba sistem"]
+};
+
+export const CLEANING_CHECKLISTS: Record<string, string[]> = {
+    "Penyapuan lantai": ["Sapu bersih debu", "Pastikan sudut bersih", "Buang sampah", "Cek kolong meja"],
+    "Mop lantai": ["Gunakan cairan pembersih", "Pasang tanda basah", "Bilas kain pel", "Keringkan area basah"],
+    "Pembersihan kamar mandi": ["Isi Tisu", "Lantai Kering", "Wastafel Bersih", "Cermin Bersih", "Sabun Terisi", "Toilet Bowl Bersih"],
+    "Sanitasi area": ["Lap gagang pintu", "Lap meja resepsionis", "Semprot disinfektan", "Lap tombol lift"],
+    "Pengantaran sampah": ["Pilad sampah (organik/non)", "Ganti plastik sampah", "Ikat plastik sampah", "Bawa ke TPS"],
+    "Pembersihan kaca": ["Semprot glass cleaner", "Wiper kaca", "Lap sudut kaca", "Cek noda air"]
+};
 
 export const MOCK_DATA: AssetRecord[] = [
     { id: 1, transactionNumber: 'TRX/ATK/2024/001', employee: { name: 'John Doe', role: 'Staff', avatar: 'https://via.placeholder.com/150' }, category: 'ATK', itemName: 'Ballpoint', qty: 10, date: '2024-03-20', status: 'Approved', remainingStock: 50, itemCode: 'ATK-001', uom: 'Pcs' },
@@ -104,7 +120,38 @@ export const MOCK_LOGBOOK_DATA: LogBookRecord[] = [
 ];
 
 export const MOCK_TIMESHEET_DATA: TimesheetRecord[] = [
-    { id: 'TS-001', employee: { name: 'Cleaner A', role: 'Cleaner', avatar: 'https://via.placeholder.com/150' }, location: 'Head Office', area: 'Lobby', date: '2024-03-25', shift: 'Pagi', clockIn: '07:00', clockOut: '16:00', status: 'Tepat Waktu' },
+    { 
+        id: 'TS-001', 
+        employee: { name: 'Cleaner A', role: 'Cleaning', avatar: 'https://via.placeholder.com/150', phone: '08123456789' }, 
+        location: 'Head Office', 
+        area: 'Lobby & Toilet', 
+        date: '2024-03-25', 
+        shift: 'Pagi', 
+        clockIn: '07:00', 
+        clockOut: '16:00', 
+        status: 'Tepat Waktu',
+        totalHours: 8,
+        activities: [
+            { id: 'ACT-1', activityType: 'Penyapuan lantai', location: 'Lobby', startTime: '07:00', endTime: '09:00', duration: 2, notes: 'Bersih' },
+            { id: 'ACT-2', activityType: 'Pembersihan kamar mandi', location: 'Toilet Lt 1', startTime: '09:00', endTime: '10:00', duration: 1, notes: 'Stok tisu aman' }
+        ]
+    },
+    { 
+        id: 'TS-002', 
+        employee: { name: 'Security B', role: 'Security', avatar: 'https://via.placeholder.com/150', phone: '08198765432' }, 
+        location: 'Warehouse', 
+        area: 'Gate 1', 
+        date: '2024-03-25', 
+        shift: 'Malam', 
+        clockIn: '19:00', 
+        clockOut: '07:00', 
+        status: 'Tepat Waktu',
+        totalHours: 12,
+        activities: [
+            { id: 'ACT-3', activityType: 'Patroli area', location: 'Perimeter Luar', startTime: '20:00', endTime: '22:00', duration: 2, notes: 'Aman' },
+            { id: 'ACT-4', activityType: 'CCTV check', location: 'Pos Utama', startTime: '23:00', endTime: '00:00', duration: 1, notes: 'Camera 4 flicker' }
+        ]
+    },
 ];
 
 export const MOCK_VENDOR_DATA: VendorRecord[] = [
@@ -113,6 +160,9 @@ export const MOCK_VENDOR_DATA: VendorRecord[] = [
 
 export const MOCK_USER_DATA: UserRecord[] = [
     { id: 'USR-001', name: 'Admin', role: 'Administrator', status: 'Active', avatar: 'https://via.placeholder.com/150' },
+    { id: 'USR-002', name: 'Cleaner A', role: 'Cleaning', status: 'Active', avatar: 'https://via.placeholder.com/150' },
+    { id: 'USR-003', name: 'Security B', role: 'Security', status: 'Active', avatar: 'https://via.placeholder.com/150' },
+    { id: 'USR-004', name: 'Teknisi C', role: 'Teknisi', status: 'Active', avatar: 'https://via.placeholder.com/150' },
 ];
 
 export const MOCK_GENERAL_MASTER_DATA: GeneralMasterItem[] = []; 

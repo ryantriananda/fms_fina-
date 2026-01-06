@@ -31,7 +31,7 @@ import { BuildingTable } from './components/BuildingTable';
 import { BuildingModal } from './components/BuildingModal';
 import { UtilityTable } from './components/UtilityTable';
 import { UtilityModal } from './components/UtilityModal';
-import { ReminderTable } from './components/ReminderTable'; // Compliance
+import { ReminderTable } from './components/ReminderTable'; // Compliance & General Reminder
 import { ComplianceModal } from './components/ComplianceModal';
 import { BuildingMaintenanceTable } from './components/BuildingMaintenanceTable';
 import { BuildingMaintenanceModal } from './components/BuildingMaintenanceModal';
@@ -50,6 +50,7 @@ import { InsuranceClaimTable } from './components/InsuranceClaimTable';
 import { InsuranceClaimModal } from './components/InsuranceClaimModal';
 import { InsuranceProviderTable } from './components/InsuranceProviderTable';
 import { InsuranceProviderModal } from './components/InsuranceProviderModal';
+import { InsuranceReminderModal } from './components/InsuranceReminderModal'; // NEW
 
 // Facility
 import { ModenaPodTable } from './components/ModenaPodTable';
@@ -64,7 +65,9 @@ import { LockerRequestModal } from './components/LockerRequestModal';
 // Stock Opname (NEW)
 import { StockOpnameTable } from './components/StockOpnameTable';
 import { AddStockOpnameModal } from './components/AddStockOpnameModal';
-import { ImportStockOpnameModal } from './components/ImportStockOpnameModal';
+
+// Import Generic
+import { ImportDataModal } from './components/ImportDataModal';
 
 // Daily Ops & Admin
 import { LogBookTable } from './components/LogBookTable';
@@ -81,6 +84,7 @@ import { GeneralMasterTable } from './components/GeneralMasterTable';
 import { GeneralMasterModal } from './components/GeneralMasterModal';
 import { MasterDeliveryLocationTable } from './components/MasterDeliveryLocationTable';
 import { DeliveryLocationModal } from './components/DeliveryLocationModal';
+import { WorkflowActionModal } from './components/WorkflowActionModal'; 
 
 import { 
     AssetRecord, MasterItem, VehicleRecord, VehicleContractRecord, ServiceRecord, TaxKirRecord, 
@@ -148,6 +152,7 @@ export const App: React.FC = () => {
   // Insurance
   const [insurances, setInsurances] = useState<InsuranceRecord[]>(MOCK_INSURANCE_DATA);
   const [insuranceProviders, setInsuranceProviders] = useState<InsuranceProviderRecord[]>(MOCK_INSURANCE_PROVIDERS);
+  const [insuranceReminders, setInsuranceReminders] = useState<ReminderRecord[]>([]); // New manual reminders state
 
   // Facility
   const [pods, setPods] = useState<ModenaPodRecord[]>(MOCK_POD_DATA);
@@ -205,6 +210,30 @@ export const App: React.FC = () => {
     mode: 'create'
   });
 
+  // --- IMPORT MODAL STATE ---
+  const [importState, setImportState] = useState<{
+      isOpen: boolean;
+      module: string;
+      title: string;
+  }>({
+      isOpen: false,
+      module: '',
+      title: ''
+  });
+
+  // --- WORKFLOW ACTION STATE (NEW) ---
+  const [workflowAction, setWorkflowAction] = useState<{
+      isOpen: boolean;
+      action: 'Approve' | 'Reject' | 'Revise';
+      item: any;
+      module: 'ATK' | 'ARK' | 'LOCKER' | 'OPNAME';
+  }>({
+      isOpen: false,
+      action: 'Approve',
+      item: null,
+      module: 'ATK'
+  });
+
   const openModal = (type: string, mode: 'create' | 'edit' | 'view' | 'approve' = 'create', data?: any, extraData?: any) => {
     setModalState({ isOpen: true, type, mode, data, extraData });
   };
@@ -216,6 +245,74 @@ export const App: React.FC = () => {
   const handleNavigate = (item: string) => {
     setActiveItem(item);
     setActiveTab('SEMUA');
+  };
+
+  // --- IMPORT LOGIC ---
+  const handleOpenImport = () => {
+      setImportState({ isOpen: true, module: activeItem, title: activeItem });
+  };
+
+  const getImportTemplateName = (module: string) => {
+      const map: Record<string, string> = {
+          'Master ATK': 'MASTER_ATK_TEMPLATE.xlsx',
+          'Master ARK': 'MASTER_ARK_TEMPLATE.xlsx',
+          'Request ATK': 'REQUEST_ATK_TEMPLATE.xlsx',
+          'Daftar Kendaraan': 'VEHICLE_DATA_TEMPLATE.xlsx',
+          'Kontrak Kendaraan': 'VEHICLE_CONTRACT_TEMPLATE.xlsx',
+          'Servis': 'SERVICE_HISTORY_TEMPLATE.xlsx',
+          'Pajak & KIR': 'TAX_KIR_TEMPLATE.xlsx',
+          'Daftar Gedung': 'BUILDING_DATA_TEMPLATE.xlsx',
+          'Asset HC': 'GENERAL_ASSET_HC_TEMPLATE.xlsx',
+          'Asset IT': 'GENERAL_ASSET_IT_TEMPLATE.xlsx',
+          'Vendor': 'MASTER_VENDOR_TEMPLATE.xlsx',
+          'Master Vendor': 'MASTER_VENDOR_TEMPLATE.xlsx',
+          'Manajemen User': 'USER_DATA_TEMPLATE.xlsx',
+          'Stock Opname': 'STOCK_OPNAME_TEMPLATE.xlsx',
+          'Log Book': 'VISITOR_LOG_TEMPLATE.xlsx',
+          'Utility Monitoring': 'UTILITY_USAGE_TEMPLATE.xlsx',
+          'Daftar Loker': 'MASTER_LOCKER_TEMPLATE.xlsx',
+          'Timesheet': 'TIMESHEET_LOG_TEMPLATE.xlsx',
+          'Expiring Soon': 'INSURANCE_REMINDER_TEMPLATE.xlsx'
+      };
+      
+      // Dynamic for General Masters
+      if (masterDataMap[module]) {
+          return `${module.replace(/\s+/g, '_').toUpperCase()}_TEMPLATE.xlsx`;
+      }
+
+      return map[module] || 'DATA_IMPORT_TEMPLATE.xlsx';
+  };
+
+  // --- WORKFLOW HANDLERS ---
+  const handleOpenWorkflow = (item: any, action: 'Approve' | 'Reject' | 'Revise', module: 'ATK' | 'ARK' | 'LOCKER' | 'OPNAME') => {
+      setWorkflowAction({ isOpen: true, action, item, module });
+  };
+
+  const handleCloseWorkflow = () => {
+      setWorkflowAction(prev => ({ ...prev, isOpen: false }));
+  };
+
+  const handleSubmitWorkflow = (comment: string) => {
+      const { action, item, module } = workflowAction;
+      const status = action === 'Approve' ? 'Approved' : action === 'Reject' ? 'Rejected' : 'Revised';
+      
+      // Update logic based on module
+      if (module === 'ATK') {
+          setAtkRequests(prev => prev.map(r => r.id === item.id ? { ...r, status } : r));
+      } else if (module === 'ARK') {
+          setArkRequests(prev => prev.map(r => r.id === item.id ? { ...r, status } : r));
+      } else if (module === 'LOCKER') {
+          setLockerRequests(prev => prev.map(r => r.id === item.id ? { ...r, status } : r));
+      } else if (module === 'OPNAME') {
+          setStockOpnames(prev => prev.map(r => r.opnameId === item.opnameId ? { 
+              ...r, 
+              statusApproval: status as any, 
+              approvalNote: comment, 
+              approvalDate: new Date().toISOString().split('T')[0] 
+          } : r));
+      }
+
+      handleCloseWorkflow();
   };
 
   // --- CRUD HANDLERS FOR MASTER ITEMS (ATK & ARK) ---
@@ -256,21 +353,33 @@ export const App: React.FC = () => {
     setList(prev => prev.filter(item => item.id !== id));
   };
 
-  // --- HANDLER FOR STOCK OPNAME APPROVAL ---
-  const handleStockOpnameApproval = (opnameId: string, status: 'Approved' | 'Rejected', note?: string) => {
-      setStockOpnames(prev => prev.map(record => {
-          if (record.opnameId === opnameId) {
-              return {
-                  ...record,
-                  statusApproval: status,
-                  approvedBy: 'Current User', // Replace with actual logged-in user
-                  approvalDate: new Date().toISOString().split('T')[0],
-                  approvalNote: note
-              };
-          }
-          return record;
-      }));
+  // --- HANDLER FOR LOGBOOK CRUD ---
+  const handleSaveLogBook = (data: Partial<LogBookRecord>) => {
+      if (modalState.mode === 'create') {
+          // Add new record
+          const newLog: LogBookRecord = {
+              ...data,
+              id: Date.now().toString(), // Simple ID gen
+              // Default values if missing
+              tanggalKunjungan: data.tanggalKunjungan || new Date().toISOString().split('T')[0],
+              jamDatang: data.jamDatang || new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'}),
+              kategoriTamu: data.kategoriTamu || 'Visitor',
+              wanita: data.wanita || 0,
+              lakiLaki: data.lakiLaki || 0,
+              anakAnak: data.anakAnak || 0
+          } as LogBookRecord;
+          setLogBooks([newLog, ...logBooks]);
+      } else if (modalState.mode === 'edit' && data.id) {
+          // Update existing record
+          setLogBooks(logBooks.map(item => item.id === data.id ? { ...item, ...data } as LogBookRecord : item));
+      }
       closeModal();
+  };
+
+  const handleDeleteLogBook = (id: string) => {
+      if (window.confirm("Are you sure you want to delete this log book entry?")) {
+          setLogBooks(prev => prev.filter(log => log.id !== id));
+      }
   };
 
   // --- RENDER CONTENT ---
@@ -297,7 +406,14 @@ export const App: React.FC = () => {
       case 'Request ATK':
         return (
             <>
-                <FilterBar tabs={['SEMUA', 'DRAFT', 'WAITING APPROVAL', 'APPROVED', 'REJECTED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('ATK_REQUEST', 'create')} customAddLabel="TAMBAH DATA" />
+                <FilterBar 
+                    tabs={['SEMUA', 'DRAFT', 'WAITING APPROVAL', 'APPROVED', 'REJECTED']} 
+                    activeTab={activeTab} 
+                    onTabChange={setActiveTab} 
+                    onAddClick={() => openModal('ATK_REQUEST', 'create')} 
+                    customAddLabel="TAMBAH DATA" 
+                    onImportClick={handleOpenImport}
+                />
                 <StationeryRequestTable data={atkRequests} onView={(i) => openModal('ATK_REQUEST', 'view', i)} />
             </>
         );
@@ -305,7 +421,12 @@ export const App: React.FC = () => {
         return (
           <>
             <FilterBar tabs={['SEMUA', 'WAITING APPROVAL', 'DISETUJUI', 'DITOLAK']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => {}} hideAdd={true} />
-            <StationeryRequestTable data={atkRequests} onView={(i) => openModal('ATK_APPROVAL', 'approve', i)} isApprovalMode={true} onApprove={(i) => openModal('ATK_APPROVAL', 'approve', i)} onReject={(i) => openModal('ATK_APPROVAL', 'approve', i)} />
+            <StationeryRequestTable 
+                data={atkRequests} 
+                onView={(i) => openModal('ATK_APPROVAL', 'approve', i)} 
+                isApprovalMode={true} 
+                onAction={(item, action) => handleOpenWorkflow(item, action, 'ATK')}
+            />
           </>
         );
       case 'Master ATK': 
@@ -322,6 +443,7 @@ export const App: React.FC = () => {
                     else openModal('MASTER_ITEM', 'create');
                 }} 
                 customAddLabel="TAMBAH DATA" 
+                onImportClick={handleOpenImport}
             />
             {(activeTab === 'ITEMS' || activeTab === 'SEMUA') && (
                 <MasterAtkTable 
@@ -358,7 +480,14 @@ export const App: React.FC = () => {
       case 'Daftar ARK':
          return (
             <>
-                <FilterBar tabs={['SEMUA', 'DRAFT', 'WAITING APPROVAL', 'APPROVED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('ARK_REQUEST', 'create')} customAddLabel="TAMBAH DATA" />
+                <FilterBar 
+                    tabs={['SEMUA', 'DRAFT', 'WAITING APPROVAL', 'APPROVED']} 
+                    activeTab={activeTab} 
+                    onTabChange={setActiveTab} 
+                    onAddClick={() => openModal('ARK_REQUEST', 'create')} 
+                    customAddLabel="TAMBAH DATA" 
+                    onImportClick={handleOpenImport}
+                />
                 <StationeryRequestTable data={arkRequests} onView={(i) => openModal('ARK_REQUEST', 'view', i)} />
             </>
          );
@@ -366,7 +495,12 @@ export const App: React.FC = () => {
          return (
             <>
                 <FilterBar tabs={['SEMUA', 'WAITING APPROVAL', 'DISETUJUI', 'DITOLAK']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => {}} hideAdd={true} />
-                <StationeryRequestTable data={arkRequests} onView={(i) => openModal('ARK_APPROVAL', 'approve', i)} isApprovalMode={true} onApprove={(i) => openModal('ARK_APPROVAL', 'approve', i)} onReject={(i) => openModal('ARK_APPROVAL', 'approve', i)} />
+                <StationeryRequestTable 
+                    data={arkRequests} 
+                    onView={(i) => openModal('ARK_APPROVAL', 'approve', i)} 
+                    isApprovalMode={true} 
+                    onAction={(item, action) => handleOpenWorkflow(item, action, 'ARK')} 
+                />
             </>
          );
       case 'Master ARK': 
@@ -383,6 +517,7 @@ export const App: React.FC = () => {
                     else openModal('MASTER_ITEM', 'create');
                 }} 
                 customAddLabel="TAMBAH DATA" 
+                onImportClick={handleOpenImport}
             />
             {(activeTab === 'ITEMS' || activeTab === 'SEMUA') && (
                 <MasterAtkTable 
@@ -428,7 +563,7 @@ export const App: React.FC = () => {
                       onTabChange={setActiveTab} 
                       onAddClick={() => openModal('STOCK_OPNAME_INIT', 'create')} 
                       customAddLabel="TAMBAH DATA" 
-                      onExportClick={() => openModal('STOCK_OPNAME_IMPORT', 'create')}
+                      onImportClick={handleOpenImport}
                   />
                   <StockOpnameTable 
                       data={filteredSO} 
@@ -445,6 +580,7 @@ export const App: React.FC = () => {
                               openModal('STOCK_OPNAME_INIT', 'view', opnameItems);
                           }
                       }}
+                      onAction={(item, action) => handleOpenWorkflow(item, action, 'OPNAME')}
                   />
               </>
           );
@@ -453,28 +589,28 @@ export const App: React.FC = () => {
       case 'Daftar Kendaraan':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'AVAILABLE', 'IN USE', 'SERVICE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('VEHICLE', 'create')} customAddLabel="Request Vehicle" />
+                  <FilterBar tabs={['SEMUA', 'AVAILABLE', 'IN USE', 'SERVICE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('VEHICLE', 'create')} customAddLabel="Request Vehicle" onImportClick={handleOpenImport}/>
                   <VehicleTable data={vehicles} onView={(i) => openModal('VEHICLE', 'view', i)} onEdit={(i) => openModal('VEHICLE', 'edit', i)} />
               </>
           );
       case 'Kontrak Kendaraan':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'ACTIVE', 'EXPIRING SOON', 'EXPIRED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('VEHICLE_CONTRACT', 'create')} customAddLabel="New Contract" />
+                  <FilterBar tabs={['SEMUA', 'ACTIVE', 'EXPIRING SOON', 'EXPIRED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('VEHICLE_CONTRACT', 'create')} customAddLabel="New Contract" onImportClick={handleOpenImport}/>
                   <VehicleContractTable data={vehicleContracts} onView={(i) => openModal('VEHICLE_CONTRACT', 'view', i)} onEdit={(i) => openModal('VEHICLE_CONTRACT', 'edit', i)} />
               </>
           );
       case 'Servis':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'SCHEDULED', 'IN PROGRESS', 'COMPLETED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('SERVICE', 'create')} customAddLabel="Add Service" moduleName='Servis'/>
+                  <FilterBar tabs={['SEMUA', 'SCHEDULED', 'IN PROGRESS', 'COMPLETED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('SERVICE', 'create')} customAddLabel="Add Service" moduleName='Servis' onImportClick={handleOpenImport}/>
                   <ServiceTable data={vehicleServices} onView={(i) => openModal('SERVICE', 'view', i)} onEdit={(i) => openModal('SERVICE', 'edit', i)} />
               </>
           );
       case 'Pajak & KIR':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'PENDING', 'PROCESSED', 'COMPLETED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('TAX_KIR', 'create')} customAddLabel="Request Pajak/KIR" />
+                  <FilterBar tabs={['SEMUA', 'PENDING', 'PROCESSED', 'COMPLETED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('TAX_KIR', 'create')} customAddLabel="Request Pajak/KIR" onImportClick={handleOpenImport}/>
                   <TaxKirTable data={vehicleTaxes} onView={(i) => openModal('TAX_KIR', 'view', i)} onEdit={(i) => openModal('TAX_KIR', 'edit', i)} />
               </>
           );
@@ -504,14 +640,14 @@ export const App: React.FC = () => {
       case 'Daftar Gedung':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'OWNED', 'RENTED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('BUILDING', 'create')} customAddLabel="New Branch Req" />
+                  <FilterBar tabs={['SEMUA', 'OWNED', 'RENTED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('BUILDING', 'create')} customAddLabel="New Branch Req" onImportClick={handleOpenImport}/>
                   <BuildingTable data={buildings} onView={(i) => openModal('BUILDING', 'view', i)} onEdit={(i) => openModal('BUILDING', 'edit', i)} />
               </>
           );
       case 'Utility Monitoring':
           return (
               <>
-                  <FilterBar tabs={['OVERVIEW', 'LISTRIK', 'AIR', 'INTERNET']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('UTILITY', 'create')} customAddLabel="Input Utility" />
+                  <FilterBar tabs={['OVERVIEW', 'LISTRIK', 'AIR', 'INTERNET']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('UTILITY', 'create')} customAddLabel="Input Utility" onImportClick={handleOpenImport}/>
                   <UtilityTable data={utilities} onView={(i) => openModal('UTILITY', 'view', i)} onEdit={(i) => openModal('UTILITY', 'edit', i)} />
               </>
           );
@@ -537,7 +673,7 @@ export const App: React.FC = () => {
           const filteredGA = generalAssets.filter(g => activeItem === 'General Asset' ? true : g.assetCategory?.includes(activeItem.split(' ')[1]));
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'OWN', 'RENT', 'DISPOSED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('GENERAL_ASSET', 'create')} customAddLabel={`Request ${activeItem}`} />
+                  <FilterBar tabs={['SEMUA', 'OWN', 'RENT', 'DISPOSED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('GENERAL_ASSET', 'create')} customAddLabel={`Request ${activeItem}`} onImportClick={handleOpenImport}/>
                   <GeneralAssetTable data={filteredGA} onView={(i) => openModal('GENERAL_ASSET', 'view', i)} onEdit={(i) => openModal('GENERAL_ASSET', 'edit', i)} />
               </>
           );
@@ -596,17 +732,52 @@ export const App: React.FC = () => {
               </>
           );
       case 'Expiring Soon':
-          const expiringPolicies = insurances.filter(i => {
+          // Combine system-generated reminders (from policies) + manual reminders
+          const systemReminders: ReminderRecord[] = insurances.filter(i => {
               const days = Math.ceil((new Date(i.endDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+              // Filter by Active Tab Logic if needed, but here we just convert all expiring
               return i.status === 'Expiring' || (days <= 60 && days > -30); 
-          });
+          }).map(i => ({
+              id: i.id,
+              category: 'Insurance',
+              documentName: `Policy Renewal: ${i.policyNumber}`,
+              buildingName: i.assets?.[0]?.name || i.assetName || 'Unknown Asset',
+              assetNo: i.assets?.[0]?.identifier || '-',
+              expiryDate: i.endDate,
+              status: i.status === 'Expired' ? 'Expired' : 'Warning',
+              source: 'System'
+          }));
+
+          const allReminders = [...systemReminders, ...insuranceReminders];
+          
+          // Apply Tab Filtering
+          const filteredReminders = activeTab === 'SEMUA' 
+              ? allReminders 
+              : allReminders.filter(r => r.category?.toUpperCase() === activeTab || (activeTab === 'VEHICLE' && r.assetNo.includes('B')) || (activeTab === 'BUILDING' && !r.assetNo.includes('B'))); // Simple heuristic
+
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'VEHICLE', 'BUILDING']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => {}} hideAdd={true} />
-                  <InsurancePolicyTable 
-                      data={activeTab === 'SEMUA' ? expiringPolicies : expiringPolicies.filter(i => i.category.toUpperCase() === activeTab)} 
-                      onView={(i) => openModal('INSURANCE', 'view', i)} 
-                      onRenew={(i) => openModal('INSURANCE', 'edit', i)}
+                  <FilterBar 
+                      tabs={['SEMUA', 'VEHICLE', 'BUILDING']} 
+                      activeTab={activeTab} 
+                      onTabChange={setActiveTab} 
+                      onAddClick={() => openModal('INSURANCE_REMINDER', 'create')} 
+                      customAddLabel="Add Reminder"
+                      onImportClick={handleOpenImport}
+                  />
+                  <ReminderTable 
+                      data={filteredReminders} 
+                      onView={(i) => {
+                          if (i.source === 'System') {
+                              // View original policy
+                              const policy = insurances.find(p => p.id === i.id);
+                              if(policy) openModal('INSURANCE', 'view', policy);
+                          } else {
+                              // View manual reminder
+                              openModal('INSURANCE_REMINDER', 'edit', i);
+                          }
+                      }}
+                      onDelete={(id) => setInsuranceReminders(prev => prev.filter(r => r.id !== id))} 
                   />
               </>
           );
@@ -636,44 +807,67 @@ export const App: React.FC = () => {
       case 'Daftar Loker':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'TERISI', 'KOSONG', 'RUSAK']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('LOCKER', 'create')} customAddLabel="Add Locker" />
+                  <FilterBar tabs={['SEMUA', 'TERISI', 'KOSONG', 'RUSAK']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('LOCKER', 'create')} customAddLabel="Add Locker" onImportClick={handleOpenImport}/>
                   <LockerTable data={lockers} onView={(i) => openModal('LOCKER', 'view', i)} onEdit={(i) => openModal('LOCKER', 'edit', i)} />
               </>
           );
       case 'Request Locker':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'PENDING', 'APPROVED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('LOCKER_REQUEST', 'create')} customAddLabel="Request Locker" />
-                  <LockerRequestTable data={lockerRequests} onView={(i) => openModal('LOCKER_REQUEST', 'view', i)} />
+                  <FilterBar tabs={['SEMUA', 'DRAFT', 'WAITING APPROVAL', 'APPROVED', 'REJECTED', 'CLOSED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('LOCKER_REQUEST', 'create')} customAddLabel="TAMBAH DATA" />
+                  <LockerRequestTable 
+                    data={lockerRequests} 
+                    onView={(i) => openModal('LOCKER_REQUEST', 'view', i)} 
+                    onAction={(item, action) => handleOpenWorkflow(item, action, 'LOCKER')}
+                  />
               </>
           );
 
       // --- DAILY OPS & ADMIN ---
       case 'Log Book':
+          // Filter logic for Log Book based on Active Tab
+          const filteredLogBooks = logBooks.filter(log => {
+              if (activeTab === 'SEMUA') return true;
+              // Map UI tabs to Data Category (Case Insensitive)
+              return log.kategoriTamu?.toUpperCase() === activeTab;
+          });
+
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'VISITOR', 'SUPPLIER', 'INTERNAL']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('LOGBOOK', 'create')} customAddLabel="Input Tamu" />
-                  <LogBookTable data={logBooks} onView={(i) => openModal('LOGBOOK', 'view', i)} onEdit={(i) => openModal('LOGBOOK', 'edit', i)} />
+                  <FilterBar 
+                      tabs={['SEMUA', 'VISITOR', 'SUPPLIER', 'INTERNAL']} 
+                      activeTab={activeTab} 
+                      onTabChange={setActiveTab} 
+                      onAddClick={() => openModal('LOGBOOK', 'create')} 
+                      customAddLabel="Input Tamu" 
+                      onImportClick={handleOpenImport}
+                  />
+                  <LogBookTable 
+                      data={filteredLogBooks} 
+                      onView={(i) => openModal('LOGBOOK', 'view', i)} 
+                      onEdit={(i) => openModal('LOGBOOK', 'edit', i)}
+                      onDelete={(id) => handleDeleteLogBook(id)} 
+                  />
               </>
           );
       case 'Timesheet':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'TEPAT WAKTU', 'TERLAMBAT']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('TIMESHEET', 'create')} customAddLabel="Add Log" />
+                  <FilterBar tabs={['SEMUA', 'TEPAT WAKTU', 'TERLAMBAT']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('TIMESHEET', 'create')} customAddLabel="Add Log" onImportClick={handleOpenImport}/>
                   <TimesheetTable data={timesheets} onView={(i) => openModal('TIMESHEET', 'view', i)} onEdit={(i) => openModal('TIMESHEET', 'edit', i)} />
               </>
           );
       case 'Vendor':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'GOODS', 'SERVICE', 'BOTH']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('VENDOR', 'create')} customAddLabel="Add Vendor" />
+                  <FilterBar tabs={['SEMUA', 'GOODS', 'SERVICE', 'BOTH']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('VENDOR', 'create')} customAddLabel="Add Vendor" onImportClick={handleOpenImport}/>
                   <VendorTable data={vendors} onView={(i) => openModal('VENDOR', 'view', i)} onEdit={(i) => openModal('VENDOR', 'edit', i)} />
               </>
           );
       case 'Manajemen User':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'ACTIVE', 'INACTIVE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('USER', 'create')} customAddLabel="Add User" />
+                  <FilterBar tabs={['SEMUA', 'ACTIVE', 'INACTIVE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('USER', 'create')} customAddLabel="Add User" onImportClick={handleOpenImport}/>
                   <UserTable data={users} onView={(i) => openModal('USER', 'view', i)} onEdit={(i) => openModal('USER', 'edit', i)} />
               </>
           );
@@ -689,7 +883,7 @@ export const App: React.FC = () => {
       case 'Master Vendor':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'ACTIVE', 'INACTIVE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('VENDOR', 'create')} customAddLabel="Add Master Vendor" />
+                  <FilterBar tabs={['SEMUA', 'ACTIVE', 'INACTIVE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('VENDOR', 'create')} customAddLabel="Add Master Vendor" onImportClick={handleOpenImport}/>
                   <MasterVendorTable data={vendors as any} onView={(i) => openModal('VENDOR', 'view', i as any)} onEdit={(i) => openModal('VENDOR', 'edit', i as any)} />
               </>
           );
@@ -708,7 +902,7 @@ export const App: React.FC = () => {
           if (masterDataMap[activeItem]) {
               return (
                   <>
-                      <FilterBar tabs={['LIST']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('GENERAL_MASTER', 'create', undefined, { title: activeItem })} customAddLabel="Add Item" />
+                      <FilterBar tabs={['LIST']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('GENERAL_MASTER', 'create', undefined, { title: activeItem })} customAddLabel="Add Item" onImportClick={handleOpenImport}/>
                       <GeneralMasterTable data={masterDataMap[activeItem]} onEdit={(i) => openModal('GENERAL_MASTER', 'edit', i, { title: activeItem })} onDelete={() => {}} title={activeItem} />
                   </>
               );
@@ -744,6 +938,29 @@ export const App: React.FC = () => {
 
       {/* --- GLOBAL MODALS --- */}
       
+      {/* Workflow Action Modal */}
+      <WorkflowActionModal 
+          isOpen={workflowAction.isOpen}
+          onClose={handleCloseWorkflow}
+          onSubmit={handleSubmitWorkflow}
+          action={workflowAction.action}
+          entityName={workflowAction.item?.id || workflowAction.item?.opnameId || 'Unknown ID'}
+      />
+
+      {/* NEW Generic Import Modal */}
+      <ImportDataModal
+          isOpen={importState.isOpen}
+          onClose={() => setImportState({ ...importState, isOpen: false })}
+          title={importState.title}
+          templateName={getImportTemplateName(importState.module)}
+          onImport={(file) => {
+              console.log(`Importing ${file.name} for ${importState.module}`);
+              // In a real app, this would trigger an API call based on module
+              alert(`File ${file.name} uploaded successfully for ${importState.module}`);
+              setImportState({ ...importState, isOpen: false });
+          }}
+      />
+
       {/* ATK/ARK/Logbook */}
       <AddStockModal 
         isOpen={modalState.isOpen && (['ATK_REQUEST', 'ARK_REQUEST', 'ATK_APPROVAL', 'ARK_APPROVAL', 'LOGBOOK'].includes(modalState.type))}
@@ -752,7 +969,7 @@ export const App: React.FC = () => {
         mode={modalState.mode}
         initialAssetData={modalState.type.includes('APPROVAL') || modalState.type.includes('REQUEST') ? modalState.data : undefined}
         initialLogBookData={modalState.type === 'LOGBOOK' ? modalState.data : undefined}
-        onSaveLogBook={(data) => { setLogBooks(prev => [ { ...data, id: Date.now() } as LogBookRecord, ...prev]); closeModal(); }}
+        onSaveLogBook={handleSaveLogBook}
         onSaveStationeryRequest={(data) => { 
             // Simple mock save
             const newReq: AssetRecord = { id: Date.now(), transactionNumber: `TRX/${Date.now()}`, employee: {name: 'User', role: 'Staff'}, category: 'ATK', itemName: 'New Item', qty: 1, date: '2024-01-01', status: 'Pending' };
@@ -762,6 +979,7 @@ export const App: React.FC = () => {
         }}
       />
 
+      {/* ... Other Modals ... */}
       <MasterItemModal
         isOpen={modalState.isOpen && modalState.type === 'MASTER_ITEM'}
         onClose={closeModal}
@@ -836,6 +1054,25 @@ export const App: React.FC = () => {
       <InsuranceModal isOpen={modalState.isOpen && modalState.type === 'INSURANCE'} onClose={closeModal} onSave={() => closeModal()} initialData={modalState.data} mode={modalState.mode as any} assetList={[...vehicles, ...buildings]} />
       <InsuranceClaimModal isOpen={modalState.isOpen && modalState.type === 'INSURANCE_CLAIM'} onClose={closeModal} onSave={() => closeModal()} initialData={modalState.data} mode={modalState.mode as any} policies={insurances} />
       <InsuranceProviderModal isOpen={modalState.isOpen && modalState.type === 'INSURANCE_PROVIDER'} onClose={closeModal} onSave={() => closeModal()} initialData={modalState.data} mode={modalState.mode as any} />
+      
+      {/* New Insurance Reminder Modal */}
+      <InsuranceReminderModal 
+        isOpen={modalState.isOpen && modalState.type === 'INSURANCE_REMINDER'} 
+        onClose={closeModal} 
+        onSave={(data) => {
+            if (modalState.mode === 'create') {
+                const newReminder = { ...data, id: `REM-${Date.now()}`, source: 'Manual' } as ReminderRecord;
+                setInsuranceReminders(prev => [newReminder, ...prev]);
+            } else {
+                setInsuranceReminders(prev => prev.map(r => r.id === modalState.data.id ? { ...r, ...data } as ReminderRecord : r));
+            }
+            closeModal();
+        }} 
+        initialData={modalState.data}
+        mode={modalState.mode as any} 
+        vehicleList={vehicles}
+        buildingList={buildings}
+      />
 
       {/* Facility Modals */}
       <PodCensusModal isOpen={modalState.isOpen && modalState.type === 'POD_CENSUS'} onClose={closeModal} onSave={() => closeModal()} initialData={modalState.data} mode={modalState.mode as any} />
@@ -850,17 +1087,18 @@ export const App: React.FC = () => {
         onSave={(records) => { setStockOpnames(prev => [...prev, ...records]); closeModal(); }} 
         mode={modalState.mode as any}
         initialData={modalState.data} // Pass data for view/edit
-        onApprove={(opnameId, note) => handleStockOpnameApproval(opnameId, 'Approved', note)}
-        onReject={(opnameId, note) => handleStockOpnameApproval(opnameId, 'Rejected', note)}
-      />
-      <ImportStockOpnameModal
-        isOpen={modalState.isOpen && modalState.type === 'STOCK_OPNAME_IMPORT'}
-        onClose={closeModal}
-        onImport={(file) => { console.log('Importing...', file); closeModal(); }}
       />
 
       {/* Admin Modals */}
-      <TimesheetModal isOpen={modalState.isOpen && modalState.type === 'TIMESHEET'} onClose={closeModal} onSave={() => closeModal()} initialData={modalState.data} mode={modalState.mode as any} buildingList={buildings} userList={users} />
+      <TimesheetModal 
+        isOpen={modalState.isOpen && modalState.type === 'TIMESHEET'} 
+        onClose={closeModal} 
+        onSave={() => closeModal()} 
+        initialData={modalState.data} 
+        mode={modalState.mode as any} 
+        buildingList={buildings} 
+        userList={users} 
+      />
       <VendorModal isOpen={modalState.isOpen && modalState.type === 'VENDOR'} onClose={closeModal} onSave={() => closeModal()} initialData={modalState.data} mode={modalState.mode as any} />
       <UserModal isOpen={modalState.isOpen && modalState.type === 'USER'} onClose={closeModal} onSave={() => closeModal()} initialData={modalState.data} mode={modalState.mode as any} />
       <MasterApprovalModal isOpen={modalState.isOpen && modalState.type === 'MASTER_APPROVAL'} onClose={closeModal} onSave={() => closeModal()} initialData={modalState.data} mode={modalState.mode as any} />

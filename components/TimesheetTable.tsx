@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { TimesheetRecord } from '../types';
-import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Pencil, Smartphone, Trash2, MapPin, CheckSquare, Clock, Eye } from 'lucide-react';
+import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Pencil, Trash2, MapPin, CheckSquare, Clock, Eye, Activity } from 'lucide-react';
 
 interface Props {
   data: TimesheetRecord[];
@@ -16,7 +16,9 @@ export const TimesheetTable: React.FC<Props> = ({ data, onEdit, onDelete, onView
           case 'Tepat Waktu': return 'bg-green-50 text-green-700 border-green-200';
           case 'Terlambat': return 'bg-orange-50 text-orange-700 border-orange-200';
           case 'Absen': return 'bg-red-50 text-red-700 border-red-200';
-          default: return 'bg-blue-50 text-blue-700 border-blue-200';
+          case 'Izin': return 'bg-blue-50 text-blue-700 border-blue-200';
+          case 'Libur': return 'bg-gray-50 text-gray-700 border-gray-200';
+          default: return 'bg-gray-50 text-gray-700 border-gray-200';
       }
   };
 
@@ -25,24 +27,15 @@ export const TimesheetTable: React.FC<Props> = ({ data, onEdit, onDelete, onView
       <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full min-w-[1300px] text-left border-collapse">
           <thead>
-            {/* Header Row 1 */}
             <tr className="bg-[#F9FAFB] border-b border-gray-200 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-              <th rowSpan={2} className="p-6 pl-8 w-16 text-center border-r border-gray-100">#</th>
-              <th rowSpan={2} className="p-6 w-64 border-r border-gray-100">Personil Kebersihan</th>
-              <th rowSpan={2} className="p-6 w-48 border-r border-gray-100">Lokasi & Area</th>
-              <th rowSpan={2} className="p-6 w-32 border-r border-gray-100">Shift</th>
-              {/* Grouped Header */}
-              <th colSpan={2} className="p-4 text-center border-b border-gray-100 w-56 border-r">
-                Waktu Kerja
-              </th>
-              <th rowSpan={2} className="p-6 w-40 border-r border-gray-100 text-center">Status</th>
-              <th rowSpan={2} className="p-6 w-48 border-r border-gray-100">Tugas & Bukti</th>
-              <th rowSpan={2} className="p-6 w-32 text-center">Aksi</th>
-            </tr>
-            {/* Header Row 2 */}
-            <tr className="bg-[#F9FAFB] text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                <th className="p-4 text-center border-r border-gray-100 border-b border-gray-200">Masuk</th>
-                <th className="p-4 text-center border-r border-gray-100 border-b border-gray-200">Pulang</th>
+              <th className="p-6 pl-8 w-16 text-center">#</th>
+              <th className="p-6 w-64">Petugas</th>
+              <th className="p-6 w-48">Lokasi & Area</th>
+              <th className="p-6 w-32">Shift</th>
+              <th className="p-6 w-32 text-center">Total Jam</th>
+              <th className="p-6 w-40 text-center">Kehadiran</th>
+              <th className="p-6 w-48">Aktivitas</th>
+              <th className="p-6 w-32 text-center">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50 text-[12px] text-gray-700">
@@ -55,7 +48,7 @@ export const TimesheetTable: React.FC<Props> = ({ data, onEdit, onDelete, onView
                 <td className="p-6 text-center font-bold text-gray-300 pl-8">{index + 1}</td>
                 
                 {/* Employee Cell */}
-                <td className="p-6 border-r border-gray-50">
+                <td className="p-6">
                   <div className="flex items-center gap-4">
                     <img 
                       src={item.employee.avatar} 
@@ -64,12 +57,14 @@ export const TimesheetTable: React.FC<Props> = ({ data, onEdit, onDelete, onView
                     />
                     <div>
                       <p className="font-black text-black text-[13px] uppercase tracking-tight">{item.employee.name}</p>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">{item.employee.phone}</p>
+                      <span className="text-[9px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded font-bold uppercase mt-1 inline-block">
+                          {item.employee.role}
+                      </span>
                     </div>
                   </div>
                 </td>
 
-                <td className="p-6 border-r border-gray-50">
+                <td className="p-6">
                     <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
                             <MapPin size={12} className="text-gray-300" />
@@ -80,45 +75,36 @@ export const TimesheetTable: React.FC<Props> = ({ data, onEdit, onDelete, onView
                     </div>
                 </td>
                 
-                <td className="p-6 border-r border-gray-50">
+                <td className="p-6">
                     <span className="bg-gray-50 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-gray-100 inline-block">
                         {item.shift}
                     </span>
                 </td>
                 
-                <td className="p-6 text-center border-r border-gray-50">
-                    <div className="font-mono font-black text-black text-[13px]">{item.clockIn || '--:--'}</div>
-                </td>
-
-                <td className="p-6 text-center border-r border-gray-50">
-                    <div className="font-mono font-black text-gray-500 text-[13px]">{item.clockOut || '--:--'}</div>
+                <td className="p-6 text-center">
+                    <div className="font-black text-black text-[14px] flex items-center justify-center gap-1">
+                        <Clock size={14} className="text-gray-400" />
+                        {item.totalHours} h
+                    </div>
                 </td>
                 
-                <td className="p-6 text-center border-r border-gray-50">
+                <td className="p-6 text-center">
                     <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusStyle(item.status)}`}>
                         {item.status}
                     </span>
                 </td>
 
-                 <td className="p-6 border-r border-gray-50">
+                 <td className="p-6">
                     <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500">
-                            <CheckSquare size={12} /> {item.tasks?.length || 0} Tugas Selesai
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-600">
+                            <Activity size={12} className="text-blue-500" /> 
+                            {item.activities?.length || 0} Item Kegiatan
                         </div>
-                        <div className="flex items-center gap-1">
-                            {item.photos && item.photos.length > 0 ? (
-                                item.photos.slice(0, 3).map((photo, idx) => (
-                                    <img key={idx} src={photo} className="w-8 h-8 rounded-lg border border-gray-200 object-cover shadow-sm" alt="Bukti" />
-                                ))
-                            ) : (
-                                <span className="text-[9px] text-gray-300 italic">No photos</span>
-                            )}
-                            {item.photos && item.photos.length > 3 && (
-                                <span className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[9px] font-bold text-gray-400 border border-gray-200">
-                                    +{item.photos.length - 3}
-                                </span>
-                            )}
-                        </div>
+                        {item.activities && item.activities.length > 0 && (
+                            <p className="text-[10px] text-gray-400 italic truncate w-40">
+                                {item.activities[0].activityType}...
+                            </p>
+                        )}
                     </div>
                 </td>
 
@@ -147,6 +133,13 @@ export const TimesheetTable: React.FC<Props> = ({ data, onEdit, onDelete, onView
                 
               </tr>
             ))}
+            {data.length === 0 && (
+                <tr>
+                    <td colSpan={8} className="p-24 text-center text-gray-300 italic text-[11px] uppercase tracking-widest">
+                        Belum ada data timesheet
+                    </td>
+                </tr>
+            )}
           </tbody>
         </table>
       </div>
