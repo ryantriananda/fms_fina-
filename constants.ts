@@ -1,9 +1,68 @@
 
-import { AssetRecord, MasterItem, VehicleRecord, TaxKirRecord, MasterVendorRecord, DeliveryLocationRecord, LogBookRecord, BuildingRecord, ReminderRecord, VehicleContractRecord, GeneralMasterItem, UserRecord, BuildingAssetRecord, BuildingMaintenanceRecord, UtilityRecord, GeneralAssetRecord, VendorRecord, TimesheetRecord, ServiceRecord, MutationRecord, SalesRecord, InsuranceRecord, MaintenanceScheduleRecord, VehicleReminderRecord, LockerRecord, ModenaPodRecord, StockOpnameRecord, LockerRequestRecord, PodRequestRecord, MasterPodRecord, MasterLockerRecord } from './types';
+// ... existing imports ...
+import { AssetRecord, MasterItem, VehicleRecord, TaxKirRecord, MasterVendorRecord, DeliveryLocationRecord, LogBookRecord, BuildingRecord, ReminderRecord, VehicleContractRecord, GeneralMasterItem, UserRecord, BuildingAssetRecord, BuildingMaintenanceRecord, UtilityRecord, GeneralAssetRecord, VendorRecord, TimesheetRecord, ServiceRecord, MutationRecord, SalesRecord, InsuranceRecord, MaintenanceScheduleRecord, VehicleReminderRecord, LockerRecord, ModenaPodRecord, StockOpnameRecord, LockerRequestRecord, PodRequestRecord, MasterPodRecord, MasterLockerRecord, InsuranceProviderRecord } from './types';
 
-// ... (previous mocks unchanged until Locker Data)
+// ... existing mocks ...
 
-// --- ATK & ARK ---
+export const MOCK_INSURANCE_DATA: InsuranceRecord[] = [
+    { 
+        id: 'INS-001', 
+        policyNumber: 'POL-ASW-2024-001', 
+        category: 'Vehicle', 
+        provider: 'Asuransi Astra Buana', 
+        type: 'All Risk', 
+        startDate: '2024-01-01', 
+        endDate: '2025-01-01', 
+        premium: '4500000', 
+        sumInsured: '200000000', 
+        status: 'Active', 
+        deductible: '300000', 
+        claims: [],
+        assets: [{ id: '1', name: 'Toyota Avanza 1.5 G', type: 'Vehicle', identifier: 'B 1234 ABC' }] 
+    },
+    { 
+        id: 'INS-002', 
+        policyNumber: 'POL-PAR-2024-001', 
+        category: 'Building', 
+        provider: 'Zurich Insurance', 
+        type: 'Property All Risk', 
+        startDate: '2024-01-01', 
+        endDate: '2025-01-01', 
+        premium: '15000000', 
+        sumInsured: '5000000000', 
+        status: 'Active', 
+        deductible: '5000000', 
+        claims: [],
+        assets: [{ id: 'BLD-001', name: 'Head Office Satrio', type: 'Building', identifier: 'AST-BLD-001' }]
+    },
+    {
+        id: 'INS-003',
+        policyNumber: 'POL-MIX-FLEET-001',
+        category: 'Vehicle',
+        provider: 'AXA Mandiri',
+        type: 'Fleet Policy',
+        startDate: '2023-12-01',
+        endDate: '2024-12-01',
+        premium: '25000000',
+        sumInsured: '1200000000', 
+        status: 'Expiring',
+        deductible: '300000',
+        claims: [],
+        assets: [
+            { id: '2', name: 'Daihatsu Gran Max', type: 'Vehicle', identifier: 'B 2233 XYZ' },
+            { id: '3', name: 'Honda HRV SE', type: 'Vehicle', identifier: 'D 1778 KJ' }
+        ]
+    }
+];
+
+export const MOCK_INSURANCE_PROVIDERS: InsuranceProviderRecord[] = [
+    { id: 1, name: 'Asuransi Astra Buana', contactPerson: 'Budi Santoso', phone: '021-1234567', email: 'claim@asuransiastra.com', address: 'Jl. TB Simatupang', rating: 4.8 },
+    { id: 2, name: 'Zurich Insurance', contactPerson: 'Dewi Lestari', phone: '021-9876543', email: 'service@zurich.co.id', address: 'Sudirman Plaza', rating: 4.5 },
+    { id: 3, name: 'AXA Mandiri', contactPerson: 'Andi Wijaya', phone: '021-5551234', email: 'support@axa-mandiri.co.id', address: 'Kuningan City', rating: 4.2 },
+    { id: 4, name: 'Sinarmas', contactPerson: 'Rini S', phone: '021-3334445', email: 'info@sinarmas.co.id', address: 'Thamrin', rating: 4.0 },
+];
+
+// ... rest of the constants ...
 export const MOCK_MASTER_DATA: MasterItem[] = [
     { id: 1, category: 'ATK', itemName: 'Kertas A4 80gr', itemCode: 'P-001', uom: 'Rim', remainingStock: 50, minimumStock: 10, maximumStock: 100, requestedStock: 0, lastPurchasePrice: '45.000', averagePrice: '44.500', purchaseDate: '2024-01-10' },
     { id: 2, category: 'ATK', itemName: 'Pulpen Hitam', itemCode: 'P-002', uom: 'Pcs', remainingStock: 120, minimumStock: 20, maximumStock: 200, requestedStock: 0, lastPurchasePrice: '2.500', averagePrice: '2.400', purchaseDate: '2024-01-15' },
@@ -132,11 +191,6 @@ export const MOCK_DELIVERY_LOCATIONS: DeliveryLocationRecord[] = [
     { id: 1, name: 'Head Office', address: 'Jl. Satrio', type: 'HO' }
 ];
 
-export const MOCK_INSURANCE_DATA: InsuranceRecord[] = [
-    { id: 'INS-V-001', policyNumber: 'POL-ASW-2024-001', assetId: '1', assetName: 'B 1234 ABC - TOYOTA AVANZA', category: 'Vehicle', provider: 'Asuransi Astra Buana', type: 'All Risk', startDate: '2024-01-01', endDate: '2025-01-01', premium: '4500000', sumInsured: '200000000', status: 'Active', deductible: '300000', claims: [] },
-    { id: 'INS-B-001', policyNumber: 'POL-PAR-2024-001', assetId: 'BLD-001', assetName: 'Head Office Satrio', category: 'Building', provider: 'Zurich Insurance', type: 'Property All Risk', startDate: '2024-01-01', endDate: '2025-01-01', premium: '15000000', sumInsured: '5000000000', status: 'Active', deductible: '5000000', claims: [] }
-];
-
 // --- SIMPLE MASTERS ---
 export const MOCK_ATK_CATEGORY: GeneralMasterItem[] = [{ id: 1, name: 'Kertas' }, { id: 2, name: 'Alat Tulis' }];
 export const MOCK_ARK_CATEGORY: GeneralMasterItem[] = [{ id: 1, name: 'Cleaning' }, { id: 2, name: 'Pantry' }];
@@ -171,86 +225,62 @@ export const MOCK_GENERAL_MASTER_DATA = {
     peran: [{ id: 1, name: 'Admin' }, { id: 2, name: 'Manager' }, { id: 3, name: 'Staff' }, { id: 4, name: 'Viewer' }]
 };
 
-// --- MOCK DATA FOR NEW MODULES ---
+// ... rest of mock data ...
+
+// New Exports for App.tsx errors
 
 export const MOCK_LOCKER_DATA: LockerRecord[] = [
-    { id: 1, lockerNumber: '001', floor: 'Lantai 1', area: '-', status: 'Terisi', assignedTo: 'Budi Santoso', department: 'HR', spareKeyStatus: 'Ada', lastAuditDate: '2024-03-20', remarks: 'Good condition' },
-    { id: 2, lockerNumber: '002', floor: 'Lantai 1', area: '-', status: 'Kosong', spareKeyStatus: 'Ada', lastAuditDate: '2024-03-10', remarks: 'Clean' },
-    { id: 3, lockerNumber: '070', floor: 'Lantai 1', area: '-', status: 'Kunci Hilang', spareKeyStatus: 'Tidak Ada', lastAuditDate: '2024-02-15', remarks: 'Key missing' },
-    { id: 4, lockerNumber: 'S-2001', floor: 'Lantai 2', area: '-', status: 'Terisi', assignedTo: 'Siti Aminah', department: 'Finance', spareKeyStatus: 'Ada', lastAuditDate: '2024-03-15', remarks: '-' },
-    { id: 5, lockerNumber: 'S-2002', floor: 'Lantai 2', area: '-', status: 'Kosong', spareKeyStatus: 'Ada', lastAuditDate: '2024-03-22', remarks: '-' },
-];
-
-export const MOCK_LOCKER_REQUEST_DATA: LockerRequestRecord[] = [
-    { 
-        id: 'REQ-L-001', 
-        requesterName: 'Siti Aminah', 
-        department: 'Finance', 
-        requesterRole: 'Staff',
-        requestDate: '2024-03-20', 
-        reason: 'Penyimpanan Dokumen Sementara', 
-        status: 'Pending',
-        preferredLocation: 'Lantai 2'
-    },
-    { 
-        id: 'REQ-L-002', 
-        requesterName: 'Budi Santoso', 
-        department: 'HR', 
-        requesterRole: 'Manager',
-        requestDate: '2024-03-25', 
-        reason: 'Loker lama rusak kuncinya', 
-        status: 'Approved',
-        preferredLocation: 'No Preference'
-    },
-];
-
-export const MOCK_POD_DATA: ModenaPodRecord[] = [
-    { id: 1, lantai: 'Lt 2 Pria', jenisKamar: 'Single Bed', nomorKamar: '201', namaPenghuni: 'Agus Setiawan', statusLokerBarang: 'Terpakai', statusLokerPantry: 'Terpakai', jadwalLaundry: 'Senin, Kamis', keterangan: '-' },
-    { id: 2, lantai: 'Lt 2 Pria', jenisKamar: 'Double Bed', nomorKamar: '202', namaPenghuni: 'Kosong', statusLokerBarang: 'Tidak Terpakai', statusLokerPantry: 'Tidak Terpakai', jadwalLaundry: '-', keterangan: 'Siap Huni' },
-    { id: 3, lantai: 'Lt 3 Perempuan', jenisKamar: 'Single Bed', nomorKamar: '301', namaPenghuni: 'Rina Wati', statusLokerBarang: 'Terpakai', statusLokerPantry: 'Terpakai', jadwalLaundry: 'Selasa, Jumat', keterangan: '-' },
-];
-
-export const MOCK_POD_REQUEST_DATA: PodRequestRecord[] = [
-    { 
-        id: 'REQ/POD/2024/001', 
-        requesterName: 'Aan Junaidi', 
-        requesterRole: 'Technician',
-        department: 'Maintenance', 
-        requestDate: '2024-03-20', 
-        floorPreference: 'Lt 2 Pria',
-        roomType: 'Single Bed', 
-        status: 'Pending',
-        reason: 'Overtime work'
-    },
-    { 
-        id: 'REQ/POD/2024/002', 
-        requesterName: 'Dewi Putri', 
-        requesterRole: 'Finance',
-        department: 'Finance', 
-        requestDate: '2024-03-19', 
-        floorPreference: 'Lt 3 Perempuan',
-        roomType: 'Double Bed', 
-        status: 'Approved',
-        reason: 'Training session'
-    },
+    { id: 1, lockerNumber: 'L-101', floor: 'Lantai 1', area: 'Area Staff', status: 'Terisi', assignedTo: 'Budi Santoso', department: 'GA', spareKeyStatus: 'Ada', lastAuditDate: '2024-01-01', remarks: 'Good' },
+    { id: 2, lockerNumber: 'L-102', floor: 'Lantai 1', area: 'Area Staff', status: 'Kosong', spareKeyStatus: 'Ada', lastAuditDate: '2024-01-01' },
+    { id: 3, lockerNumber: 'L-103', floor: 'Lantai 2', area: 'Area Manager', status: 'Kunci Hilang', spareKeyStatus: 'Tidak Ada', lastAuditDate: '2024-01-01' }
 ];
 
 export const MOCK_STOCK_OPNAME_DATA: StockOpnameRecord[] = [
-    { id: 'SO-2024-03', date: '2024-03-31', location: 'Gudang ATK Lt. 2', itemCategory: 'ATK', totalItems: 150, matchedItems: 148, discrepancyItems: 2, status: 'Review', auditor: 'Tim GA' },
+    { id: 'SO-001', date: '2024-03-01', location: 'Head Office', itemCategory: 'ATK', totalItems: 150, matchedItems: 148, discrepancyItems: 2, status: 'Completed', auditor: 'System' }
+];
+
+export const MOCK_LOCKER_REQUEST_DATA: LockerRequestRecord[] = [
+    { id: 'REQ-L-001', requesterName: 'Siti', department: 'HR', requestDate: '2024-03-10', reason: 'Need locker', status: 'Pending', preferredLocation: 'Lantai 1' }
+];
+
+export const MOCK_POD_REQUEST_DATA: PodRequestRecord[] = [];
+
+export const MOCK_POD_DATA: ModenaPodRecord[] = [
+    { id: 1, lantai: 'Lt 2 Pria', jenisKamar: 'Single Bed', nomorKamar: '201', namaPenghuni: 'Rudi Hartono', statusLokerBarang: 'Terpakai', statusLokerPantry: 'Terpakai', jadwalLaundry: 'Senin', keterangan: '' }
 ];
 
 export const MOCK_MASTER_POD_DATA: MasterPodRecord[] = [
-    { id: 1, lantai: 'Lt 2 Pria', jenisKamar: 'Single Bed', nomorKamar: '201', status: 'Occupied', occupiedBy: 'Agus Setiawan' },
-    { id: 2, lantai: 'Lt 2 Pria', jenisKamar: 'Double Bed', nomorKamar: '202', status: 'Available' },
-    { id: 3, lantai: 'Lt 3 Perempuan', jenisKamar: 'Single Bed', nomorKamar: '301', status: 'Occupied', occupiedBy: 'Rina Wati' },
+    { id: 1, lantai: 'Lt 2 Pria', jenisKamar: 'Single Bed', nomorKamar: '201', status: 'Occupied', occupiedBy: 'Rudi Hartono' },
+    { id: 2, lantai: 'Lt 2 Pria', jenisKamar: 'Single Bed', nomorKamar: '202', status: 'Available' }
 ];
 
 export const MOCK_MASTER_LOCKER_GOODS_DATA: MasterLockerRecord[] = [
-    { id: 1, lockerNumber: 'G-001', floor: 'Lantai 1', type: 'Goods', status: 'Active', remarks: 'Near Entrance' },
-    { id: 2, lockerNumber: 'G-002', floor: 'Lantai 1', type: 'Goods', status: 'Active', remarks: '' },
+    { id: 1, lockerNumber: 'LG-001', floor: 'Lantai 1', type: 'Goods', status: 'Active' }
 ];
 
 export const MOCK_MASTER_LOCKER_PANTRY_DATA: MasterLockerRecord[] = [
-    { id: 101, lockerNumber: 'P-001', floor: 'Lantai 2', type: 'Pantry', status: 'Active', remarks: 'Staff Only' },
-    { id: 102, lockerNumber: 'P-002', floor: 'Lantai 2', type: 'Pantry', status: 'Maintenance', remarks: 'Broken Hinge' },
+    { id: 1, lockerNumber: 'LP-001', floor: 'Lantai 1', type: 'Pantry', status: 'Active' }
+];
+
+export const MOCK_GA_MUTATION_DATA: MutationRecord[] = [];
+export const MOCK_GA_SALES_DATA: SalesRecord[] = [];
+
+export const MOCK_VEHICLE_MODEL: GeneralMasterItem[] = [
+    { id: 1, name: 'Avanza' },
+    { id: 2, name: 'Innova' }
+];
+
+export const MOCK_BUILDING_COMPONENTS: GeneralMasterItem[] = [
+    { id: 1, name: 'Atap' },
+    { id: 2, name: 'Dinding' }
+];
+
+export const MOCK_DOCUMENT_TYPES: GeneralMasterItem[] = [
+    { id: 1, name: 'SHM' },
+    { id: 2, name: 'IMB' }
+];
+
+export const MOCK_UTILITY_TYPES: GeneralMasterItem[] = [
+    { id: 1, name: 'Listrik' },
+    { id: 2, name: 'Air' }
 ];

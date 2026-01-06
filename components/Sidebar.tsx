@@ -7,50 +7,52 @@ import {
   Users, 
   Home, 
   BookOpen, 
-  ChevronLeft,
-  ChevronRight,
-  Car,
-  Database,
-  Wrench,
-  Send,
-  DollarSign,
-  ChevronDown,
-  X,
-  Building,
-  Briefcase,
-  Bell,
-  Box,
-  House,
-  Settings,
-  UserCog,
-  Zap,
-  ShieldCheck,
-  Package,
-  List,
-  Monitor,
-  Tag,
-  MapPin,
-  Scale,
-  CreditCard,
-  Layers,
-  Palette,
-  Landmark,
-  Component,
-  Percent,
-  Radio,
-  Stamp,
-  RefreshCw,
-  Sliders,
-  CheckCircle2,
-  Headset,
-  Gavel,
-  FileBadge,
-  Hammer,
-  Shield,
-  FileSpreadsheet,
-  Grid,
-  ClipboardList,
-  Lock
+  ChevronLeft, 
+  ChevronRight, 
+  Car, 
+  Database, 
+  Wrench, 
+  Send, 
+  DollarSign, 
+  ChevronDown, 
+  X, 
+  Building, 
+  Briefcase, 
+  Bell, 
+  Box, 
+  House, 
+  Settings, 
+  UserCog, 
+  Zap, 
+  ShieldCheck, 
+  Package, 
+  List, 
+  Monitor, 
+  Tag, 
+  MapPin, 
+  Scale, 
+  CreditCard, 
+  Layers, 
+  Palette, 
+  Landmark, 
+  Component, 
+  Percent, 
+  Radio, 
+  Stamp, 
+  RefreshCw, 
+  Sliders, 
+  CheckCircle2, 
+  Headset, 
+  Gavel, 
+  FileBadge, 
+  Hammer, 
+  Shield, 
+  FileSpreadsheet, 
+  Grid, 
+  ClipboardList, 
+  Lock,
+  Umbrella,
+  AlertTriangle
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -117,7 +119,6 @@ export const Sidebar: React.FC<Props> = ({
              { label: 'Daftar Gedung', icon: <List size={16} /> }, 
              { label: 'Utility Monitoring', icon: <Zap size={16} /> },
              { label: 'Branch Improvement', icon: <FileText size={16} /> },
-             { label: 'Asuransi Gedung', icon: <Shield size={16} /> },
              { label: 'Compliance & Legal', icon: <ShieldCheck size={16} /> },
         ]
     },
@@ -130,7 +131,6 @@ export const Sidebar: React.FC<Props> = ({
             { label: 'Servis', icon: <Wrench size={16} /> },
             { label: 'Pajak & KIR', icon: <FileText size={16} /> },
             { label: 'Reminder Pajak & KIR', icon: <Bell size={16} /> },
-            { label: 'Asuransi Kendaraan', icon: <Shield size={16} /> },
             { label: 'Mutasi', icon: <Send size={16} /> },
             { label: 'Penjualan', icon: <DollarSign size={16} /> },
         ]
@@ -149,7 +149,21 @@ export const Sidebar: React.FC<Props> = ({
         ]
     },
 
-    // 3. FACILITY SERVICES
+    // 3. INSURANCE MANAGEMENT (NEW MASTER MENU)
+    {
+        groupLabel: 'Risk Management',
+        label: 'Insurance',
+        icon: <Umbrella size={20} />,
+        subItems: [
+            { label: 'Insurance Dashboard', icon: <LayoutDashboard size={16} /> },
+            { label: 'All Policies', icon: <FileText size={16} /> },
+            { label: 'Insurance Claims', icon: <AlertTriangle size={16} /> },
+            { label: 'Expiring Soon', icon: <Clock size={16} /> },
+            { label: 'Insurance Providers', icon: <Users size={16} /> },
+        ]
+    },
+
+    // 4. FACILITY SERVICES
     {
         groupLabel: 'Facility Services',
         label: 'MODENA Pod',
@@ -169,7 +183,7 @@ export const Sidebar: React.FC<Props> = ({
     },
     { label: 'Stock Opname', icon: <ClipboardList size={20} /> },
 
-    // 4. CONSUMABLES (ATK & ARK)
+    // 5. CONSUMABLES (ATK & ARK)
     { 
         groupLabel: 'Consumables',
         label: 'ATK', 
@@ -190,7 +204,7 @@ export const Sidebar: React.FC<Props> = ({
         ]
     },
 
-    // 5. DAILY OPERATIONS
+    // 6. DAILY OPERATIONS
     { 
         groupLabel: 'Daily Operations',
         label: 'Log Book', 
@@ -198,7 +212,7 @@ export const Sidebar: React.FC<Props> = ({
     },
     { label: 'Timesheet', icon: <Clock size={20} /> },
 
-    // 6. ADMINISTRATION
+    // 7. ADMINISTRATION
     { 
         groupLabel: 'Administration',
         label: 'Vendor', 

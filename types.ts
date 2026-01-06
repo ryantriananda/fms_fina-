@@ -1,4 +1,164 @@
 
+// ... existing types ...
+
+export interface ContractRecord {
+    id: string;
+    assetCategory: string;
+    assetNumber: string;
+    address: string;
+    type: string;
+    location: string;
+    channel: string;
+    subLocation: string;
+    status: string;
+}
+
+export interface InsuranceClaim {
+  id: string;
+  incidentDate: string;
+  description: string;
+  claimAmount: string; // Estimasi biaya klaim
+  coveredAmount: string; // Yang dibayar asuransi
+  status: 'Submitted' | 'Survey' | 'Approved' | 'Paid' | 'Rejected';
+  evidencePhotos?: string[];
+  remarks?: string;
+}
+
+// Updated to support Multi-Asset
+export interface LinkedAsset {
+    id: string;
+    name: string; // "B 1234 XX - Avanza" or "Gedung A"
+    type: 'Vehicle' | 'Building' | 'General';
+    identifier: string; // No Polisi or Asset Code
+}
+
+export interface InsuranceRecord {
+  id: string;
+  policyNumber: string;
+  // Multi-asset support
+  assets: LinkedAsset[]; 
+  
+  // Legacy fields (optional for backward compatibility if needed, but preferred to use assets[])
+  assetId?: string; 
+  assetName?: string; 
+  
+  category: 'Vehicle' | 'Building' | 'General' | 'Mixed'; // Added Mixed
+  provider: string; // Insurance Vendor
+  type: 'All Risk' | 'TLO' | 'Property All Risk' | 'Earthquake' | string;
+  startDate: string;
+  endDate: string;
+  premium: string; // Biaya Premi
+  sumInsured: string; // Nilai Pertanggungan
+  status: 'Active' | 'Expiring' | 'Expired';
+  deductible?: string; // Biaya resiko sendiri (OR)
+  claims?: InsuranceClaim[];
+  attachmentUrl?: string; // Softcopy Polis
+}
+
+export interface InsuranceProviderRecord {
+    id: number;
+    name: string;
+    contactPerson: string;
+    phone: string;
+    email: string;
+    address: string;
+    rating: number; // 1-5
+}
+
+// ... rest of existing types ...
+export interface PurchaseRecord {
+  id: string;
+  date: string;
+  vendorName: string;
+  qty: number;
+  unitPrice: string;
+  totalPrice: string;
+  status: string;
+  attachmentUrl?: string;
+}
+
+// --- NEW MODULE TYPES ---
+
+export interface ModenaPodRecord {
+  id: number;
+  lantai: string;
+  jenisKamar: string;
+  nomorKamar: string;
+  namaPenghuni: string;
+  statusLokerBarang: string;
+  statusLokerPantry: string;
+  jadwalLaundry: string;
+  keterangan: string;
+}
+
+export interface LockerRecord {
+  id: number;
+  lockerNumber: string;
+  floor: string;
+  area: string;
+  status: 'Terisi' | 'Kosong' | 'Kunci Hilang';
+  assignedTo?: string; // Occupant Name
+  department?: string; // Occupant Dept
+  spareKeyStatus: 'Ada' | 'Tidak Ada';
+  lastAuditDate: string;
+  remarks?: string;
+}
+
+export interface LockerRequestRecord {
+  id: string;
+  requesterName: string;
+  department: string;
+  requestDate: string;
+  reason: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  preferredLocation?: string; // e.g. "Lantai 1", "No Preference"
+  requesterRole?: string;
+}
+
+export interface PodRequestRecord {
+  id: string;
+  requesterName: string;
+  requesterRole?: string;
+  department: string;
+  requestDate: string; // Replaces checkIn/Out for this UI
+  floorPreference?: string;
+  roomType: string;
+  reason?: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  checkInDate?: string; // kept for compatibility if needed
+  checkOutDate?: string; // kept for compatibility if needed
+}
+
+export interface StockOpnameRecord {
+  id: string;
+  date: string;
+  location: string;
+  itemCategory: string; // ATK, ARK, Asset
+  totalItems: number;
+  matchedItems: number;
+  discrepancyItems: number;
+  status: 'Draft' | 'Completed' | 'Review';
+  auditor: string;
+}
+
+export interface MasterPodRecord {
+  id: number;
+  lantai: string;
+  jenisKamar: string;
+  nomorKamar: string;
+  status: 'Available' | 'Occupied' | 'Maintenance';
+  occupiedBy?: string;
+}
+
+export interface MasterLockerRecord {
+  id: number;
+  lockerNumber: string;
+  floor: string;
+  type: 'Goods' | 'Pantry';
+  status: 'Active' | 'Inactive' | 'Maintenance';
+  remarks?: string;
+}
+
 export interface Employee {
   id: string;
   name: string;
@@ -538,138 +698,4 @@ export interface ApprovalTier {
   type: 'Role' | 'User';
   value: string;
   sla: number;
-}
-
-export interface ContractRecord {
-    id: string;
-    assetCategory: string;
-    assetNumber: string;
-    address: string;
-    type: string;
-    location: string;
-    channel: string;
-    subLocation: string;
-    status: string;
-}
-
-export interface InsuranceClaim {
-  id: string;
-  incidentDate: string;
-  description: string;
-  claimAmount: string; // Estimasi biaya klaim
-  coveredAmount: string; // Yang dibayar asuransi
-  status: 'Submitted' | 'Survey' | 'Approved' | 'Paid' | 'Rejected';
-  evidencePhotos?: string[];
-  remarks?: string;
-}
-
-export interface InsuranceRecord {
-  id: string;
-  policyNumber: string;
-  assetId: string; // Relation to Vehicle or Building
-  assetName: string; // Display Name (No Polisi or Building Name)
-  category: 'Vehicle' | 'Building';
-  provider: string; // Insurance Vendor
-  type: 'All Risk' | 'TLO' | 'Property All Risk' | 'Earthquake' | string;
-  startDate: string;
-  endDate: string;
-  premium: string; // Biaya Premi
-  sumInsured: string; // Nilai Pertanggungan
-  status: 'Active' | 'Expiring' | 'Expired';
-  deductible?: string; // Biaya resiko sendiri (OR)
-  claims?: InsuranceClaim[];
-  attachmentUrl?: string; // Softcopy Polis
-}
-
-export interface PurchaseRecord {
-  id: string;
-  date: string;
-  vendorName: string;
-  qty: number;
-  unitPrice: string;
-  totalPrice: string;
-  status: string;
-  attachmentUrl?: string;
-}
-
-// --- NEW MODULE TYPES ---
-
-export interface ModenaPodRecord {
-  id: number;
-  lantai: string;
-  jenisKamar: string;
-  nomorKamar: string;
-  namaPenghuni: string;
-  statusLokerBarang: string;
-  statusLokerPantry: string;
-  jadwalLaundry: string;
-  keterangan: string;
-}
-
-export interface LockerRecord {
-  id: number;
-  lockerNumber: string;
-  floor: string;
-  area: string;
-  status: 'Terisi' | 'Kosong' | 'Kunci Hilang';
-  assignedTo?: string; // Occupant Name
-  department?: string; // Occupant Dept
-  spareKeyStatus: 'Ada' | 'Tidak Ada';
-  lastAuditDate: string;
-  remarks?: string;
-}
-
-export interface LockerRequestRecord {
-  id: string;
-  requesterName: string;
-  department: string;
-  requestDate: string;
-  reason: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  preferredLocation?: string; // e.g. "Lantai 1", "No Preference"
-  requesterRole?: string;
-}
-
-export interface PodRequestRecord {
-  id: string;
-  requesterName: string;
-  requesterRole?: string;
-  department: string;
-  requestDate: string; // Replaces checkIn/Out for this UI
-  floorPreference?: string;
-  roomType: string;
-  reason?: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  checkInDate?: string; // kept for compatibility if needed
-  checkOutDate?: string; // kept for compatibility if needed
-}
-
-export interface StockOpnameRecord {
-  id: string;
-  date: string;
-  location: string;
-  itemCategory: string; // ATK, ARK, Asset
-  totalItems: number;
-  matchedItems: number;
-  discrepancyItems: number;
-  status: 'Draft' | 'Completed' | 'Review';
-  auditor: string;
-}
-
-export interface MasterPodRecord {
-  id: number;
-  lantai: string;
-  jenisKamar: string;
-  nomorKamar: string;
-  status: 'Available' | 'Occupied' | 'Maintenance';
-  occupiedBy?: string;
-}
-
-export interface MasterLockerRecord {
-  id: number;
-  lockerNumber: string;
-  floor: string;
-  type: 'Goods' | 'Pantry';
-  status: 'Active' | 'Inactive' | 'Maintenance';
-  remarks?: string;
 }
