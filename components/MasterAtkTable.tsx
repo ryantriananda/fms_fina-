@@ -1,14 +1,15 @@
 
 import React from 'react';
 import { MasterItem } from '../types';
-import { ChevronsUpDown, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { ChevronsUpDown, ChevronLeft, ChevronRight, Eye, Trash2 } from 'lucide-react';
 
 interface Props {
   data: MasterItem[];
   onEdit?: (item: MasterItem) => void;
+  onDelete?: (id: string | number) => void;
 }
 
-export const MasterAtkTable: React.FC<Props> = ({ data, onEdit }) => {
+export const MasterAtkTable: React.FC<Props> = ({ data, onEdit, onDelete }) => {
   const formatCurrency = (val?: string) => {
     if (!val) return '-';
     const num = parseInt(val.replace(/\D/g, '')) || 0;
@@ -58,7 +59,7 @@ export const MasterAtkTable: React.FC<Props> = ({ data, onEdit }) => {
               <th className="px-4 w-32 text-right text-gray-300">
                  AVG PRICE
               </th>
-              <th className="px-4 text-center w-20">
+              <th className="px-4 text-center w-24">
                  AKSI
               </th>
             </tr>
@@ -117,12 +118,22 @@ export const MasterAtkTable: React.FC<Props> = ({ data, onEdit }) => {
                 </td>
                 
                 <td className="px-4 text-center">
-                    <button 
-                        className="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-black hover:bg-gray-100 transition-all"
-                        onClick={(e) => { e.stopPropagation(); onEdit?.(item); }}
-                    >
-                        <Eye size={16} />
-                    </button>
+                    <div className="flex items-center justify-center gap-2">
+                        <button 
+                            className="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-black hover:bg-gray-100 transition-all"
+                            onClick={(e) => { e.stopPropagation(); onEdit?.(item); }}
+                            title="Edit"
+                        >
+                            <Eye size={16} />
+                        </button>
+                        <button 
+                            className="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-red-600 hover:bg-red-50 transition-all"
+                            onClick={(e) => { e.stopPropagation(); onDelete?.(item.id); }}
+                            title="Delete"
+                        >
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
                 </td>
               </tr>
             ))}

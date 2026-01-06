@@ -75,6 +75,8 @@ import { MasterApprovalModal } from './components/MasterApprovalModal';
 import { MasterVendorTable } from './components/MasterVendorTable';
 import { GeneralMasterTable } from './components/GeneralMasterTable';
 import { GeneralMasterModal } from './components/GeneralMasterModal';
+import { MasterDeliveryLocationTable } from './components/MasterDeliveryLocationTable';
+import { DeliveryLocationModal } from './components/DeliveryLocationModal';
 
 import { 
     AssetRecord, MasterItem, VehicleRecord, VehicleContractRecord, ServiceRecord, TaxKirRecord, 
@@ -82,7 +84,7 @@ import {
     GeneralAssetRecord, BuildingMaintenanceRecord, MaintenanceScheduleRecord, InsuranceRecord, 
     InsuranceProviderRecord, ModenaPodRecord, PodRequestRecord, LockerRecord, LockerRequestRecord, 
     StockOpnameRecord, LogBookRecord, TimesheetRecord, VendorRecord, UserRecord, MasterApprovalRecord, 
-    GeneralMasterItem 
+    GeneralMasterItem, DeliveryLocationRecord
 } from './types';
 
 import { 
@@ -93,7 +95,14 @@ import {
     MOCK_GENERAL_ASSET_DATA, MOCK_INSURANCE_DATA, MOCK_INSURANCE_PROVIDERS,
     MOCK_POD_DATA, MOCK_POD_REQUEST_DATA, MOCK_LOCKER_DATA, MOCK_LOCKER_REQUEST_DATA,
     MOCK_STOCK_OPNAME_DATA, MOCK_LOGBOOK_DATA, MOCK_TIMESHEET_DATA, MOCK_VENDOR_DATA, 
-    MOCK_USER_DATA, MOCK_GENERAL_MASTER_DATA, MOCK_BRAND_DATA, MOCK_COLOR_DATA, MOCK_BUILDING_ASSETS
+    MOCK_USER_DATA, MOCK_GENERAL_MASTER_DATA, MOCK_BRAND_DATA, MOCK_COLOR_DATA, MOCK_BUILDING_ASSETS,
+    MOCK_PPN_DATA, MOCK_BRAND_TYPE_DATA, MOCK_VEHICLE_MODEL_DATA, MOCK_BUILDING_COMPONENT_DATA,
+    MOCK_DOC_TYPE_DATA, MOCK_UTILITY_TYPE_DATA, MOCK_OPERATOR_DATA, MOCK_ASSET_TYPE_DATA,
+    MOCK_DEPARTMENT_DATA, MOCK_LOCATION_DATA, MOCK_UOM_DATA, MOCK_BUILDING_TYPE_DATA,
+    MOCK_COST_CENTER_DATA, MOCK_ASSET_CATEGORY_DATA, MOCK_TAX_TYPE_DATA, MOCK_PAYMENT_TYPE_DATA,
+    MOCK_SERVICE_TYPE_DATA, MOCK_MUTATION_STATUS_DATA, MOCK_SALES_STATUS_DATA, MOCK_REQUEST_STATUS_DATA,
+    MOCK_MUTATION_TYPE_DATA, MOCK_VENDOR_TYPE_DATA, MOCK_ROLE_DATA, MOCK_VEHICLE_TYPE_DATA,
+    MOCK_ATK_CATEGORY, MOCK_ARK_CATEGORY, MOCK_DELIVERY_LOCATIONS
 } from './constants';
 
 export const App: React.FC = () => {
@@ -108,6 +117,7 @@ export const App: React.FC = () => {
   const [masterAtk, setMasterAtk] = useState<MasterItem[]>(MOCK_MASTER_DATA);
   const [arkRequests, setArkRequests] = useState<AssetRecord[]>(MOCK_ARK_DATA);
   const [masterArk, setMasterArk] = useState<MasterItem[]>(MOCK_MASTER_ARK_DATA);
+  const [deliveryLocations, setDeliveryLocations] = useState<DeliveryLocationRecord[]>(MOCK_DELIVERY_LOCATIONS);
   
   // Vehicle
   const [vehicles, setVehicles] = useState<VehicleRecord[]>(MOCK_VEHICLE_DATA);
@@ -148,8 +158,35 @@ export const App: React.FC = () => {
   const [users, setUsers] = useState<UserRecord[]>(MOCK_USER_DATA);
   const [masterApprovals, setMasterApprovals] = useState<MasterApprovalRecord[]>([]);
   
-  // General Masters
-  const [generalMasters, setGeneralMasters] = useState<GeneralMasterItem[]>(MOCK_GENERAL_MASTER_DATA);
+  // General Masters Data Map
+  const masterDataMap: Record<string, GeneralMasterItem[]> = {
+      'Master PPN': MOCK_PPN_DATA,
+      'Master Brand Type': MOCK_BRAND_TYPE_DATA,
+      'Master Brand': MOCK_BRAND_DATA,
+      'Master Model Kendaraan': MOCK_VEHICLE_MODEL_DATA,
+      'Master Komponen Bangunan': MOCK_BUILDING_COMPONENT_DATA,
+      'Master Tipe Dokumen': MOCK_DOC_TYPE_DATA,
+      'Master Tipe Utilitas': MOCK_UTILITY_TYPE_DATA,
+      'Master Operator': MOCK_OPERATOR_DATA,
+      'Master Asset Type': MOCK_ASSET_TYPE_DATA,
+      'Master Department': MOCK_DEPARTMENT_DATA,
+      'Master Lokasi': MOCK_LOCATION_DATA,
+      'Master Satuan': MOCK_UOM_DATA,
+      'Master Warna': MOCK_COLOR_DATA,
+      'Master Tipe Gedung': MOCK_BUILDING_TYPE_DATA,
+      'Master Cost Center': MOCK_COST_CENTER_DATA,
+      'Asset Category': MOCK_ASSET_CATEGORY_DATA,
+      'Jenis Pajak': MOCK_TAX_TYPE_DATA,
+      'Jenis Pembayaran': MOCK_PAYMENT_TYPE_DATA,
+      'Jenis Servis': MOCK_SERVICE_TYPE_DATA,
+      'Status Mutasi': MOCK_MUTATION_STATUS_DATA,
+      'Status Penjualan': MOCK_SALES_STATUS_DATA,
+      'Status Request': MOCK_REQUEST_STATUS_DATA,
+      'Tipe Mutasi': MOCK_MUTATION_TYPE_DATA,
+      'Tipe Vendor': MOCK_VENDOR_TYPE_DATA,
+      'Role': MOCK_ROLE_DATA,
+      'Jenis Kendaraan': MOCK_VEHICLE_TYPE_DATA
+  };
 
   // --- MODAL STATE ---
   const [modalState, setModalState] = useState<{
@@ -175,6 +212,44 @@ export const App: React.FC = () => {
   const handleNavigate = (item: string) => {
     setActiveItem(item);
     setActiveTab('SEMUA');
+  };
+
+  // --- CRUD HANDLERS FOR MASTER ITEMS (ATK & ARK) ---
+  const handleSaveMasterItem = (data: Partial<MasterItem>) => {
+    const isArk = activeItem === 'Master ARK';
+    const currentList = isArk ? masterArk : masterAtk;
+    const setList = isArk ? setMasterArk : setMasterAtk;
+
+    if (modalState.mode === 'create') {
+      const newItem: MasterItem = {
+        ...data,
+        id: Date.now(), // Generate simple ID
+        remainingStock: data.remainingStock || 0,
+        minimumStock: data.minimumStock || 0,
+        maximumStock: data.maximumStock || 0,
+        requestedStock: 0,
+        lastPurchasePrice: data.lastPurchasePrice || '0',
+        averagePrice: data.averagePrice || '0',
+        category: data.category || (isArk ? 'Cleaning' : 'Kertas'),
+        itemName: data.itemName || 'New Item',
+        itemCode: data.itemCode || `ITEM-${Date.now()}`,
+        uom: data.uom || 'Pcs',
+        purchaseDate: data.purchaseDate || new Date().toISOString().split('T')[0]
+      } as MasterItem;
+      setList([newItem, ...currentList]);
+    } else if (modalState.mode === 'edit' && data.id) {
+      setList(currentList.map(item => (item.id === data.id ? { ...item, ...data } as MasterItem : item)));
+    }
+    closeModal();
+  };
+
+  const handleDeleteMasterItem = (id: string | number) => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus item ini?")) return;
+    
+    const isArk = activeItem === 'Master ARK';
+    const setList = isArk ? setMasterArk : setMasterAtk;
+    
+    setList(prev => prev.filter(item => item.id !== id));
   };
 
   // --- RENDER CONTENT ---
@@ -215,8 +290,46 @@ export const App: React.FC = () => {
       case 'Master ATK': 
         return (
           <>
-            <FilterBar tabs={['SEMUA', 'CATEGORY', 'UOM', 'DELIVERY', 'DETAIL REQUEST']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('MASTER_ITEM', 'create')} customAddLabel="TAMBAH DATA" hideImport={false} hideExport={false} />
-            <MasterAtkTable data={masterAtk} onEdit={(i) => openModal('MASTER_ITEM', 'edit', i)} />
+            <FilterBar 
+                tabs={['ITEMS', 'CATEGORY', 'UOM', 'DELIVERY']} 
+                activeTab={activeTab === 'SEMUA' ? 'ITEMS' : activeTab} 
+                onTabChange={setActiveTab} 
+                onAddClick={() => {
+                    if (activeTab === 'CATEGORY') openModal('GENERAL_MASTER', 'create', undefined, { title: 'Kategori ATK' });
+                    else if (activeTab === 'UOM') openModal('GENERAL_MASTER', 'create', undefined, { title: 'Master Satuan' });
+                    else if (activeTab === 'DELIVERY') openModal('DELIVERY_LOCATION', 'create');
+                    else openModal('MASTER_ITEM', 'create');
+                }} 
+                customAddLabel="TAMBAH DATA" 
+            />
+            {(activeTab === 'ITEMS' || activeTab === 'SEMUA') && (
+                <MasterAtkTable 
+                    data={masterAtk} 
+                    onEdit={(i) => openModal('MASTER_ITEM', 'edit', i)}
+                    onDelete={(id) => handleDeleteMasterItem(id)}
+                />
+            )}
+            {activeTab === 'CATEGORY' && (
+                <GeneralMasterTable 
+                    data={MOCK_ATK_CATEGORY} 
+                    onEdit={(i) => openModal('GENERAL_MASTER', 'edit', i, { title: 'Kategori ATK' })} 
+                    onDelete={() => {}} 
+                />
+            )}
+            {activeTab === 'UOM' && (
+                <GeneralMasterTable 
+                    data={MOCK_UOM_DATA} 
+                    onEdit={(i) => openModal('GENERAL_MASTER', 'edit', i, { title: 'Master Satuan' })} 
+                    onDelete={() => {}} 
+                />
+            )}
+            {activeTab === 'DELIVERY' && (
+                <MasterDeliveryLocationTable 
+                    data={deliveryLocations} 
+                    onEdit={(i) => openModal('DELIVERY_LOCATION', 'edit', i)} 
+                    onDelete={(id) => setDeliveryLocations(prev => prev.filter(i => i.id !== id))} 
+                />
+            )}
           </>
         );
 
@@ -238,8 +351,46 @@ export const App: React.FC = () => {
       case 'Master ARK': 
         return (
           <>
-            <FilterBar tabs={['SEMUA', 'CATEGORY', 'UOM', 'DELIVERY', 'DETAIL REQUEST']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('MASTER_ITEM', 'create')} customAddLabel="TAMBAH DATA" hideImport={false} hideExport={false} />
-            <MasterAtkTable data={masterArk} onEdit={(i) => openModal('MASTER_ITEM', 'edit', i)} />
+            <FilterBar 
+                tabs={['ITEMS', 'CATEGORY', 'UOM', 'DELIVERY']} 
+                activeTab={activeTab === 'SEMUA' ? 'ITEMS' : activeTab} 
+                onTabChange={setActiveTab} 
+                onAddClick={() => {
+                    if (activeTab === 'CATEGORY') openModal('GENERAL_MASTER', 'create', undefined, { title: 'Kategori ARK' });
+                    else if (activeTab === 'UOM') openModal('GENERAL_MASTER', 'create', undefined, { title: 'Master Satuan' });
+                    else if (activeTab === 'DELIVERY') openModal('DELIVERY_LOCATION', 'create');
+                    else openModal('MASTER_ITEM', 'create');
+                }} 
+                customAddLabel="TAMBAH DATA" 
+            />
+            {(activeTab === 'ITEMS' || activeTab === 'SEMUA') && (
+                <MasterAtkTable 
+                    data={masterArk} 
+                    onEdit={(i) => openModal('MASTER_ITEM', 'edit', i)} 
+                    onDelete={(id) => handleDeleteMasterItem(id)}
+                />
+            )}
+            {activeTab === 'CATEGORY' && (
+                <GeneralMasterTable 
+                    data={MOCK_ARK_CATEGORY} 
+                    onEdit={(i) => openModal('GENERAL_MASTER', 'edit', i, { title: 'Kategori ARK' })} 
+                    onDelete={() => {}} 
+                />
+            )}
+            {activeTab === 'UOM' && (
+                <GeneralMasterTable 
+                    data={MOCK_UOM_DATA} 
+                    onEdit={(i) => openModal('GENERAL_MASTER', 'edit', i, { title: 'Master Satuan' })} 
+                    onDelete={() => {}} 
+                />
+            )}
+            {activeTab === 'DELIVERY' && (
+                <MasterDeliveryLocationTable 
+                    data={deliveryLocations} 
+                    onEdit={(i) => openModal('DELIVERY_LOCATION', 'edit', i)} 
+                    onDelete={(id) => setDeliveryLocations(prev => prev.filter(i => i.id !== id))} 
+                />
+            )}
           </>
         );
 
@@ -494,17 +645,27 @@ export const App: React.FC = () => {
                   <MasterVendorTable data={vendors as any} onView={(i) => openModal('VENDOR', 'view', i as any)} onEdit={(i) => openModal('VENDOR', 'edit', i as any)} />
               </>
           );
+      case 'Sync Branchs':
+      case 'Sync Channels':
+          return (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                  <p className="text-xl font-bold uppercase tracking-widest">{activeItem}</p>
+                  <p className="text-sm mt-2">Sync process triggered in background...</p>
+              </div>
+          );
       
       // Handle all other General Master items
       default:
-          if (activeItem.startsWith('Master') || activeItem.includes('Jenis') || activeItem.includes('Tipe') || activeItem.includes('Status') || activeItem.includes('Asset Category') || activeItem.includes('Role')) {
+          // Check if active item is in our master data map
+          if (masterDataMap[activeItem]) {
               return (
                   <>
                       <FilterBar tabs={['LIST']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('GENERAL_MASTER', 'create', undefined, { title: activeItem })} customAddLabel="Add Item" />
-                      <GeneralMasterTable data={generalMasters} onEdit={(i) => openModal('GENERAL_MASTER', 'edit', i, { title: activeItem })} onDelete={() => {}} title={activeItem} />
+                      <GeneralMasterTable data={masterDataMap[activeItem]} onEdit={(i) => openModal('GENERAL_MASTER', 'edit', i, { title: activeItem })} onDelete={() => {}} title={activeItem} />
                   </>
               );
           }
+          
           return (
             <div className="flex flex-col items-center justify-center h-full text-gray-400">
               <p className="text-xl font-bold">Welcome to {activeItem}</p>
@@ -556,9 +717,24 @@ export const App: React.FC = () => {
       <MasterItemModal
         isOpen={modalState.isOpen && modalState.type === 'MASTER_ITEM'}
         onClose={closeModal}
-        onSave={() => closeModal()}
+        onSave={handleSaveMasterItem}
         initialData={modalState.data}
         moduleName={activeItem.includes('ARK') ? 'ARK' : 'ATK'}
+        mode={modalState.mode as any}
+      />
+
+      <DeliveryLocationModal
+        isOpen={modalState.isOpen && modalState.type === 'DELIVERY_LOCATION'}
+        onClose={closeModal}
+        onSave={(data) => {
+            if (modalState.mode === 'create') {
+                setDeliveryLocations(prev => [...prev, { ...data, id: Date.now() } as DeliveryLocationRecord]);
+            } else {
+                setDeliveryLocations(prev => prev.map(item => item.id === modalState.data.id ? { ...item, ...data } as DeliveryLocationRecord : item));
+            }
+            closeModal();
+        }}
+        initialData={modalState.data}
         mode={modalState.mode as any}
       />
 

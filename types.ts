@@ -724,9 +724,10 @@ export interface StockOpnameRecord {
 // Others
 export interface DeliveryLocationRecord {
   id: number;
-  name: string;
-  address: string;
-  type: string;
+  name: string; // Method Name
+  type: 'Internal' | 'External';
+  status: 'Active' | 'Inactive';
+  address?: string;
 }
 
 export interface LogBookRecord {

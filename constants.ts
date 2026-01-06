@@ -1,4 +1,5 @@
 
+// ... existing imports ...
 import { 
     AssetRecord, MasterItem, VehicleRecord, TaxKirRecord, MasterVendorRecord, 
     DeliveryLocationRecord, LogBookRecord, BuildingRecord, ReminderRecord, 
@@ -10,17 +11,119 @@ import {
     MasterLockerRecord, InsuranceProviderRecord 
 } from './types';
 
-// General Masters
+// ... existing constants ...
+
+export const MOCK_DELIVERY_LOCATIONS: DeliveryLocationRecord[] = [
+    { id: 1, name: 'PICKUP HO', type: 'Internal', status: 'Active', address: 'Jl. Prof. Dr. Satrio C4 No. 13' },
+    { id: 2, name: 'PICKUP WAREHOUSE CIKUPA', type: 'Internal', status: 'Active', address: 'Kawasan Industri Cikupa Mas' },
+    { id: 3, name: 'VENDOR DELIVERY', type: 'External', status: 'Active', address: '-' },
+    { id: 4, name: 'BRANCH SURABAYA', type: 'Internal', status: 'Inactive', address: 'Jl. Mayjen Sungkono' }
+];
+
+// ... remaining constants ...
+// ... existing constants ...
 export const MOCK_UOM_DATA: GeneralMasterItem[] = [
     { id: 1, name: 'Pcs' }, { id: 2, name: 'Box' }, { id: 3, name: 'Pack' }, { id: 4, name: 'Rim' }, { id: 5, name: 'Unit' }
 ];
 
 export const MOCK_BRAND_DATA: GeneralMasterItem[] = [
-    { id: 1, name: 'Toyota' }, { id: 2, name: 'Honda' }, { id: 3, name: 'Suzuki' }, { id: 4, name: 'Daihatsu' }, { id: 5, name: 'Mitsubishi' }
+    { id: 1, name: 'Toyota' }, { id: 2, name: 'Honda' }, { id: 3, name: 'Suzuki' }, { id: 4, name: 'Daihatsu' }, { id: 5, name: 'Mitsubishi' }, { id: 6, name: 'Hyundai' }, { id: 7, name: 'Wuling' }
+];
+
+export const MOCK_BRAND_TYPE_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Japanese' }, { id: 2, name: 'European' }, { id: 3, name: 'American' }, { id: 4, name: 'Chinese' }, { id: 5, name: 'Korean' }
 ];
 
 export const MOCK_COLOR_DATA: GeneralMasterItem[] = [
-    { id: 1, name: 'Hitam' }, { id: 2, name: 'Putih' }, { id: 3, name: 'Silver' }, { id: 4, name: 'Abu-abu' }, { id: 5, name: 'Merah' }
+    { id: 1, name: 'Hitam' }, { id: 2, name: 'Putih' }, { id: 3, name: 'Silver' }, { id: 4, name: 'Abu-abu' }, { id: 5, name: 'Merah' }, { id: 6, name: 'Biru' }
+];
+
+export const MOCK_PPN_DATA: GeneralMasterItem[] = [
+    { id: 1, name: '11%' }, { id: 2, name: '10%' }, { id: 3, name: '0% (Bebas PPN)' }
+];
+
+export const MOCK_VEHICLE_MODEL_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Avanza' }, { id: 2, name: 'Innova' }, { id: 3, name: 'Xenia' }, { id: 4, name: 'Gran Max' }, { id: 5, name: 'Hiace' }
+];
+
+export const MOCK_BUILDING_COMPONENT_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Atap' }, { id: 2, name: 'Dinding' }, { id: 3, name: 'Lantai' }, { id: 4, name: 'Pintu' }, { id: 5, name: 'Jendela' }, { id: 6, name: 'Pagar' }
+];
+
+export const MOCK_DOC_TYPE_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'STNK' }, { id: 2, name: 'BPKB' }, { id: 3, name: 'KIR' }, { id: 4, name: 'SIPA' }, { id: 5, name: 'Izin Reklame' }, { id: 6, name: 'PBB' }
+];
+
+export const MOCK_UTILITY_TYPE_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Listrik (PLN)' }, { id: 2, name: 'Air (PDAM)' }, { id: 3, name: 'Internet (Wifi)' }, { id: 4, name: 'Gas' }, { id: 5, name: 'TV Kabel' }
+];
+
+export const MOCK_OPERATOR_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Telkomsel' }, { id: 2, name: 'Indosat' }, { id: 3, name: 'XL Axiata' }, { id: 4, name: 'Biznet' }, { id: 5, name: 'Indihome' }
+];
+
+export const MOCK_ASSET_TYPE_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Laptop' }, { id: 2, name: 'PC Desktop' }, { id: 3, name: 'Furniture' }, { id: 4, name: 'AC' }, { id: 5, name: 'Generator' }, { id: 6, name: 'Vehicle' }
+];
+
+export const MOCK_DEPARTMENT_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Human Capital' }, { id: 2, name: 'General Affair' }, { id: 3, name: 'Finance' }, { id: 4, name: 'Sales' }, { id: 5, name: 'Marketing' }, { id: 6, name: 'IT' }, { id: 7, name: 'Supply Chain' }
+];
+
+export const MOCK_LOCATION_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Head Office Satrio' }, { id: 2, name: 'Showroom Kemang' }, { id: 3, name: 'Warehouse Cikupa' }, { id: 4, name: 'Branch Bandung' }, { id: 5, name: 'Branch Surabaya' }
+];
+
+export const MOCK_BUILDING_TYPE_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Office' }, { id: 2, name: 'Showroom' }, { id: 3, name: 'Warehouse' }, { id: 4, name: 'MHC (Modena Home Center)' }, { id: 5, name: 'Service Center' }
+];
+
+export const MOCK_COST_CENTER_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'CC-HO-001 (General)' }, { id: 2, name: 'CC-MKT-002 (Marketing)' }, { id: 3, name: 'CC-SAL-003 (Sales)' }, { id: 4, name: 'CC-IT-004 (Technology)' }
+];
+
+export const MOCK_ASSET_CATEGORY_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Electronic' }, { id: 2, name: 'Vehicle' }, { id: 3, name: 'Furniture' }, { id: 4, name: 'Machinery' }, { id: 5, name: 'Building' }
+];
+
+export const MOCK_TAX_TYPE_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'PPh 21' }, { id: 2, name: 'PPh 23' }, { id: 3, name: 'PPh 4 Ayat 2' }, { id: 4, name: 'PPN Masukan' }
+];
+
+export const MOCK_PAYMENT_TYPE_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Bank Transfer' }, { id: 2, name: 'Cash' }, { id: 3, name: 'Corporate Card' }, { id: 4, name: 'Petty Cash' }, { id: 5, name: 'Cheque' }
+];
+
+export const MOCK_SERVICE_TYPE_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Servis Berkala (Rutin)' }, { id: 2, name: 'Perbaikan Berat (Overhaul)' }, { id: 3, name: 'Ganti Oli' }, { id: 4, name: 'Tune Up' }, { id: 5, name: 'Body Repair' }
+];
+
+export const MOCK_MUTATION_STATUS_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Draft' }, { id: 2, name: 'Pending Approval' }, { id: 3, name: 'Approved' }, { id: 4, name: 'In Transit' }, { id: 5, name: 'Received' }, { id: 6, name: 'Rejected' }
+];
+
+export const MOCK_SALES_STATUS_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Open Bidding' }, { id: 2, name: 'Closed' }, { id: 3, name: 'Sold' }, { id: 4, name: 'Scrapped' }
+];
+
+export const MOCK_REQUEST_STATUS_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'New' }, { id: 2, name: 'In Progress' }, { id: 3, name: 'Completed' }, { id: 4, name: 'Cancelled' }
+];
+
+export const MOCK_MUTATION_TYPE_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Permanent' }, { id: 2, name: 'Temporary (Pinjam Pakai)' }
+];
+
+export const MOCK_VENDOR_TYPE_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'PT' }, { id: 2, name: 'CV' }, { id: 3, name: 'Perorangan' }, { id: 4, name: 'UD' }, { id: 5, name: 'Koperasi' }
+];
+
+export const MOCK_ROLE_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'Super Admin' }, { id: 2, name: 'Admin GA' }, { id: 3, name: 'Branch Manager' }, { id: 4, name: 'Department Head' }, { id: 5, name: 'Staff' }, { id: 6, name: 'Viewer' }
+];
+
+export const MOCK_VEHICLE_TYPE_DATA: GeneralMasterItem[] = [
+    { id: 1, name: 'MPV' }, { id: 2, name: 'SUV' }, { id: 3, name: 'Sedan' }, { id: 4, name: 'City Car' }, { id: 5, name: 'Pickup' }, { id: 6, name: 'Truck Box' }, { id: 7, name: 'Motorcycle' }
 ];
 
 export const MOCK_GENERAL_MASTER_DATA: GeneralMasterItem[] = [
@@ -93,11 +196,13 @@ export const MOCK_SALES_DATA: SalesRecord[] = [
 export const MOCK_BUILDING_DATA: BuildingRecord[] = [
     {
         id: 'BLD-001', name: 'Head Office Satrio', assetNo: 'BLD-HO-001', type: 'Office', location: 'Jakarta', address: 'Jl. Prof. Dr. Satrio', status: 'Active',
-        ownership: 'Own', rentCost: '0', totalMaintenanceCost: '50000000', utilityCost: '15000000'
+        ownership: 'Own', rentCost: '0', totalMaintenanceCost: '50000000', utilityCost: '15000000',
+        city: 'Jakarta Selatan', district: 'Setiabudi', province: 'DKI Jakarta'
     },
     {
         id: 'BLD-002', name: 'Showroom Kemang', assetNo: 'BLD-SR-002', type: 'Showroom', location: 'Jakarta', address: 'Jl. Kemang Raya', status: 'Active',
-        ownership: 'Rent', rentCost: '200000000', totalMaintenanceCost: '20000000', utilityCost: '10000000'
+        ownership: 'Rent', rentCost: '200000000', totalMaintenanceCost: '20000000', utilityCost: '10000000',
+        city: 'Jakarta Selatan', district: 'Mampang Prapatan', province: 'DKI Jakarta'
     }
 ];
 
