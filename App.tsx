@@ -75,6 +75,7 @@ import { ImportDataModal } from './components/ImportDataModal';
 
 // Daily Ops & Admin
 import { LogBookTable } from './components/LogBookTable';
+import { LogBookModal } from './components/LogBookModal'; // New dedicated modal
 import { TimesheetTable } from './components/TimesheetTable';
 import { TimesheetModal } from './components/TimesheetModal';
 import { VendorTable } from './components/VendorTable';
@@ -1206,11 +1207,11 @@ export const App: React.FC = () => {
           return (
               <>
                   <FilterBar 
-                      tabs={['SEMUA', 'VISITOR', 'SUPPLIER', 'INTERNAL']} 
+                      tabs={['SEMUA', 'VISITOR', 'SUPPLIER', 'INTERNAL', 'OTHERS']} 
                       activeTab={activeTab} 
                       onTabChange={setActiveTab} 
                       onAddClick={() => openModal('LOGBOOK', 'create')} 
-                      customAddLabel="Input Tamu" 
+                      customAddLabel="INPUT TAMU" 
                       onImportClick={handleOpenImport}
                   />
                   <LogBookTable 
@@ -1365,17 +1366,24 @@ export const App: React.FC = () => {
               setImportState({ ...importState, isOpen: false });
           }}
       />
+      
+      {/* Log Book Modal (Dedicated) */}
+      <LogBookModal
+        isOpen={modalState.isOpen && modalState.type === 'LOGBOOK'}
+        onClose={closeModal}
+        onSave={handleSaveLogBook}
+        initialData={modalState.data}
+        mode={modalState.mode as any}
+      />
 
-      {/* ATK/ARK/Logbook */}
+      {/* Add Stock Modal (ATK/ARK only now) */}
       <AddStockModal 
-        isOpen={modalState.isOpen && (['ATK_REQUEST', 'ARK_REQUEST', 'ATK_APPROVAL', 'ARK_APPROVAL', 'LOGBOOK'].includes(modalState.type))}
+        isOpen={modalState.isOpen && (['ATK_REQUEST', 'ARK_REQUEST', 'ATK_APPROVAL', 'ARK_APPROVAL'].includes(modalState.type))}
         onClose={closeModal}
         onSave={() => {}}
-        moduleName={modalState.type.includes('ATK') ? 'ATK' : modalState.type.includes('ARK') ? 'ARK' : 'Log Book'}
+        moduleName={modalState.type.includes('ATK') ? 'ATK' : 'ARK'}
         mode={modalState.mode}
         initialAssetData={modalState.type.includes('APPROVAL') || modalState.type.includes('REQUEST') ? modalState.data : undefined}
-        initialLogBookData={modalState.type === 'LOGBOOK' ? modalState.data : undefined}
-        onSaveLogBook={handleSaveLogBook}
         onSaveStationeryRequest={(data) => { 
             // Simple mock save
             const newReq: AssetRecord = { id: Date.now(), transactionNumber: `TRX/${Date.now()}`, employee: {name: 'User', role: 'Staff'}, category: 'ATK', itemName: 'New Item', qty: 1, date: '2024-01-01', status: 'Pending' };
