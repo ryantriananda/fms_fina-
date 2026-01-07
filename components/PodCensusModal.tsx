@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, Save, Home, Lock, MessageSquare, User, Bed, Calendar } from 'lucide-react';
 import { ModenaPodRecord } from '../types';
@@ -16,7 +15,7 @@ export const PodCensusModal: React.FC<Props> = ({ isOpen, onClose, onSave, initi
     lantai: 'Lt 2 Pria',
     jenisKamar: 'Single Bed',
     nomorKamar: '',
-    namaPenghuni: '',
+    occupiedBy: '',
     statusLokerBarang: 'Tidak Terpakai',
     statusLokerPantry: 'Tidak Terpakai',
     jadwalLaundry: 'Tidak ada',
@@ -32,7 +31,7 @@ export const PodCensusModal: React.FC<Props> = ({ isOpen, onClose, onSave, initi
             lantai: 'Lt 2 Pria',
             jenisKamar: 'Single Bed',
             nomorKamar: '',
-            namaPenghuni: '',
+            occupiedBy: '',
             statusLokerBarang: 'Tidak Terpakai',
             statusLokerPantry: 'Tidak Terpakai',
             jadwalLaundry: 'Tidak ada',
@@ -132,8 +131,8 @@ export const PodCensusModal: React.FC<Props> = ({ isOpen, onClose, onSave, initi
                                 disabled={isView}
                                 className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-[12px] font-black text-black outline-none focus:border-black placeholder:text-gray-300 transition-all shadow-sm"
                                 placeholder="Masukkan nama lengkap..."
-                                value={form.namaPenghuni}
-                                onChange={(e) => setForm({...form, namaPenghuni: e.target.value})}
+                                value={form.occupiedBy}
+                                onChange={(e) => setForm({...form, occupiedBy: e.target.value})}
                             />
                             <User size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                         </div>

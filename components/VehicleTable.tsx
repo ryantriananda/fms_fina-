@@ -7,7 +7,7 @@ interface Props {
   data: VehicleRecord[];
   onEdit?: (item: VehicleRecord) => void;
   onView?: (item: VehicleRecord) => void;
-  onDelete?: (id: number) => void;
+  onDelete?: (id: number | string) => void;
   onAction?: (item: VehicleRecord, action: 'Approve' | 'Reject' | 'Revise') => void;
 }
 
