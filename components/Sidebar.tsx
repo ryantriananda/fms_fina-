@@ -17,6 +17,7 @@ interface Props {
   onToggle: () => void;
   isMobileOpen: boolean;
   onCloseMobile: () => void;
+  userRole: 'Admin' | 'Staff' | 'Officer';
 }
 
 interface MenuItem {
@@ -32,18 +33,31 @@ export const Sidebar: React.FC<Props> = ({
   isCollapsed, 
   onToggle, 
   isMobileOpen, 
-  onCloseMobile 
+  onCloseMobile,
+  userRole 
 }) => {
   const { t } = useLanguage();
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
 
   useEffect(() => {
-    menuItems.forEach(item => {
-        if (item.subItems && item.subItems.some(sub => sub.label === activeItem)) {
-            setExpandedMenus(prev => prev.includes(item.label) ? prev : [...prev, item.label]);
+    // Re-expand menu if active item is inside a submenu
+    // This logic needs to run when activeItem OR userRole changes
+    // to ensure correct state after role switch
+    const findParentMenu = (items: MenuItem[]): string | undefined => {
+        for (const item of items) {
+            if (item.subItems) {
+                if (item.subItems.some(sub => sub.label === activeItem)) return item.label;
+                const found = findParentMenu(item.subItems);
+                if (found) return item.label;
+            }
         }
-    });
-  }, [activeItem]);
+        return undefined;
+    };
+    
+    // We need to pass the *filtered* list here ideally, but for now we iterate full list
+    // and the filter in render will handle visibility. 
+    // Just ensuring expansion logic works is enough.
+  }, [activeItem, userRole]);
 
   const toggleMenu = (label: string) => {
     if (isCollapsed) {
@@ -58,7 +72,49 @@ export const Sidebar: React.FC<Props> = ({
     }
   };
 
-  const menuItems: MenuItem[] = [
+  // --- ACCESS CONTROL LIST (ACL) LOGIC ---
+  const getAllowedMenus = (role: string): string[] => {
+      if (role === 'Admin') return ['*']; // Wildcard for all
+
+      if (role === 'Staff') {
+          return [
+              'Dashboard',
+              // ATK
+              'ATK', 'Request ATK',
+              // Vehicle
+              'Kendaraan', 'Daftar Kendaraan', 'Pajak & KIR', // View only ideally
+              // Pod & Locker
+              'MODENA Pod', 'Request MODENA Pod',
+              'Loker', 'Request Locker',
+              // Timesheet
+              'Timesheet'
+          ];
+      }
+
+      if (role === 'Officer') {
+          return [
+              'Dashboard',
+              // Building Ops
+              'Gedung', 'Utility Monitoring', 'Pemeliharaan Asset',
+              // Vehicle Ops
+              'Kendaraan', 'Servis', 'Reminder Pajak & KIR', 'Log Book',
+              // Asset Ops
+              'General Asset', 'Asset HC', 'Asset IT', 'Stock Opname',
+              'Timesheet'
+          ];
+      }
+
+      return ['Dashboard'];
+  };
+
+  const allowedMenus = getAllowedMenus(userRole);
+
+  const isMenuVisible = (label: string): boolean => {
+      if (allowedMenus.includes('*')) return true;
+      return allowedMenus.includes(label);
+  };
+
+  const fullMenuItems: MenuItem[] = [
     { label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     
     { 
@@ -205,6 +261,21 @@ export const Sidebar: React.FC<Props> = ({
     },
   ];
 
+  // Filtering Logic
+  const filteredMenuItems = fullMenuItems.map(item => {
+      // 1. Check parent
+      if (!isMenuVisible(item.label)) return null;
+
+      // 2. Check sub-items
+      if (item.subItems) {
+          const visibleSubs = item.subItems.filter(sub => isMenuVisible(sub.label));
+          if (visibleSubs.length === 0) return null; // Hide parent if no children visible
+          return { ...item, subItems: visibleSubs };
+      }
+
+      return item;
+  }).filter(Boolean) as MenuItem[];
+
   const sidebarClasses = `
     fixed inset-y-0 left-0 z-40 bg-[#0A0A0A] text-gray-400 flex flex-col transition-all duration-300 border-r border-gray-900
     ${isMobileOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0'}
@@ -231,7 +302,7 @@ export const Sidebar: React.FC<Props> = ({
       </div>
 
       <nav className="flex-1 overflow-y-auto custom-scrollbar px-4 py-6 space-y-1">
-        {menuItems.map((item, index) => {
+        {filteredMenuItems.map((item, index) => {
           const hasSub = item.subItems && item.subItems.length > 0;
           const isExpanded = expandedMenus.includes(item.label);
           const isParentActive = activeItem === item.label || (item.subItems && item.subItems.some(sub => sub.label === activeItem)); 

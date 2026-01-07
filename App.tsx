@@ -118,6 +118,9 @@ export const App: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeItem, setActiveItem] = useState('Dashboard');
   const [activeTab, setActiveTab] = useState('SEMUA');
+  
+  // ROLE STATE (Simulation)
+  const [userRole, setUserRole] = useState<'Admin' | 'Staff' | 'Officer'>('Admin');
 
   // --- DATA STATES ---
   // ATK/ARK
@@ -262,17 +265,23 @@ export const App: React.FC = () => {
           'Servis': 'SERVICE_HISTORY_TEMPLATE.xlsx',
           'Pajak & KIR': 'TAX_KIR_TEMPLATE.xlsx',
           'Daftar Gedung': 'BUILDING_DATA_TEMPLATE.xlsx',
+          'Branch Improvement': 'BRANCH_IMPROVEMENT_TEMPLATE.xlsx', // Added
+          'Compliance & Legal': 'LEGAL_DOCS_TEMPLATE.xlsx', // Added
           'Asset HC': 'GENERAL_ASSET_HC_TEMPLATE.xlsx',
           'Asset IT': 'GENERAL_ASSET_IT_TEMPLATE.xlsx',
+          'Customer Service': 'ASSET_CS_TEMPLATE.xlsx', // Added
           'Vendor': 'MASTER_VENDOR_TEMPLATE.xlsx',
           'Master Vendor': 'MASTER_VENDOR_TEMPLATE.xlsx',
+          'Insurance Providers': 'INSURANCE_PROVIDER_TEMPLATE.xlsx', // Added
+          'All Policies': 'INSURANCE_POLICY_TEMPLATE.xlsx', // Added
           'Manajemen User': 'USER_DATA_TEMPLATE.xlsx',
           'Stock Opname': 'STOCK_OPNAME_TEMPLATE.xlsx',
           'Log Book': 'VISITOR_LOG_TEMPLATE.xlsx',
           'Utility Monitoring': 'UTILITY_USAGE_TEMPLATE.xlsx',
           'Daftar Loker': 'MASTER_LOCKER_TEMPLATE.xlsx',
           'Timesheet': 'TIMESHEET_LOG_TEMPLATE.xlsx',
-          'Expiring Soon': 'INSURANCE_REMINDER_TEMPLATE.xlsx'
+          'Expiring Soon': 'INSURANCE_REMINDER_TEMPLATE.xlsx',
+          'Reminder Pemeliharaan': 'MAINTENANCE_SCHEDULE_TEMPLATE.xlsx' // Added
       };
       
       // Dynamic for General Masters
@@ -654,14 +663,14 @@ export const App: React.FC = () => {
       case 'Branch Improvement':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'PENDING', 'ON PROGRESS', 'COMPLETED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('BUILDING', 'create')} customAddLabel="New Improvement" />
+                  <FilterBar tabs={['SEMUA', 'PENDING', 'ON PROGRESS', 'COMPLETED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('BUILDING', 'create')} customAddLabel="New Improvement" onImportClick={handleOpenImport} />
                   <BuildingTable data={buildings} onView={(i) => openModal('BUILDING', 'view', i)} onEdit={(i) => openModal('BUILDING', 'edit', i)} />
               </>
           );
       case 'Compliance & Legal':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'URGENT', 'WARNING', 'SAFE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('COMPLIANCE', 'create')} customAddLabel="Add Document" />
+                  <FilterBar tabs={['SEMUA', 'URGENT', 'WARNING', 'SAFE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('COMPLIANCE', 'create')} customAddLabel="Add Document" onImportClick={handleOpenImport} />
                   <ReminderTable data={complianceDocs} onView={(i) => openModal('COMPLIANCE', 'view', i)} />
               </>
           );
@@ -687,7 +696,7 @@ export const App: React.FC = () => {
       case 'Reminder Pemeliharaan':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'OVERDUE', 'DUE SOON', 'ON SCHEDULE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('MAINTENANCE_SCHEDULE', 'create')} hideAdd={true} />
+                  <FilterBar tabs={['SEMUA', 'OVERDUE', 'DUE SOON', 'ON SCHEDULE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('MAINTENANCE_SCHEDULE', 'create')} hideAdd={true} onImportClick={handleOpenImport} />
                   <MaintenanceReminderTable data={assetMaintenances} onEdit={(i) => openModal('MAINTENANCE_SCHEDULE', 'edit', i)} />
               </>
           );
@@ -711,7 +720,7 @@ export const App: React.FC = () => {
       case 'All Policies':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'ACTIVE', 'EXPIRING', 'EXPIRED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('INSURANCE', 'create')} customAddLabel="New Policy" />
+                  <FilterBar tabs={['SEMUA', 'ACTIVE', 'EXPIRING', 'EXPIRED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('INSURANCE', 'create')} customAddLabel="New Policy" onImportClick={handleOpenImport} />
                   <InsurancePolicyTable data={insurances} onView={(i) => openModal('INSURANCE', 'view', i)} onEdit={(i) => openModal('INSURANCE', 'edit', i)} />
               </>
           );
@@ -784,7 +793,7 @@ export const App: React.FC = () => {
       case 'Insurance Providers':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'ACTIVE', 'INACTIVE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('INSURANCE_PROVIDER', 'create')} customAddLabel="Add Provider" />
+                  <FilterBar tabs={['SEMUA', 'ACTIVE', 'INACTIVE']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('INSURANCE_PROVIDER', 'create')} customAddLabel="Add Provider" onImportClick={handleOpenImport} />
                   <InsuranceProviderTable data={insuranceProviders} onEdit={(i) => openModal('INSURANCE_PROVIDER', 'edit', i)} />
               </>
           );
@@ -793,7 +802,7 @@ export const App: React.FC = () => {
       case 'Pod Census':
           return (
               <>
-                  <FilterBar tabs={['SEMUA', 'AVAILABLE', 'OCCUPIED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('POD_CENSUS', 'create')} customAddLabel="Update Census" />
+                  <FilterBar tabs={['SEMUA', 'AVAILABLE', 'OCCUPIED']} activeTab={activeTab} onTabChange={setActiveTab} onAddClick={() => openModal('POD_CENSUS', 'create')} customAddLabel="Update Census" onImportClick={handleOpenImport} />
                   <ModenaPodTable data={pods} onView={(i) => openModal('POD_CENSUS', 'view', i)} onEdit={(i) => openModal('POD_CENSUS', 'edit', i)} />
               </>
           );
@@ -926,10 +935,16 @@ export const App: React.FC = () => {
         onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
+        userRole={userRole} // PASS ROLE
       />
       
       <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarCollapsed ? 'lg:ml-[90px]' : 'lg:ml-[280px]'}`}>
-        <TopBar breadcrumbs={['Home', activeItem]} onMenuClick={() => setIsMobileMenuOpen(true)} />
+        <TopBar 
+            breadcrumbs={['Home', activeItem]} 
+            onMenuClick={() => setIsMobileMenuOpen(true)}
+            userRole={userRole}
+            onRoleChange={setUserRole} // PASS ROLE HANDLER
+        />
         
         <main className="flex-1 p-8 overflow-y-auto custom-scrollbar">
           {renderContent()}
