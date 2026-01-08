@@ -9,6 +9,7 @@ export { default as vehicleService } from './vehicleService';
 export { default as buildingService } from './buildingService';
 export { default as assetService } from './assetService';
 export { default as facilityService } from './facilityService';
+export { default as insuranceService } from './insuranceService';
 
 // Re-export untuk convenience
 export * from './authService';
@@ -16,3 +17,4 @@ export * from './vehicleService';
 export * from './buildingService';
 export * from './assetService';
 export * from './facilityService';
+export * from './insuranceService';

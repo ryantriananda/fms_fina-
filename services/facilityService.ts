@@ -6,60 +6,100 @@
 import { PodRequestRecord, MasterPodRecord, TenantPodRecord, LockerRecord, LockerRequestRecord } from '../types';
 import api from './api';
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+}
+
 export const facilityService = {
+  // === PODS ===
+  getPods: async (): Promise<MasterPodRecord[]> => {
+    const response = await api.get<ApiResponse<MasterPodRecord[]>>('/facility/pods');
+    return response.data;
+  },
+
+  getPodById: async (id: string): Promise<MasterPodRecord> => {
+    const response = await api.get<ApiResponse<MasterPodRecord>>(`/facility/pods/${id}`);
+    return response.data;
+  },
+
+  createPod: async (data: Partial<MasterPodRecord>): Promise<MasterPodRecord> => {
+    const response = await api.post<ApiResponse<MasterPodRecord>>('/facility/pods', data);
+    return response.data;
+  },
+
+  updatePod: async (id: string, data: Partial<MasterPodRecord>): Promise<MasterPodRecord> => {
+    const response = await api.put<ApiResponse<MasterPodRecord>>(`/facility/pods/${id}`, data);
+    return response.data;
+  },
+
+  deletePod: async (id: string): Promise<void> => {
+    await api.delete(`/facility/pods/${id}`);
+  },
+
   // === POD REQUESTS ===
   getPodRequests: async (): Promise<PodRequestRecord[]> => {
-    // return api.get<PodRequestRecord[]>('/facility/pod-requests');
-    return Promise.resolve([]);
+    const response = await api.get<ApiResponse<PodRequestRecord[]>>('/facility/pod-requests');
+    return response.data;
   },
 
   createPodRequest: async (data: Partial<PodRequestRecord>): Promise<PodRequestRecord> => {
-    // return api.post<PodRequestRecord>('/facility/pod-requests', data);
-    return Promise.resolve({ ...data, id: Date.now() } as PodRequestRecord);
+    const response = await api.post<ApiResponse<PodRequestRecord>>('/facility/pod-requests', data);
+    return response.data;
   },
 
-  // === MASTER POD ===
+  // === MASTER POD (legacy) ===
   getMasterPods: async (): Promise<MasterPodRecord[]> => {
-    // return api.get<MasterPodRecord[]>('/facility/master-pods');
-    return Promise.resolve([]);
+    return facilityService.getPods();
   },
 
   createMasterPod: async (data: Partial<MasterPodRecord>): Promise<MasterPodRecord> => {
-    // return api.post<MasterPodRecord>('/facility/master-pods', data);
-    return Promise.resolve({ ...data, id: Date.now() } as MasterPodRecord);
+    return facilityService.createPod(data);
   },
 
   // === TENANT POD ===
   getTenantPods: async (): Promise<TenantPodRecord[]> => {
-    // return api.get<TenantPodRecord[]>('/facility/tenant-pods');
     return Promise.resolve([]);
   },
 
   createTenantPod: async (data: Partial<TenantPodRecord>): Promise<TenantPodRecord> => {
-    // return api.post<TenantPodRecord>('/facility/tenant-pods', data);
     return Promise.resolve({ ...data, id: Date.now() } as TenantPodRecord);
   },
 
   // === LOCKERS ===
   getLockers: async (): Promise<LockerRecord[]> => {
-    // return api.get<LockerRecord[]>('/facility/lockers');
-    return Promise.resolve([]);
+    const response = await api.get<ApiResponse<LockerRecord[]>>('/facility/lockers');
+    return response.data;
+  },
+
+  getLockerById: async (id: string): Promise<LockerRecord> => {
+    const response = await api.get<ApiResponse<LockerRecord>>(`/facility/lockers/${id}`);
+    return response.data;
   },
 
   createLocker: async (data: Partial<LockerRecord>): Promise<LockerRecord> => {
-    // return api.post<LockerRecord>('/facility/lockers', data);
-    return Promise.resolve({ ...data, id: Date.now() } as LockerRecord);
+    const response = await api.post<ApiResponse<LockerRecord>>('/facility/lockers', data);
+    return response.data;
+  },
+
+  updateLocker: async (id: string, data: Partial<LockerRecord>): Promise<LockerRecord> => {
+    const response = await api.put<ApiResponse<LockerRecord>>(`/facility/lockers/${id}`, data);
+    return response.data;
+  },
+
+  deleteLocker: async (id: string): Promise<void> => {
+    await api.delete(`/facility/lockers/${id}`);
   },
 
   // === LOCKER REQUESTS ===
   getLockerRequests: async (): Promise<LockerRequestRecord[]> => {
-    // return api.get<LockerRequestRecord[]>('/facility/locker-requests');
-    return Promise.resolve([]);
+    const response = await api.get<ApiResponse<LockerRequestRecord[]>>('/facility/locker-requests');
+    return response.data;
   },
 
   createLockerRequest: async (data: Partial<LockerRequestRecord>): Promise<LockerRequestRecord> => {
-    // return api.post<LockerRequestRecord>('/facility/locker-requests', data);
-    return Promise.resolve({ ...data, id: Date.now() } as LockerRequestRecord);
+    const response = await api.post<ApiResponse<LockerRequestRecord>>('/facility/locker-requests', data);
+    return response.data;
   },
 };
 
