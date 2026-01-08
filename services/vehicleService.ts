@@ -6,78 +6,83 @@
 import { VehicleRecord, VehicleContractRecord, ServiceRecord, TaxKirRecord, MutationRecord, SalesRecord } from '../types';
 import api from './api';
 
-// Untuk development, pakai mock data dulu
-// Nanti tinggal uncomment API calls ketika backend ready
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+}
 
 export const vehicleService = {
   // === VEHICLES ===
   getAll: async (): Promise<VehicleRecord[]> => {
-    // return api.get<VehicleRecord[]>('/vehicles');
-    return Promise.resolve([]); // Replace with actual API
+    const response = await api.get<ApiResponse<VehicleRecord[]>>('/vehicles');
+    return response.data;
   },
 
   getById: async (id: string | number): Promise<VehicleRecord> => {
-    // return api.get<VehicleRecord>(`/vehicles/${id}`);
-    return Promise.reject('Not implemented');
+    const response = await api.get<ApiResponse<VehicleRecord>>(`/vehicles/${id}`);
+    return response.data;
   },
 
   create: async (data: Partial<VehicleRecord>): Promise<VehicleRecord> => {
-    // return api.post<VehicleRecord>('/vehicles', data);
-    return Promise.resolve({ ...data, id: Date.now() } as VehicleRecord);
+    const response = await api.post<ApiResponse<VehicleRecord>>('/vehicles', data);
+    return response.data;
   },
 
   update: async (id: string | number, data: Partial<VehicleRecord>): Promise<VehicleRecord> => {
-    // return api.put<VehicleRecord>(`/vehicles/${id}`, data);
-    return Promise.resolve({ ...data, id } as VehicleRecord);
+    const response = await api.put<ApiResponse<VehicleRecord>>(`/vehicles/${id}`, data);
+    return response.data;
   },
 
   delete: async (id: string | number): Promise<void> => {
-    // return api.delete(`/vehicles/${id}`);
-    return Promise.resolve();
+    await api.delete(`/vehicles/${id}`);
   },
 
   // === CONTRACTS ===
   getContracts: async (): Promise<VehicleContractRecord[]> => {
-    // return api.get<VehicleContractRecord[]>('/vehicles/contracts');
-    return Promise.resolve([]);
+    const response = await api.get<ApiResponse<VehicleContractRecord[]>>('/vehicles/contracts/all');
+    return response.data;
   },
 
   createContract: async (data: Partial<VehicleContractRecord>): Promise<VehicleContractRecord> => {
-    // return api.post<VehicleContractRecord>('/vehicles/contracts', data);
-    return Promise.resolve({ ...data, id: `CTR-${Date.now()}` } as VehicleContractRecord);
+    const response = await api.post<ApiResponse<VehicleContractRecord>>('/vehicles/contracts', data);
+    return response.data;
   },
 
   // === SERVICES ===
   getServices: async (): Promise<ServiceRecord[]> => {
-    // return api.get<ServiceRecord[]>('/vehicles/services');
-    return Promise.resolve([]);
+    const response = await api.get<ApiResponse<ServiceRecord[]>>('/vehicles/services/all');
+    return response.data;
   },
 
   createService: async (data: Partial<ServiceRecord>): Promise<ServiceRecord> => {
-    // return api.post<ServiceRecord>('/vehicles/services', data);
-    return Promise.resolve({ ...data, id: `SRV-${Date.now()}` } as ServiceRecord);
+    const response = await api.post<ApiResponse<ServiceRecord>>('/vehicles/services', data);
+    return response.data;
   },
 
   // === TAX & KIR ===
   getTaxKir: async (): Promise<TaxKirRecord[]> => {
-    // return api.get<TaxKirRecord[]>('/vehicles/tax-kir');
-    return Promise.resolve([]);
+    const response = await api.get<ApiResponse<TaxKirRecord[]>>('/vehicles/tax-kir/all');
+    return response.data;
   },
 
   createTaxKir: async (data: Partial<TaxKirRecord>): Promise<TaxKirRecord> => {
-    // return api.post<TaxKirRecord>('/vehicles/tax-kir', data);
-    return Promise.resolve({ ...data, id: `TAX-${Date.now()}` } as TaxKirRecord);
+    const response = await api.post<ApiResponse<TaxKirRecord>>('/vehicles/tax-kir', data);
+    return response.data;
   },
 
   // === MUTATIONS ===
   getMutations: async (): Promise<MutationRecord[]> => {
-    // return api.get<MutationRecord[]>('/vehicles/mutations');
-    return Promise.resolve([]);
+    const response = await api.get<ApiResponse<MutationRecord[]>>('/vehicles/mutations/all');
+    return response.data;
   },
 
-  // === SALES ===
+  createMutation: async (data: Partial<MutationRecord>): Promise<MutationRecord> => {
+    const response = await api.post<ApiResponse<MutationRecord>>('/vehicles/mutations', data);
+    return response.data;
+  },
+
+  // === SALES (placeholder) ===
   getSales: async (): Promise<SalesRecord[]> => {
-    // return api.get<SalesRecord[]>('/vehicles/sales');
     return Promise.resolve([]);
   },
 };

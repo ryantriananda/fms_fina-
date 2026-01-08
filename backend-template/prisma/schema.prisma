@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 // ==================== AUTH ====================
@@ -497,7 +497,7 @@ model ApprovalWorkflow {
   id        String   @id @default(cuid())
   module    String
   branch    String   @default("All Branches")
-  tiers     Json     // Store approval tiers as JSON
+  tiers     String   // Store approval tiers as JSON string
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 }

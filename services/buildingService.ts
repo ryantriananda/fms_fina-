@@ -6,64 +6,68 @@
 import { BuildingRecord, UtilityRecord, ReminderRecord, BuildingMaintenanceRecord } from '../types';
 import api from './api';
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+}
+
 export const buildingService = {
   // === BUILDINGS ===
   getAll: async (): Promise<BuildingRecord[]> => {
-    // return api.get<BuildingRecord[]>('/buildings');
-    return Promise.resolve([]);
+    const response = await api.get<ApiResponse<BuildingRecord[]>>('/buildings');
+    return response.data;
   },
 
   getById: async (id: string | number): Promise<BuildingRecord> => {
-    // return api.get<BuildingRecord>(`/buildings/${id}`);
-    return Promise.reject('Not implemented');
+    const response = await api.get<ApiResponse<BuildingRecord>>(`/buildings/${id}`);
+    return response.data;
   },
 
   create: async (data: Partial<BuildingRecord>): Promise<BuildingRecord> => {
-    // return api.post<BuildingRecord>('/buildings', data);
-    return Promise.resolve({ ...data, id: Date.now() } as BuildingRecord);
+    const response = await api.post<ApiResponse<BuildingRecord>>('/buildings', data);
+    return response.data;
   },
 
   update: async (id: string | number, data: Partial<BuildingRecord>): Promise<BuildingRecord> => {
-    // return api.put<BuildingRecord>(`/buildings/${id}`, data);
-    return Promise.resolve({ ...data, id } as BuildingRecord);
+    const response = await api.put<ApiResponse<BuildingRecord>>(`/buildings/${id}`, data);
+    return response.data;
   },
 
   delete: async (id: string | number): Promise<void> => {
-    // return api.delete(`/buildings/${id}`);
-    return Promise.resolve();
+    await api.delete(`/buildings/${id}`);
   },
 
   // === UTILITIES ===
   getUtilities: async (): Promise<UtilityRecord[]> => {
-    // return api.get<UtilityRecord[]>('/buildings/utilities');
-    return Promise.resolve([]);
+    const response = await api.get<ApiResponse<UtilityRecord[]>>('/buildings/utilities/all');
+    return response.data;
   },
 
   createUtility: async (data: Partial<UtilityRecord>): Promise<UtilityRecord> => {
-    // return api.post<UtilityRecord>('/buildings/utilities', data);
-    return Promise.resolve({ ...data, id: `UTIL-${Date.now()}` } as UtilityRecord);
+    const response = await api.post<ApiResponse<UtilityRecord>>('/buildings/utilities', data);
+    return response.data;
   },
 
   // === COMPLIANCE / REMINDERS ===
   getReminders: async (): Promise<ReminderRecord[]> => {
-    // return api.get<ReminderRecord[]>('/buildings/reminders');
-    return Promise.resolve([]);
+    const response = await api.get<ApiResponse<ReminderRecord[]>>('/buildings/reminders/all');
+    return response.data;
   },
 
   createReminder: async (data: Partial<ReminderRecord>): Promise<ReminderRecord> => {
-    // return api.post<ReminderRecord>('/buildings/reminders', data);
-    return Promise.resolve({ ...data, id: Date.now() } as ReminderRecord);
+    const response = await api.post<ApiResponse<ReminderRecord>>('/buildings/reminders', data);
+    return response.data;
   },
 
   // === MAINTENANCE ===
   getMaintenances: async (): Promise<BuildingMaintenanceRecord[]> => {
-    // return api.get<BuildingMaintenanceRecord[]>('/buildings/maintenances');
-    return Promise.resolve([]);
+    const response = await api.get<ApiResponse<BuildingMaintenanceRecord[]>>('/buildings/maintenance/all');
+    return response.data;
   },
 
   createMaintenance: async (data: Partial<BuildingMaintenanceRecord>): Promise<BuildingMaintenanceRecord> => {
-    // return api.post<BuildingMaintenanceRecord>('/buildings/maintenances', data);
-    return Promise.resolve({ ...data, id: `BM-${Date.now()}` } as BuildingMaintenanceRecord);
+    const response = await api.post<ApiResponse<BuildingMaintenanceRecord>>('/buildings/maintenance', data);
+    return response.data;
   },
 };
 
