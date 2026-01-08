@@ -1,0 +1,503 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== AUTH ====================
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  name        String
+  role        String   @default("Staff")
+  department  String?
+  phone       String?
+  avatar      String?
+  status      String   @default("Active")
+  employeeId  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  vehicles        Vehicle[]
+  atkRequests     AtkRequest[]
+  arkRequests     ArkRequest[]
+  podRequests     PodRequest[]
+  lockerRequests  LockerRequest[]
+  logBooks        LogBook[]
+  timesheets      Timesheet[]
+}
+
+// ==================== VEHICLE ====================
+model Vehicle {
+  id              String   @id @default(cuid())
+  noPolisi        String   @unique
+  nama            String
+  merek           String
+  model           String?
+  tipeKendaraan   String?
+  tahunPembuatan  String?
+  warna           String?
+  isiSilinder     String?
+  noRangka        String?
+  noMesin         String?
+  ownership       String   @default("Milik Modena")
+  channel         String?
+  cabang          String?
+  status          String   @default("Aktif")
+  approvalStatus  String   @default("Pending")
+  pengguna        String?
+  tglBeli         DateTime?
+  hargaBeli       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String?
+  createdBy       User?    @relation(fields: [createdById], references: [id])
+
+  // Relations
+  contracts       VehicleContract[]
+  services        VehicleService[]
+  taxKirs         TaxKir[]
+  mutations       Mutation[]
+}
+
+model VehicleContract {
+  id              String   @id @default(cuid())
+  noKontrak       String?
+  vehicleId       String
+  vehicle         Vehicle  @relation(fields: [vehicleId], references: [id])
+  vendor          String?
+  tglMulai        DateTime?
+  tglBerakhir     DateTime?
+  biayaSewa       String?
+  status          String   @default("Active")
+  approvalStatus  String   @default("Pending")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model VehicleService {
+  id              String   @id @default(cuid())
+  vehicleId       String
+  vehicle         Vehicle  @relation(fields: [vehicleId], references: [id])
+  tglRequest      DateTime @default(now())
+  jenisServis     String?
+  vendor          String?
+  masalah         String?
+  kmKendaraan     String?
+  estimasiBiaya   String?
+  cost            String?
+  status          String   @default("Pending")
+  statusApproval  String   @default("Pending")
+  completionDate  DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model TaxKir {
+  id              String   @id @default(cuid())
+  vehicleId       String
+  vehicle         Vehicle  @relation(fields: [vehicleId], references: [id])
+  jenis           String
+  tglRequest      DateTime @default(now())
+  jatuhTempo      DateTime?
+  estimasiBiaya   String?
+  status          String   @default("Pending")
+  statusApproval  String   @default("Pending")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ==================== BUILDING ====================
+model Building {
+  id              String   @id @default(cuid())
+  assetNo         String   @unique
+  name            String
+  type            String?
+  ownership       String   @default("Rent")
+  location        String?
+  address         String?
+  city            String?
+  province        String?
+  status          String   @default("Active")
+  rentCost        String?
+  electricityPower String?
+  waterSource     String?
+  landArea        String?
+  buildingArea    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  utilities       Utility[]
+  maintenances    BuildingMaintenance[]
+  reminders       Reminder[]
+}
+
+model Utility {
+  id          String   @id @default(cuid())
+  buildingId  String
+  building    Building @relation(fields: [buildingId], references: [id])
+  period      String
+  date        DateTime
+  type        String
+  meterStart  Float
+  meterEnd    Float
+  usage       Float
+  unit        String
+  cost        String?
+  status      String   @default("Unpaid")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BuildingMaintenance {
+  id              String   @id @default(cuid())
+  buildingId      String
+  building        Building @relation(fields: [buildingId], references: [id])
+  assetName       String
+  maintenanceType String
+  vendor          String?
+  description     String?
+  cost            String?
+  status          String   @default("Pending")
+  approvalStatus  String   @default("Pending")
+  requestDate     DateTime @default(now())
+  completionDate  DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Reminder {
+  id            String   @id @default(cuid())
+  buildingId    String?
+  building      Building? @relation(fields: [buildingId], references: [id])
+  category      String
+  documentName  String
+  expiryDate    DateTime
+  status        String   @default("Safe")
+  source        String   @default("Manual")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ==================== GENERAL ASSET ====================
+model GeneralAsset {
+  id              String   @id @default(cuid())
+  assetNumber     String   @unique
+  assetName       String
+  assetCategory   String
+  type            String?
+  ownership       String   @default("Own")
+  assetLocation   String?
+  department      String?
+  status          String   @default("Active")
+  approvalStatus  String   @default("Approved")
+  purchasePrice   String?
+  purchaseDate    DateTime?
+  brand           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  maintenances    AssetMaintenance[]
+  mutations       Mutation[]
+}
+
+model AssetMaintenance {
+  id                  String   @id @default(cuid())
+  assetId             String
+  asset               GeneralAsset @relation(fields: [assetId], references: [id])
+  frequency           String   @default("Yearly")
+  lastMaintenanceDate DateTime?
+  nextMaintenanceDate DateTime?
+  status              String   @default("Safe")
+  vendor              String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Mutation {
+  id              String   @id @default(cuid())
+  assetType       String   // VEHICLE or GENERAL_ASSET
+  vehicleId       String?
+  vehicle         Vehicle? @relation(fields: [vehicleId], references: [id])
+  generalAssetId  String?
+  generalAsset    GeneralAsset? @relation(fields: [generalAssetId], references: [id])
+  tipeMutasi      String?
+  lokasiAsal      String?
+  lokasiTujuan    String?
+  tglPermintaan   DateTime @default(now())
+  status          String   @default("Pending")
+  statusApproval  String   @default("Pending")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ==================== CONSUMABLES (ATK/ARK) ====================
+model MasterItem {
+  id              String   @id @default(cuid())
+  itemCode        String   @unique
+  itemName        String
+  category        String
+  type            String   @default("ATK") // ATK or ARK
+  uom             String
+  remainingStock  Int      @default(0)
+  minimumStock    Int      @default(0)
+  maximumStock    Int      @default(100)
+  lastPurchasePrice String?
+  averagePrice    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AtkRequest {
+  id                String   @id @default(cuid())
+  transactionNumber String   @unique
+  requesterId       String
+  requester         User     @relation(fields: [requesterId], references: [id])
+  itemName          String
+  category          String
+  qty               Int
+  uom               String?
+  status            String   @default("Pending")
+  date              DateTime @default(now())
+  remarks           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model ArkRequest {
+  id                String   @id @default(cuid())
+  transactionNumber String   @unique
+  requesterId       String
+  requester         User     @relation(fields: [requesterId], references: [id])
+  itemName          String
+  category          String
+  qty               Int
+  uom               String?
+  status            String   @default("Pending")
+  date              DateTime @default(now())
+  remarks           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model StockOpname {
+  id            String   @id @default(cuid())
+  opnameId      String   @unique
+  itemCode      String
+  itemName      String
+  category      String
+  systemQty     Int
+  physicalQty   Int
+  diff          Int
+  performedBy   String
+  status        String   @default("MATCHED")
+  statusApproval String  @default("Pending")
+  date          DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ==================== FACILITY ====================
+model MasterPod {
+  id            String   @id @default(cuid())
+  nomorKamar    String   @unique
+  lantai        String
+  jenisKamar    String
+  kapasitas     Int      @default(1)
+  status        String   @default("ACTIVE")
+  gender        String?
+  biayaAwal     String?
+  biayaTerbaru  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  tenants       TenantPod[]
+  requests      PodRequest[]
+}
+
+model TenantPod {
+  id              String   @id @default(cuid())
+  podId           String
+  pod             MasterPod @relation(fields: [podId], references: [id])
+  namaPenghuni    String
+  posisi          String?
+  departemen      String?
+  gender          String?
+  statusLokerBarang String?
+  statusLokerPantry String?
+  jadwalLaundry   String?
+  keterangan      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model PodRequest {
+  id              String   @id @default(cuid())
+  requesterId     String
+  requester       User     @relation(fields: [requesterId], references: [id])
+  podId           String?
+  pod             MasterPod? @relation(fields: [podId], references: [id])
+  floorPreference String?
+  roomType        String?
+  reason          String?
+  status          String   @default("Pending")
+  requestDate     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Locker {
+  id            String   @id @default(cuid())
+  lockerNumber  String   @unique
+  floor         String?
+  area          String?
+  assignedTo    String?
+  department    String?
+  status        String   @default("Kosong")
+  lastAuditDate DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  requests      LockerRequest[]
+}
+
+model LockerRequest {
+  id            String   @id @default(cuid())
+  requesterId   String
+  requester     User     @relation(fields: [requesterId], references: [id])
+  lockerId      String?
+  locker        Locker?  @relation(fields: [lockerId], references: [id])
+  requestType   String?
+  reason        String?
+  status        String   @default("Pending")
+  requestDate   DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ==================== DAILY OPS ====================
+model LogBook {
+  id                String   @id @default(cuid())
+  tanggalKunjungan  DateTime
+  jamDatang         String
+  jamPulang         String?
+  lokasiModena      String?
+  kategoriTamu      String
+  namaTamu          String
+  countAdult        Int      @default(0)
+  countChild        Int      @default(0)
+  email             String?
+  phone             String?
+  note              String?
+  recordedById      String?
+  recordedBy        User?    @relation(fields: [recordedById], references: [id])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Timesheet {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    User     @relation(fields: [employeeId], references: [id])
+  date        DateTime
+  shift       String?
+  status      String   @default("Tepat Waktu")
+  totalHours  Float    @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ==================== INSURANCE ====================
+model InsuranceProvider {
+  id            String   @id @default(cuid())
+  name          String
+  contactPerson String?
+  phone         String?
+  email         String?
+  address       String?
+  rating        Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  policies      InsurancePolicy[]
+}
+
+model InsurancePolicy {
+  id            String   @id @default(cuid())
+  policyNumber  String   @unique
+  providerId    String
+  provider      InsuranceProvider @relation(fields: [providerId], references: [id])
+  type          String
+  startDate     DateTime
+  endDate       DateTime
+  premium       String?
+  sumInsured    String?
+  status        String   @default("Active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  claims        InsuranceClaim[]
+}
+
+model InsuranceClaim {
+  id            String   @id @default(cuid())
+  policyId      String
+  policy        InsurancePolicy @relation(fields: [policyId], references: [id])
+  incidentDate  DateTime
+  description   String?
+  claimAmount   String?
+  coveredAmount String?
+  status        String   @default("Submitted")
+  remarks       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ==================== VENDOR ====================
+model Vendor {
+  id          String   @id @default(cuid())
+  vendorCode  String   @unique
+  vendorName  String
+  type        String?
+  category    String?
+  email       String?
+  phone       String?
+  address     String?
+  picName     String?
+  status      String   @default("Active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ==================== MASTER DATA ====================
+model MasterData {
+  id        String   @id @default(cuid())
+  category  String   // e.g., "Brand", "Color", "Department", etc.
+  name      String
+  status    String   @default("Active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([category, name])
+}
+
+model ApprovalWorkflow {
+  id        String   @id @default(cuid())
+  module    String
+  branch    String   @default("All Branches")
+  tiers     Json     // Store approval tiers as JSON
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}

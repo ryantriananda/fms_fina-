@@ -678,3 +678,57 @@ export const BuildingModal: React.FC<Props> = ({
                             <div className="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-10">
                                 
                                 {/* 1. INFO UTAMA (Lokasi & Utilitas) */}
+
+                                {proposalTab === 'INFO UTAMA' && (
+                                    <div className="space-y-6">
+                                        <p className="text-gray-500 text-sm">Info Utama content placeholder</p>
+                                    </div>
+                                )}
+
+                                {proposalTab === 'SPESIFIKASI FISIK' && (
+                                    <div className="space-y-6">
+                                        <p className="text-gray-500 text-sm">Spesifikasi Fisik content placeholder</p>
+                                    </div>
+                                )}
+
+                                {proposalTab === 'RENOVASI & LINGKUNGAN' && (
+                                    <div className="space-y-6">
+                                        <p className="text-gray-500 text-sm">Renovasi & Lingkungan content placeholder</p>
+                                    </div>
+                                )}
+
+                                {proposalTab === 'BIAYA & LEGAL' && (
+                                    <div className="space-y-6">
+                                        <p className="text-gray-500 text-sm">Biaya & Legal content placeholder</p>
+                                    </div>
+                                )}
+
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-6">
+                                <button
+                                    onClick={() => setIsEditingProposal(false)}
+                                    className="px-6 py-3 text-[11px] font-black uppercase tracking-widest text-gray-500 hover:text-black transition-colors"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        // Save proposal logic
+                                        setIsEditingProposal(false);
+                                    }}
+                                    className="px-8 py-3 bg-black text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-gray-800 transition-all shadow-lg shadow-black/20"
+                                >
+                                    <Save size={14} className="inline mr-2" />
+                                    Simpan Kandidat
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+      </div>
+    </div>
+  );
+};
